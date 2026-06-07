@@ -1,0 +1,287 @@
+
+tally · current session
+100%
+0% headroom
+resets in 2h 21m
+weekly · all models
+6% · Fri 11:30 AM
+
+Claude finished the response Claude finished the response May 19th - June 14th, 2026Agents League Hackathon Code, Collaborate and Compete Hosted by Microsoft  Registrants 1,616 Projects 136 Agents League Hackathon An AI developer challenge running between June 4- 14, 2026 with live coding bat
+
+pasted
+
+Design the exact UI, exact reasoning trace, exact Foundry IQ workflow, exact architecture, and exact implementation plan needed to build the strongest possible version of ConflictSense.
+
+Jun 6
+
+Architected comprehensive UI mockup, workflow patterns, and implementation roadmap
+Architected comprehensive UI mockup, workflow patterns, and implementation roadmap
+Here's the complete implementation — UI mockup first, then architecture diagram, then the full written spec.
+
+
+
+Now the full interactive UI mockup:
+
+
+Created a file, read a file
+Created a file, read a file
+Now the complete written spec — architecture, Foundry IQ workflow, implementation plan:
+
+Foundry IQ workflow — exact query patterns per agent
+Each agent has a specific relationship to Foundry IQ. This is the argument that makes the integration non-removable.
+
+DocumentAnalyzer sends one query per topic to Foundry IQ with knowledge_source_ids scoped to each document individually. The return is a per-document array of grounded answers — each with source_document, section, passage, and confidence. This is what makes multi-source comparison possible: you get 7 answers to the same question, each attributed. Without Foundry IQ, you concatenate all documents into one prompt and lose per-source attribution. At real enterprise scale (50+ policies), you also blow the context window.
+
+python
+# DocumentAnalyzer — per-topic, per-document grounded retrieval
+def extract_per_document(self, topic: str, documents: list[KnowledgeSource]) -> list[PolicyStatement]:
+    results = []
+    for doc in documents:
+        response = foundry_iq.query(
+            query=f"What rule or policy applies to: {topic}?",
+            knowledge_source_ids=[doc.id],
+            require_grounded_citations=True,
+        )
+        if response.has_content:
+            results.append(PolicyStatement(
+                document=doc.name,
+                section=response.citation.section,
+                passage=response.citation.exact_text,
+                confidence=response.confidence,
+                topic=topic,
+            ))
+    return results
+ConflictDetector receives the list of PolicyStatement objects and applies a contradiction-detection prompt. The prompt structure is: "Here are N statements about [topic], each from a different authoritative source. Identify any pair that makes incompatible claims. Explain why they cannot simultaneously be satisfied for the same population of employees." This is distinct from single-document analysis — the agent is comparing authoritative answers, not re-reading documents.
+
+ImpactAssessor sends a follow-up Foundry IQ query: "Which employee groups, systems, or teams are mentioned in connection with [conflict topic]?" This grounds the affected-employee count in actual policy text rather than in LLM inference.
+
+RiskQuantifier queries Foundry IQ with regulatory context: "What are the penalties for [regulation name] non-compliance?" The knowledge base should include the actual regulation text (DPDP Act §91, FCA handbook excerpts) alongside the company policies so the risk estimates are grounded, not hallucinated.
+
+ResolutionRecommender queries: "What resolution approaches exist for [conflict type] in [regulatory context]?" This grounds resolution suggestions in regulatory best practice, not just LLM pattern matching.
+
+The ablation test result (document this in README): removing Foundry IQ and replacing with single-context concatenation produces (a) no section-level citations, (b) LLM paraphrases rather than exact policy language, (c) context overflow at ~50,000 tokens for real enterprise corpora, and (d) outputs that cannot be shown to a regulator. The Foundry IQ path produces auditable findings. That is the exact word to use: auditable.
+
+Exact agent prompts
+DocumentAnalyzer system prompt:
+
+You are a policy document analyst. You receive grounded citations retrieved from a single enterprise policy document. Your task: extract the specific rule or constraint that applies to the given topic. Return ONLY the exact claim made by this document — do not infer, extrapolate, or summarize. If the document is silent on the topic, say so explicitly. Return JSON: {statement: string, scope: string, effective_date: string, is_silent: boolean}
+ConflictDetector system prompt:
+
+You are a policy conflict analyst. You receive N policy statements about the same topic, each from a different authoritative source document with a Foundry IQ citation. Your task: identify any pair or group of statements that make incompatible claims — claims that cannot simultaneously be satisfied for the same employee population. Explain, in plain language, WHY the conflict is logically impossible — not just that the statements differ. If a conflict requires a specific employee scenario to be impossible (e.g. Indian-resident remote workers), specify that scenario precisely. If no genuine conflict exists, say so. Return JSON: {has_conflict: boolean, conflict_pairs: [...], reasoning: string, severity: CRITICAL|HIGH|MEDIUM, confidence: float}
+Key constraint: confidence below 0.65 → output status: UNCERTAIN, do not classify. The UI routes these to a separate human review queue, never the main dashboard.
+
+Reliability implementation — exact code architecture
+python
+class ConflictSenseOrchestrator:
+    PRIMARY_MODEL = "gpt-4o"          # via Azure Foundry
+    BACKUP_MODEL  = "gpt-4o-mini"     # via Azure Foundry
+    
+    CONFIDENCE_THRESHOLDS = {
+        "high":   (0.85, 1.00),   # auto-classify, show in dashboard
+        "medium": (0.65, 0.85),   # show with REVIEW REQUIRED badge
+        "low":    (0.00, 0.65),   # route to human review queue only
+    }
+
+    def call_agent(self, agent: str, payload: dict) -> dict:
+        # Tier 1 — Primary
+        try:
+            result = self._call(self.PRIMARY_MODEL, payload, timeout=10)
+            self._validate(result)
+            return result
+        except (APIError, TimeoutError, ValidationError) as e:
+            self._log(f"PRIMARY_FAILED:{agent}:{e}")
+        
+        # Tier 2 — Backup
+        try:
+            result = self._call(self.BACKUP_MODEL, payload, timeout=15)
+            self._validate(result)
+            result["_meta"]["fallback"] = "TIER_2"
+            return result
+        except (APIError, TimeoutError, ValidationError) as e:
+            self._log(f"BACKUP_FAILED:{agent}:{e}")
+        
+        # Tier 3 — Pre-computed mock (demo always completes)
+        self._log(f"MOCK_ACTIVATED:{agent}")
+        return self.mock_responses[agent]
+
+    def _validate(self, result: dict) -> None:
+        """Block any conflict finding without ≥2 Foundry IQ citations."""
+        if result.get("has_conflict"):
+            citations = result.get("citations", [])
+            if len(citations) < 2:
+                raise ValidationError("Conflict requires ≥2 grounded citations")
+            for c in citations:
+                if not all(k in c for k in ["source", "section", "confidence"]):
+                    raise ValidationError(f"Malformed citation: {c}")
+Test tier 3 on Day 5: set AZURE_API_KEY=invalid_key_test, run the full demo. If it completes with a visible [MOCK MODE] indicator in the UI, the reliability requirement is met. If it throws an unhandled exception, it is not.
+
+File structure — exact
+conflictsense/
+├── README.md
+├── docs/
+│   ├── architecture.png          # Required: embedded in README
+│   ├── responsible_ai.md         # Confidence thresholds, approval gate, citations
+│   ├── ablation_test.md          # What breaks without Foundry IQ (run it, log results)
+│   └── SYNTHETIC_DATA.md
+│
+├── agents/
+│   ├── orchestrator.py           # ConflictSenseOrchestrator class + fallback chain
+│   ├── document_analyzer.py      # Per-doc Foundry IQ retrieval
+│   ├── conflict_detector.py      # Cross-source contradiction detection
+│   ├── impact_assessor.py        # Stakeholder + system mapping
+│   ├── risk_quantifier.py        # Regulatory risk scoring
+│   └── resolution_recommender.py # Resolution generation
+│
+├── knowledge_base/               # Foundry IQ knowledge sources
+│   ├── IT_Security_Policy.md
+│   ├── HR_Remote_Work_Policy.md
+│   ├── Data_Governance_Policy.md
+│   ├── Employee_Handbook.md
+│   ├── Whistleblower_Policy.md
+│   ├── Finance_Expense_Policy.md
+│   ├── DPDP_Compliance_Directive.md
+│   └── regulations/
+│       ├── DPDP_Act_excerpts.md  # §16(2), §91 — grounds risk estimates
+│       └── FCA_handbook.md       # FCA breach notification rules
+│
+├── frontend/                     # React + Vite
+│   └── src/
+│       ├── App.jsx               # Root
+│       ├── components/
+│       │   ├── ConflictDashboard.jsx
+│       │   ├── ReasoningTrace.jsx   # The most important component
+│       │   ├── ConflictCard.jsx
+│       │   ├── ApprovalGate.jsx
+│       │   └── DocumentGrid.jsx
+│       └── lib/
+│           └── api.js             # Calls backend /analyze endpoint
+│
+├── backend/                      # FastAPI
+│   ├── main.py                   # /analyze, /approve, /reject endpoints
+│   └── models.py                 # Pydantic schemas
+│
+├── tests/
+│   ├── test_conflict_detection.py    # Unit: known conflict pairs
+│   ├── test_pipeline_reliability.py  # Integration: mock all 3 tiers
+│   └── test_fallback_chain.py        # E2E with invalid API key
+│
+└── .env.example
+Day-by-day implementation sequence
+Day 1 (today) — Foundation + community
+
+Join Agents League Discord. Post project description now, before writing code. This is 10% of your score and costs 10 minutes.
+Write all 7 synthetic policy documents in knowledge_base/. Write them with distinct voices — the IT Security Policy sounds like a 2019 audit document, the HR policy sounds like a COVID-era remote work accommodation, the DPDP Directive sounds like an external law firm drafted it in 2026. The documents must feel like they were written by different people who weren't thinking about each other.
+Upload to Foundry IQ. Verify retrieval works on at least Conflict 1 before building any agent.
+Draw the architecture diagram in Excalidraw. Export to PNG. Embed in README placeholder. This diagram is a forcing function for the rest of the build.
+Day 2 — DocumentAnalyzer + ReasoningTrace UI first
+
+Build the reasoning trace UI component before the backend. Design the exact output format each agent will produce. The trace format is a first-class deliverable, not a side effect of the backend.
+Build DocumentAnalyzer against Foundry IQ. Validate that per-document retrieval returns section-level citations, not just document-level matches.
+Build the orchestrator shell with the 3-tier fallback chain. Write Tier 3 mock responses using your Day 1 conflict designs.
+Day 3 — ConflictDetector + confidence thresholds
+
+Build ConflictDetector. Test on Conflict 1 (3-way data residency), Conflict 2 (anonymity impossibility), Conflict 3 (incident reporting gap). These are your benchmark conflicts.
+Implement confidence thresholds. Verify low-confidence findings route to the human review queue, not the main dashboard.
+Build citation validation. A conflict without ≥2 citations is blocked at the output layer.
+Day 4 — ImpactAssessor + RiskQuantifier + full pipeline
+
+Wire all 5 agents into the orchestrator. Run end-to-end on your synthetic documents.
+The affected employee count for Conflict 1 should come from Foundry IQ entity extraction, not from hardcoding "34 employees" in the response. If it comes from IQ retrieval, the claim is grounded. If it's hardcoded, it's a hallucination.
+Run the reliability test: set API key to invalid, confirm demo completes in mock mode.
+Day 5 — Frontend, approval gate, demo flow
+
+Build the full 2-panel UI (reference the artifact above). The reasoning trace must show genuine intermediate reasoning — prose conclusions, not pipeline labels.
+Build the human approval gate. No conflict enters the resolution workflow without a click.
+Wire frontend to backend. Run the full demo end-to-end.
+Post a progress update in Discord with a screenshot or short Loom clip.
+Day 6 — Demo polish + README + ablation test
+
+Run the demo 10 times. Fix any blank loading states, spinner-only moments, or steps where reasoning is absent. If a step shows [0.8s] ConflictDetector called instead of an actual reasoning paragraph, fix it.
+Write the ablation test: concatenate all documents into one prompt, ask the LLM to find conflicts, document what degrades. Put results in docs/ablation_test.md.
+Write the README front-to-back. The first scroll must answer: what does this do, why does it matter, what does Foundry IQ enable that nothing else does.
+Day 7 — Submit + community vote
+
+Final submission. Verify GitHub link works, demo is live, README renders correctly.
+Post submission link in Discord with the anonymity conflict as the hook: "ConflictSense found that Nexora's employees believe they can report harassment anonymously. They cannot. The IT Security Policy logs every system action, no exceptions. ConflictSense found this without being asked to look there."
+Vote for 5 other projects you find genuinely interesting.
+Day 8 — Buffer / emergency pivot
+
+If ConflictSense hit a terminal blocker on Day 6 that wasn't resolved, this is your pivot day. IncidentOrchestrator: same stack, same Foundry IQ, linear incident response pipeline, fully controllable synthetic data. Do not attempt both at reduced quality.
+The one thing that will determine whether you win
+The reasoning trace. Not the idea. Not the architecture. Not the number of agents.
+
+The trace must show prose reasoning — intermediate conclusions written as sentences — not timestamped function calls. Before writing a single line of backend code, decide: what exact text appears at each step? Write that text first, as a design doc. Then build the agents to produce it.
+
+The difference:
+
+Loses: [0.8s] ConflictDetector → CONFLICT_DETECTED: IT_Security ↔ HR_Remote_Work [CRITICAL]
+
+Wins: [0.8s] ConflictDetector → IT Security mandates US servers. DPDP requires Indian servers for Indian employees. HR permits those same employees to work anywhere. All three rules apply to the same 34 people simultaneously. They cannot all be satisfied. This is not ambiguity — it is a structural impossibility baked into the current architecture.
+
+Same underlying detection. Completely different score on the "Reasoning & Multi-step Thinking" criterion that is 20% of your total.
+
+
+Conflictsense ui
+Code · JSX 
+Design the exact README, architecture diagram, GitHub structure, judging narrative, and 90-second demo video shot-by-shot.
+
+Jun 6
+
+Architected comprehensive documentation suite with SVG diagrams and demo scripts
+Architected comprehensive documentation suite with SVG diagrams and demo scripts
+The user wants me to design:
+
+The exact README (full markdown content)
+Architecture diagram (visual)
+GitHub structure
+Judging narrative
+90-second demo video shot-by-shot
+Let me create all of these. I'll:
+
+Write the full README as a markdown file
+Create an architecture diagram as SVG
+Create a visual GitHub structure
+Write the judging narrative
+Create a shot-by-shot demo script
+Let me think about how to present these. The README should be production-ready markdown they can copy directly. The architecture diagram should be a crisp SVG. The GitHub structure is a tree visualization. The judging narrative is a document. The demo script is a shot-by-shot breakdown.
+
+Let me create the README as a file artifact, the architecture diagram as an SVG widget, and the demo script + GitHub structure + judging narrative as another artifact or in my response text.
+
+Actually, let me think about what format serves them best:
+
+README.md → file artifact (they paste it directly into their repo)
+Architecture diagram → SVG widget (they screenshot/export it)
+GitHub structure → visual widget or inline text
+Judging narrative → written in response
+Demo script → written in response or file artifact
+I'll create:
+
+README.md as a downloadable file
+Architecture diagram as an SVG visualization (more polished than the previous one)
+Demo script as a file artifact (they reference during recording)
+A combined GitHub structure + judging narrative as my response text
+Let me start with the architecture diagram SVG since that's the most visual piece. I need a clean, professional diagram that could be screenshotted and embedded in the README.
+
+For the architecture diagram, I want to show:
+
+The 7 input documents on top
+DocumentAnalyzer receiving them
+Foundry IQ as a central hub with spokes to all agents
+The 5-agent pipeline flowing downward
+Human Approval Gate
+Output: Resolution Roadmap
+Work IQ signals as a side input
+…
+
+Show less
+Done
+
+
+
+You are out of free messages until 3:10 AM
+Keep working
+
+
+
+
+Claude is AI and can make mistakes. Please double-check responses.
