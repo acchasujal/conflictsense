@@ -42,6 +42,7 @@ from agents.conflict_detector import ConflictDetector
 from agents.conflict_validator import ConflictValidatorAgent
 from agents.impact_assessor import ImpactAssessor
 from agents.risk_quantifier import RiskQuantifier
+from agents.resolution_recommender import ResolutionRecommender
 from agents.conflict_types import ConflictRecord, ConflictStatus
 
 logger = logging.getLogger("conflictsense.orchestrator")
@@ -89,12 +90,14 @@ class ConflictSenseOrchestrator:
         validator_agent: Optional[ConflictValidatorAgent] = None,
         impact_assessor: Optional[ImpactAssessor] = None,
         risk_quantifier: Optional[RiskQuantifier] = None,
+        resolution_recommender: Optional[ResolutionRecommender] = None,
     ) -> None:
         self._analyzer = analyzer or DocumentAnalyzer()
         self._detector = detector or ConflictDetector()
         self._validator_agent = validator_agent or ConflictValidatorAgent()
         self._impact_assessor = impact_assessor or ImpactAssessor()
         self._risk_quantifier = risk_quantifier or RiskQuantifier()
+        self._resolution_recommender = resolution_recommender or ResolutionRecommender()
 
     async def run_analysis(self, emit_fn: EmitFn) -> OrchestratorResult:
         """
@@ -261,8 +264,19 @@ class ConflictSenseOrchestrator:
                         "assessment": risk_assessment.to_dict(),
                     })
 
-                    # Enrich with Phase 3 placeholders (ResolutionRecommender TBD)
-                    record.resolution = self._placeholder_resolution(record)
+                    # Run ResolutionRecommender
+                    record.resolution = self._resolution_recommender.recommend(record)
+
+                    emit_fn("trace_step", {
+                        "agent": "ResolutionRecommender",
+                        "agentColor": "#5AB0F0",
+                        "time": "live",
+                        "query": None,
+                        "citations": None,
+                        "conclusion": record.resolution,
+                        "severity": None,
+                        "confidence": None,
+                    })
 
                     # Build serializable dict for SSE
                     record_dict = self._conflict_to_dict(record)

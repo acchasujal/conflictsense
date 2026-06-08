@@ -11,6 +11,8 @@ from __future__ import annotations
 import logging
 import re
 import time
+import os
+import json
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -18,6 +20,17 @@ from agents.conflict_types import ConflictRecord, ConflictSeverity, ConflictStat
 
 logger = logging.getLogger("conflictsense.risk_quantifier")
 
+_SYSTEM_PROMPT = """You are a regulatory risk analyst. Based on the provided regulatory excerpts and the policy conflict, estimate the Regulatory, Operational, Legal, and Reputational risks. Provide your reasoning in plain text. Reference specific laws (e.g., DPDP Act) only if provided in the context.
+
+You MUST return a JSON object with this exact structure:
+{
+  "risk_level": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+  "risk_score": integer (1-100),
+  "risk_categories": ["list", "of", "strings"],
+  "reasoning": "plain text reasoning",
+  "potential_consequences": ["list", "of", "strings"],
+  "uncertainty": "string or null"
+}"""
 
 class RiskLevel(str, Enum):
     LOW = "LOW"
@@ -57,6 +70,25 @@ class RiskAssessment:
 class RiskQuantifier:
     """Grounded enterprise risk analyst for validated conflict records."""
 
+    def __init__(self, azure_client=None):
+        self._azure_client = azure_client
+        self._available = False
+        
+        if self._azure_client is not None:
+            self._available = True
+        else:
+            try:
+                from openai import AzureOpenAI
+                if os.getenv("AZURE_OPENAI_ENDPOINT") and os.getenv("AZURE_OPENAI_API_KEY"):
+                    self._azure_client = AzureOpenAI(
+                        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", ""),
+                        api_key=os.getenv("AZURE_OPENAI_API_KEY", ""),
+                        api_version=os.getenv("AZURE_API_VERSION", "2025-01-01-preview"),
+                    )
+                    self._available = True
+            except ImportError:
+                pass
+
     def quantify(self, record: ConflictRecord, topic: str | None = None) -> RiskAssessment:
         if record.status == ConflictStatus.REJECTED:
             raise ValueError("RiskQuantifier cannot process rejected conflicts.")
@@ -66,6 +98,45 @@ class RiskQuantifier:
             raise ValueError("RiskQuantifier requires at least two grounded source documents.")
 
         t0 = time.monotonic()
+        
+        if self._available and self._azure_client:
+            user_prompt = f"Topic: {topic}\nConflict: {record.title}\nReasoning: {record.reasoning}\nImpact: {record.affected}\n"
+            for c in record.citations:
+                user_prompt += f"\nDocument: {c.document}\nPassage: {c.passage}\n"
+            
+            try:
+                deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_4O", "gpt-4o")
+                response = self._azure_client.chat.completions.create(
+                    model=deployment,
+                    messages=[
+                        {"role": "system", "content": _SYSTEM_PROMPT},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    temperature=0.0,
+                    max_tokens=500,
+                    response_format={"type": "json_object"},
+                    timeout=15
+                )
+                
+                data = json.loads(response.choices[0].message.content)
+                
+                assessment = RiskAssessment(
+                    risk_level=RiskLevel(data["risk_level"]),
+                    risk_score=data["risk_score"],
+                    risk_categories=data["risk_categories"],
+                    reasoning=data["reasoning"],
+                    supporting_evidence=self._supporting_evidence(record),
+                    confidence=min(record.confidence, self._evidence_confidence(record)),
+                    affected_entities=self._affected_entities(record.affected),
+                    potential_consequences=data["potential_consequences"],
+                    uncertainty=data.get("uncertainty"),
+                    execution_time_s=time.monotonic() - t0,
+                )
+                record.risk_assessment = assessment
+                logger.info("RiskQuantifier: assessed %r live as %s", record.title, assessment.risk_level.value)
+                return assessment
+            except Exception as e:
+                logger.warning("RiskQuantifier: Azure LLM failed (%s), falling back to rule-based.", e)
         text = self._combined_text(record, topic)
         categories = self._categories(text)
         affected_entities = self._affected_entities(record.affected)

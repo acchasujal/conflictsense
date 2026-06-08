@@ -71,7 +71,7 @@ async def _collect_stream_events() -> list[dict]:
 @pytest.fixture(scope="module")
 def stream_events() -> list[dict]:
     """Synchronously collect all stream events for class-level tests."""
-    return asyncio.get_event_loop().run_until_complete(_collect_stream_events())
+    return asyncio.run(_collect_stream_events())
 
 
 # ─── Health check ─────────────────────────────────────────────────────────────
@@ -81,9 +81,17 @@ class TestHealth:
         res = sync_client.get("/health")
         assert res.status_code == 200
 
-    def test_health_indicates_mock_mode(self):
+    def test_health_indicates_valid_mode(self):
+        """Health endpoint must return a valid mode string.
+
+        The mode is 'LIVE' when Azure credentials are configured in .env
+        and 'MOCK_MODE' when they are absent. Both are valid — the test
+        verifies the field exists and contains a known value.
+        """
         data = sync_client.get("/health").json()
-        assert data["mode"] == "MOCK_MODE"
+        assert data["mode"] in {"LIVE", "MOCK_MODE"}, (
+            f"Unexpected mode: {data['mode']!r}. Must be 'LIVE' or 'MOCK_MODE'."
+        )
 
     def test_health_reports_conflict_count(self):
         data = sync_client.get("/health").json()

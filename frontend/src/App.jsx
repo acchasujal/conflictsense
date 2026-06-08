@@ -24,8 +24,9 @@
  */
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import ConflictDashboard from './components/ConflictDashboard.jsx';
-import ReasoningTrace    from './components/ReasoningTrace.jsx';
+import ConflictDashboard    from './components/ConflictDashboard.jsx';
+import ReasoningTrace       from './components/ReasoningTrace.jsx';
+import EnterpriseRiskBanner from './components/EnterpriseRiskBanner.jsx';
 import { streamAnalysis, approveConflict, rejectConflict } from './lib/api.js';
 import {
   MOCK_DOCUMENTS,
@@ -293,6 +294,9 @@ export default function App() {
           <span>⚠</span>
           <span>ConflictSense uses AI to identify potential policy conflicts. All findings require human review before action. This tool does not constitute legal advice.</span>
         </div>
+
+        {/* ── Enterprise Risk Banner (appears once first conflict is detected) ─── */}
+        <EnterpriseRiskBanner conflicts={visibleConflicts} phase={phase} />
 
         {/* ── Two-panel body ───────────────────────────────────────────── */}
         <div style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>

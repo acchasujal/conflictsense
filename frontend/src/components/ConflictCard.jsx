@@ -26,6 +26,7 @@
 
 import React from 'react';
 import ApprovalGate from './ApprovalGate.jsx';
+import RemediationWorkflow from './RemediationWorkflow.jsx';
 
 // ─── Severity design tokens ───────────────────────────────────────────────────
 const SEV = {
@@ -76,6 +77,114 @@ function CitationBadge({ src }) {
       <span style={{ opacity: 0.55, fontSize: 10 }}>📎</span> {src}
     </span>
   );
+}
+
+// ─── Risk Level pill (collapsed card) ────────────────────────────────────────
+const RISK_SEV = {
+  CRITICAL: { color: '#A32D2D', bg: '#FCEBEB', border: '#F09595' },
+  HIGH:     { color: '#854F0B', bg: '#FAEEDA', border: '#EF9F27' },
+  MEDIUM:   { color: '#185FA5', bg: '#E6F1FB', border: '#85B7EB' },
+  LOW:      { color: '#27500A', bg: '#EAF3DE', border: '#97C459' },
+};
+
+function RiskPill({ riskLevel, riskScore }) {
+  if (!riskLevel) return null;
+  const s = RISK_SEV[riskLevel] || RISK_SEV.MEDIUM;
+  return (
+    <span
+      style={{
+        background: s.bg,
+        color: s.color,
+        border: `0.5px solid ${s.border}`,
+        padding: '1px 7px',
+        borderRadius: 3,
+        fontSize: 10,
+        fontWeight: 700,
+        letterSpacing: '0.2px',
+        flexShrink: 0,
+      }}
+    >
+      Risk {riskLevel}{riskScore ? ` · ${riskScore}` : ''}
+    </span>
+  );
+}
+
+// ─── Contradiction highlighting in citation passages ──────────────────────────
+// We highlight phrases that are opposite in meaning across two policies.
+// For the hero conflict (id=2 — Anonymity), we hard-code the exact phrases
+// that prove the impossibility. For others we fall back to plain text.
+const CONTRADICTION_PHRASES = {
+  'Whistleblower_Policy.md': [
+    { phrase: 'anonymous', color: '#16A34A', bg: 'rgba(22,163,74,0.10)', label: 'guarantees' },
+    { phrase: 'never logged or traceable', color: '#16A34A', bg: 'rgba(22,163,74,0.10)', label: 'guarantees' },
+  ],
+  'IT_Security_Policy.md': [
+    { phrase: 'logged with full user identity', color: '#DC2626', bg: 'rgba(220,38,38,0.10)', label: 'violates' },
+    { phrase: 'No exceptions permitted', color: '#DC2626', bg: 'rgba(220,38,38,0.10)', label: 'violates' },
+    { phrase: 'exclusively on US-domiciled servers', color: '#DC2626', bg: 'rgba(220,38,38,0.10)', label: 'conflicts' },
+    { phrase: 'no exceptions for any user type', color: '#DC2626', bg: 'rgba(220,38,38,0.10)', label: 'blocks' },
+  ],
+  'DPDP_Compliance_Directive.md': [
+    { phrase: 'within Indian jurisdiction', color: '#9333EA', bg: 'rgba(147,51,234,0.10)', label: 'mandates' },
+  ],
+  'HR_Remote_Work_Policy.md': [
+    { phrase: 'any global location', color: '#EA580C', bg: 'rgba(234,88,12,0.10)', label: 'allows' },
+  ],
+};
+
+function highlightPassage(passage, document) {
+  const rules = CONTRADICTION_PHRASES[document];
+  if (!rules) return <span>{passage}</span>;
+
+  let remaining = passage;
+  const parts = [];
+  let key = 0;
+
+  while (remaining.length > 0) {
+    let earliest = null;
+    let earliestIdx = Infinity;
+
+    for (const rule of rules) {
+      const idx = remaining.toLowerCase().indexOf(rule.phrase.toLowerCase());
+      if (idx !== -1 && idx < earliestIdx) {
+        earliest = rule;
+        earliestIdx = idx;
+      }
+    }
+
+    if (!earliest) {
+      parts.push(<span key={key++}>{remaining}</span>);
+      break;
+    }
+
+    if (earliestIdx > 0) {
+      parts.push(<span key={key++}>{remaining.slice(0, earliestIdx)}</span>);
+    }
+
+    const matchedText = remaining.slice(earliestIdx, earliestIdx + earliest.phrase.length);
+    parts.push(
+      <mark
+        key={key++}
+        title={earliest.label}
+        style={{
+          background: earliest.bg,
+          color: earliest.color,
+          fontWeight: 700,
+          borderRadius: 2,
+          padding: '0 2px',
+          border: `1px solid ${earliest.color}44`,
+          fontStyle: 'normal',
+          cursor: 'help',
+        }}
+      >
+        {matchedText}
+      </mark>
+    );
+
+    remaining = remaining.slice(earliestIdx + earliest.phrase.length);
+  }
+
+  return <>{parts}</>;
 }
 
 // ─── ConflictCard ─────────────────────────────────────────────────────────────
@@ -230,9 +339,24 @@ export default function ConflictCard({
       </div>
 
       {/* ── Affected ───────────────────────────────────────────────────── */}
-      <div style={{ fontSize: 11, color: '#64748B', marginBottom: 6 }}>
+      <div style={{ fontSize: 11, color: '#64748B', marginBottom: 5 }}>
         {conflict.affected}
       </div>
+
+      {/* ── Risk level on collapsed card ────────────────────────────────── */}
+      {conflict.risk_assessment && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' }}>
+          <RiskPill
+            riskLevel={conflict.risk_assessment.risk_level}
+            riskScore={conflict.risk_assessment.risk_score}
+          />
+          {conflict.risk_assessment.potential_consequences?.[0] && (
+            <span style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {conflict.risk_assessment.potential_consequences[0]}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* ── Source citation badges ──────────────────────────────────────── */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -269,7 +393,7 @@ export default function ConflictCard({
             </div>
           )}
 
-          {/* Foundry IQ citation details */}
+          {/* Foundry IQ citation details — with contradiction highlighting */}
           {conflict.citations && conflict.citations.length > 0 && (
             <div style={{ marginBottom: 10 }}>
               <div
@@ -280,46 +404,76 @@ export default function ConflictCard({
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
                   marginBottom: 5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
                 }}
               >
                 Foundry IQ Citations
+                <span style={{ fontSize: 9, fontWeight: 400, color: '#CBD5E1', textTransform: 'none', letterSpacing: 0 }}>
+                  — contradictory phrases highlighted
+                </span>
               </div>
-              {conflict.citations.map((cit, i) => (
-                <div
-                  key={i}
-                  style={{
-                    background: '#F8FAFC',
-                    border: '0.5px solid #E2E8F0',
-                    borderRadius: 4,
-                    padding: '6px 9px',
-                    marginBottom: 4,
-                  }}
-                >
+              {conflict.citations.map((cit, i) => {
+                const isFirst = i === 0;
+                const borderColor = isFirst ? 'rgba(22,163,74,0.3)' : 'rgba(220,38,38,0.3)';
+                const hasHighlight = !!CONTRADICTION_PHRASES[cit.document];
+                return (
                   <div
+                    key={i}
                     style={{
-                      fontFamily: 'monospace',
-                      fontSize: 10,
-                      color: '#378ADD',
-                      marginBottom: 2,
+                      background: '#F8FAFC',
+                      border: `0.5px solid ${hasHighlight ? borderColor : '#E2E8F0'}`,
+                      borderLeft: hasHighlight ? `3px solid ${isFirst ? '#16A34A' : '#DC2626'}` : '0.5px solid #E2E8F0',
+                      borderRadius: 4,
+                      padding: '6px 9px',
+                      marginBottom: 4,
                     }}
                   >
-                    {cit.document} {cit.section}{' '}
-                    <span style={{ color: '#94A3B8' }}>
-                      [{Math.round(cit.confidence * 100)}% conf]
-                    </span>
+                    <div
+                      style={{
+                        fontFamily: 'monospace',
+                        fontSize: 10,
+                        color: '#378ADD',
+                        marginBottom: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 5,
+                      }}
+                    >
+                      {cit.document} {cit.section}{' '}
+                      <span style={{ color: '#94A3B8' }}>
+                        [{Math.round(cit.confidence * 100)}% conf]
+                      </span>
+                      {hasHighlight && (
+                        <span
+                          style={{
+                            marginLeft: 'auto',
+                            fontSize: 9,
+                            background: isFirst ? 'rgba(22,163,74,0.1)' : 'rgba(220,38,38,0.1)',
+                            color: isFirst ? '#16A34A' : '#DC2626',
+                            padding: '1px 5px',
+                            borderRadius: 2,
+                            fontFamily: 'inherit',
+                          }}
+                        >
+                          {isFirst ? '✓ guarantees' : '✗ contradicts'}
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: '#475569',
+                        fontStyle: 'italic',
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      "{highlightPassage(cit.passage, cit.document)}"
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      color: '#475569',
-                      fontStyle: 'italic',
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    "{cit.passage}"
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
@@ -344,19 +498,7 @@ export default function ConflictCard({
               onEscalate={onEscalate}
             />
           ) : isApproved ? (
-            <div
-              style={{
-                fontSize: 11,
-                color: '#27500A',
-                background: '#EAF3DE',
-                border: '0.5px solid #97C459',
-                padding: '6px 12px',
-                borderRadius: 5,
-                display: 'inline-block',
-              }}
-            >
-              ✓ Finding approved — entering resolution workflow
-            </div>
+            <RemediationWorkflow conflict={conflict} />
           ) : isEscalated ? (
             <div
               style={{
