@@ -223,7 +223,9 @@ def expense_selfcert_stmt() -> PolicyStatement:
 @pytest.fixture
 def detector() -> ConflictDetector:
     """ConflictDetector in Tier 3-only mode (no Azure credentials)."""
-    return ConflictDetector(azure_client=None)
+    with patch("agents.conflict_detector.AZURE_ENDPOINT", ""), \
+         patch("agents.conflict_detector.AZURE_API_KEY", ""):
+        return ConflictDetector(azure_client=None)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
