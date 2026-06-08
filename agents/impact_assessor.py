@@ -15,10 +15,10 @@ Responsibilities:
 
 import logging
 import time
-import os
 
 from agents.conflict_types import ConflictRecord
 from agents.iq_mock_data import topic_key_for, IMPACT_MOCKS
+from agents.llm_provider import ProviderChain, get_provider_chain
 
 logger = logging.getLogger("conflictsense.impact_assessor")
 
@@ -30,24 +30,10 @@ class ImpactAssessor:
     Implements Tier 1 Azure call with Tier 3 Mock Mode fallback.
     """
 
-    def __init__(self, azure_client=None) -> None:
-        self._azure_client = azure_client
-        self._available = False
-        
-        if self._azure_client is not None:
-            self._available = True
-        else:
-            try:
-                from openai import AzureOpenAI
-                if os.getenv("AZURE_OPENAI_ENDPOINT") and os.getenv("AZURE_OPENAI_API_KEY"):
-                    self._azure_client = AzureOpenAI(
-                        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", ""),
-                        api_key=os.getenv("AZURE_OPENAI_API_KEY", ""),
-                        api_version=os.getenv("AZURE_API_VERSION", "2025-01-01-preview"),
-                    )
-                    self._available = True
-            except ImportError:
-                pass
+    def __init__(self, provider_chain: ProviderChain | None = None, azure_client=None) -> None:
+        if azure_client is not None:
+            logger.warning("ImpactAssessor ignores Azure clients; using non-Azure provider chain.")
+        self._provider_chain = provider_chain or get_provider_chain()
 
     def assess(self, record: ConflictRecord, topic: str) -> ConflictRecord:
         """
@@ -55,40 +41,20 @@ class ImpactAssessor:
         """
         t0 = time.monotonic()
         
-        if self._available and self._azure_client:
-            user_prompt = f"Topic: {topic}\nConflict: {record.title}\nReasoning: {record.reasoning}\n"
-            for c in record.citations:
-                user_prompt += f"\nDocument: {c.document}\nPassage: {c.passage}\n"
-            
-            try:
-                deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_4O", "gpt-4o")
-                response = self._azure_client.chat.completions.create(
-                    model=deployment,
-                    messages=[
-                        {"role": "system", "content": _SYSTEM_PROMPT},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    temperature=0.0,
-                    max_tokens=250,
-                    timeout=10
-                )
-                impact = response.choices[0].message.content.strip()
-                record.affected = impact
-                elapsed = time.monotonic() - t0
-                logger.info("ImpactAssessor: assessed %r live in %.2fs", record.title, elapsed)
-                return record
-            except Exception as e:
-                logger.warning("ImpactAssessor: Azure LLM failed: %s", e)
-        
-        # In a full implementation, we'd call Azure OpenAI (Tier 1/2) using FoundryIQClient.
-        # Here we rely on Tier 3 Mock Fallback.
-        
         tkey = topic_key_for(topic)
-        impact = IMPACT_MOCKS.get(tkey, "Affects unknown number of employees.")
+        fallback = IMPACT_MOCKS.get(tkey, "Affects unknown number of employees.")
+        user_prompt = f"Topic: {topic}\nConflict: {record.title}\nReasoning: {record.reasoning}\n"
+        for c in record.citations:
+            user_prompt += f"\nDocument: {c.document}\nPassage: {c.passage}\n"
+        response = self._provider_chain.complete_text(
+            _SYSTEM_PROMPT,
+            user_prompt,
+            mock_factory=lambda: fallback,
+        )
         
-        record.affected = impact
+        record.affected = response.content.strip() or fallback
         
         elapsed = time.monotonic() - t0
-        logger.info("ImpactAssessor: assessed %r mock in %.2fs", record.title, elapsed)
+        logger.info("ImpactAssessor: assessed %r via %s in %.2fs", record.title, response.provider, elapsed)
         
         return record

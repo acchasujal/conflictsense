@@ -11,12 +11,11 @@ from __future__ import annotations
 import logging
 import re
 import time
-import os
-import json
 from dataclasses import dataclass, field
 from enum import Enum
 
 from agents.conflict_types import ConflictRecord, ConflictSeverity, ConflictStatus
+from agents.llm_provider import ProviderChain, get_provider_chain
 
 logger = logging.getLogger("conflictsense.risk_quantifier")
 
@@ -70,24 +69,10 @@ class RiskAssessment:
 class RiskQuantifier:
     """Grounded enterprise risk analyst for validated conflict records."""
 
-    def __init__(self, azure_client=None):
-        self._azure_client = azure_client
-        self._available = False
-        
-        if self._azure_client is not None:
-            self._available = True
-        else:
-            try:
-                from openai import AzureOpenAI
-                if os.getenv("AZURE_OPENAI_ENDPOINT") and os.getenv("AZURE_OPENAI_API_KEY"):
-                    self._azure_client = AzureOpenAI(
-                        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", ""),
-                        api_key=os.getenv("AZURE_OPENAI_API_KEY", ""),
-                        api_version=os.getenv("AZURE_API_VERSION", "2025-01-01-preview"),
-                    )
-                    self._available = True
-            except ImportError:
-                pass
+    def __init__(self, provider_chain: ProviderChain | None = None, azure_client=None):
+        if azure_client is not None:
+            logger.warning("RiskQuantifier ignores Azure clients; using non-Azure provider chain.")
+        self._provider_chain = provider_chain or get_provider_chain()
 
     def quantify(self, record: ConflictRecord, topic: str | None = None) -> RiskAssessment:
         if record.status == ConflictStatus.REJECTED:
@@ -99,44 +84,6 @@ class RiskQuantifier:
 
         t0 = time.monotonic()
         
-        if self._available and self._azure_client:
-            user_prompt = f"Topic: {topic}\nConflict: {record.title}\nReasoning: {record.reasoning}\nImpact: {record.affected}\n"
-            for c in record.citations:
-                user_prompt += f"\nDocument: {c.document}\nPassage: {c.passage}\n"
-            
-            try:
-                deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_4O", "gpt-4o")
-                response = self._azure_client.chat.completions.create(
-                    model=deployment,
-                    messages=[
-                        {"role": "system", "content": _SYSTEM_PROMPT},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    temperature=0.0,
-                    max_tokens=500,
-                    response_format={"type": "json_object"},
-                    timeout=15
-                )
-                
-                data = json.loads(response.choices[0].message.content)
-                
-                assessment = RiskAssessment(
-                    risk_level=RiskLevel(data["risk_level"]),
-                    risk_score=data["risk_score"],
-                    risk_categories=data["risk_categories"],
-                    reasoning=data["reasoning"],
-                    supporting_evidence=self._supporting_evidence(record),
-                    confidence=min(record.confidence, self._evidence_confidence(record)),
-                    affected_entities=self._affected_entities(record.affected),
-                    potential_consequences=data["potential_consequences"],
-                    uncertainty=data.get("uncertainty"),
-                    execution_time_s=time.monotonic() - t0,
-                )
-                record.risk_assessment = assessment
-                logger.info("RiskQuantifier: assessed %r live as %s", record.title, assessment.risk_level.value)
-                return assessment
-            except Exception as e:
-                logger.warning("RiskQuantifier: Azure LLM failed (%s), falling back to rule-based.", e)
         text = self._combined_text(record, topic)
         categories = self._categories(text)
         affected_entities = self._affected_entities(record.affected)
@@ -144,12 +91,39 @@ class RiskQuantifier:
         risk_score = self._risk_score(record, categories, consequences)
         risk_level = self._risk_level(risk_score)
         uncertainty = self._uncertainty(record, text)
+        fallback_data = {
+            "risk_level": risk_level.value,
+            "risk_score": risk_score,
+            "risk_categories": categories,
+            "reasoning": self._reasoning(record, categories, consequences, uncertainty),
+            "potential_consequences": consequences,
+            "uncertainty": uncertainty,
+        }
+        user_prompt = f"Topic: {topic}\nConflict: {record.title}\nReasoning: {record.reasoning}\nImpact: {record.affected}\n"
+        for c in record.citations:
+            user_prompt += f"\nDocument: {c.document}\nPassage: {c.passage}\n"
+        try:
+            data, response = self._provider_chain.complete_json(
+                _SYSTEM_PROMPT,
+                user_prompt,
+                mock_factory=lambda: fallback_data,
+            )
+            risk_level = RiskLevel(data.get("risk_level", fallback_data["risk_level"]))
+            risk_score = int(data.get("risk_score", fallback_data["risk_score"]))
+            categories = list(data.get("risk_categories", fallback_data["risk_categories"]))
+            consequences = list(data.get("potential_consequences", fallback_data["potential_consequences"]))
+            uncertainty = data.get("uncertainty", fallback_data["uncertainty"])
+            reasoning = str(data.get("reasoning", fallback_data["reasoning"]))
+            logger.info("RiskQuantifier: provider %s supplied risk assessment.", response.provider)
+        except Exception as exc:
+            logger.warning("RiskQuantifier: provider output invalid (%s), using rule-based fallback.", exc)
+            reasoning = fallback_data["reasoning"]
 
         assessment = RiskAssessment(
             risk_level=risk_level,
             risk_score=risk_score,
             risk_categories=categories,
-            reasoning=self._reasoning(record, categories, consequences, uncertainty),
+            reasoning=reasoning,
             supporting_evidence=self._supporting_evidence(record),
             confidence=min(record.confidence, self._evidence_confidence(record)),
             affected_entities=affected_entities,

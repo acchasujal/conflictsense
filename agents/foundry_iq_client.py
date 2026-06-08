@@ -41,8 +41,8 @@ logger = logging.getLogger("conflictsense.foundry_iq")
 
 # ─── Config ───────────────────────────────────────────────────────────────────
 
-AZURE_ENDPOINT   = os.getenv("AZURE_OPENAI_ENDPOINT", "")
-AZURE_API_KEY    = os.getenv("AZURE_OPENAI_API_KEY", "")
+AZURE_ENDPOINT   = os.getenv("AZURE_FOUNDRY_ENDPOINT", "")
+AZURE_API_KEY    = os.getenv("AZURE_API_KEY", "")
 DEPLOYMENT_4O    = os.getenv("AZURE_OPENAI_DEPLOYMENT_4O", "gpt-4o")
 DEPLOYMENT_MINI  = os.getenv("AZURE_OPENAI_DEPLOYMENT_MINI", "gpt-4o-mini")
 API_VERSION      = os.getenv("AZURE_API_VERSION", "2025-01-01-preview")
@@ -236,11 +236,11 @@ class FoundryIQClient:
             )
             if result is not None:
                 return result
-            logger.error("Tier 2 failed for %s — raising exception to trigger mock fallback.", document_name)
-            raise RuntimeError(f"Azure endpoints unavailable or failed for {document_name}. Fallback required.")
+            logger.error("Foundry IQ retrieval failed for %s — using Tier 3 mock citations.", document_name)
+            return _mock_result(document_name, topic, query)
 
-        # No Azure credentials or both tiers failed
-        raise RuntimeError("Azure endpoints unavailable or unconfigured. Fallback required.")
+        # No Foundry IQ credentials or live retrieval unavailable.
+        return _mock_result(document_name, topic, query)
 
     def _call_azure(
         self,

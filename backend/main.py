@@ -183,9 +183,15 @@ async def reject_conflict(body: RejectRequest):
 @app.get("/health")
 async def health():
     """Health check — returns 200 if backend is running."""
-    has_creds = bool(os.getenv("AZURE_OPENAI_ENDPOINT") and os.getenv("AZURE_OPENAI_API_KEY"))
-    mode = "LIVE" if has_creds else "MOCK_MODE"
-    return {"status": "ok", "mode": mode, "conflicts_loaded": len(MOCK_CONFLICTS)}
+    forced_mock = os.getenv("CONFLICTSENSE_FORCE_MOCK", "").lower() in {"1", "true", "yes"}
+    has_foundry_iq = bool(os.getenv("AZURE_FOUNDRY_ENDPOINT") and os.getenv("AZURE_API_KEY"))
+    mode = "MOCK_MODE" if forced_mock or not has_foundry_iq else "FOUNDRY_IQ_CONFIGURED"
+    return {
+        "status": "ok",
+        "mode": mode,
+        "foundry_iq_configured": has_foundry_iq,
+        "conflicts_loaded": len(MOCK_CONFLICTS),
+    }
 
 
 # ─── Dev entry point ──────────────────────────────────────────────────────────

@@ -57,3 +57,4 @@ judge_screenshots/
 coverage/
 tmp/
 temp/
+.tmp-chrome-screens

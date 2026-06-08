@@ -29,16 +29,14 @@ Fallback chain (docs/reliability_spec.md §1):
 from __future__ import annotations
 
 import hashlib
-import json
 import logging
-import os
-import re
 import time
 from typing import Optional
 
 from dotenv import load_dotenv
 
 from agents.document_analyzer import DocumentAnalyzerResult, PolicyStatement
+from agents.llm_provider import ProviderChain, get_provider_chain
 from agents.conflict_types import (
     ConflictSeverity,
     ConflictStatus,
@@ -53,15 +51,6 @@ load_dotenv()
 logger = logging.getLogger("conflictsense.conflict_detector")
 
 # ─── Configuration ─────────────────────────────────────────────────────────────
-
-AZURE_ENDPOINT  = os.getenv("AZURE_OPENAI_ENDPOINT", "")
-AZURE_API_KEY   = os.getenv("AZURE_OPENAI_API_KEY", "")
-DEPLOYMENT_4O   = os.getenv("AZURE_OPENAI_DEPLOYMENT_4O", "gpt-4o")
-DEPLOYMENT_MINI = os.getenv("AZURE_OPENAI_DEPLOYMENT_MINI", "gpt-4o-mini")
-API_VERSION     = os.getenv("AZURE_API_VERSION", "2025-01-01-preview")
-
-TIER1_TIMEOUT: int = 10
-TIER2_TIMEOUT: int = 15
 
 from agents.conflict_helpers import (
     SchemaValidator,
@@ -128,31 +117,13 @@ class ConflictDetector:
             print(conflict.reasoning)
     """
 
-    def __init__(self, azure_client=None) -> None:
-        self._azure_client = azure_client
-        self._available = False
+    def __init__(self, provider_chain: Optional[ProviderChain] = None, azure_client=None) -> None:
+        if azure_client is not None:
+            logger.warning("ConflictDetector ignores Azure clients; using non-Azure provider chain.")
+        self._provider_chain = provider_chain or get_provider_chain()
         self._validator = SchemaValidator()
         self._dup_filter = DuplicateFilter()
         self._confidence_fw = ConfidenceFramework()
-
-        if azure_client is not None:
-            self._available = True
-        elif AZURE_ENDPOINT and AZURE_API_KEY:
-            try:
-                from openai import AzureOpenAI
-                self._azure_client = AzureOpenAI(
-                    azure_endpoint=AZURE_ENDPOINT,
-                    api_key=AZURE_API_KEY,
-                    api_version=API_VERSION,
-                )
-                self._available = True
-                logger.info("ConflictDetector: Azure OpenAI connection configured.")
-            except ImportError:
-                logger.warning("ConflictDetector: openai package unavailable — Tier 3 only.")
-            except Exception as exc:
-                logger.warning("ConflictDetector: Azure init failed (%s) — Tier 3 only.", exc)
-        else:
-            logger.info("ConflictDetector: No Azure credentials — Tier 3 mock mode active.")
 
     # ── Public Interface ───────────────────────────────────────────────────────
 
@@ -240,73 +211,27 @@ class ConflictDetector:
     def _call_with_fallback(
         self, topic: str, citations: list[PolicyStatement],
     ) -> tuple[dict, int]:
-        """Tier 1 → Tier 2 → Tier 3. Returns (parsed_dict, tier_used)."""
+        """Gemini -> OpenRouter -> Groq -> NVIDIA -> Tier 3 mock."""
         block = self._build_statements_block(citations)
-
-        if self._available:
-            result = self._call_azure(topic, block, DEPLOYMENT_4O, TIER1_TIMEOUT, 1)
-            if result is not None:
-                return result, 1
-
-            logger.warning("Tier 1 failed for %r — trying Tier 2.", topic)
-            result = self._call_azure(topic, block, DEPLOYMENT_MINI, TIER2_TIMEOUT, 2)
-            if result is not None:
-                return result, 2
-
-            logger.warning("Tier 2 failed for %r — activating Tier 3.", topic)
-
-        return self._mock_response(topic), 3
+        user_prompt = _USER_PROMPT_TEMPLATE.format(topic=topic, statements_block=block)
+        try:
+            data, response = self._provider_chain.complete_json(
+                _SYSTEM_PROMPT,
+                user_prompt,
+                mock_factory=lambda: self._mock_response(topic),
+            )
+            if "has_conflict" not in data:
+                raise ValueError("missing has_conflict")
+            if data.get("has_conflict") and not data.get("conflict_pairs"):
+                raise ValueError("conflict response missing conflict_pairs")
+            return data, 3 if response.is_mock_mode else 1
+        except Exception as exc:
+            logger.warning("Provider chain produced unusable output for %r: %s", topic, exc)
+            return self._mock_response(topic), 3
 
     def _mock_response(self, topic: str) -> dict:
         """Return a pre-computed mock response for the topic (Tier 3)."""
         return get_conflict_mock_response(topic)
-
-    def _call_azure(
-        self, topic: str, statements_block: str,
-        deployment: str, timeout: int, tier: int,
-    ) -> Optional[dict]:
-        """Single Azure call. Returns parsed dict or None on failure."""
-        if self._azure_client is None:
-            return None
-        user_prompt = _USER_PROMPT_TEMPLATE.format(
-            topic=topic, statements_block=statements_block,
-        )
-        try:
-            t0 = time.monotonic()
-            response = self._azure_client.chat.completions.create(
-                model=deployment,
-                messages=[
-                    {"role": "system", "content": _SYSTEM_PROMPT},
-                    {"role": "user",   "content": user_prompt},
-                ],
-                temperature=0.0,   # Deterministic: same input → same output
-                max_tokens=2048,
-                timeout=timeout,
-                response_format={"type": "json_object"},
-            )
-            logger.debug("Tier %d (%s) responded in %.2fs.", tier, deployment, time.monotonic() - t0)
-            return self._parse_llm_response(response.choices[0].message.content or "", topic, tier)
-        except Exception as exc:
-            logger.warning("Tier %d (%s) error for %r: %s", tier, deployment, topic, exc)
-            return None
-
-    def _parse_llm_response(self, raw_text: str, topic: str, tier: int) -> Optional[dict]:
-        """Parse LLM JSON string → dict. Returns None if parsing fails."""
-        try:
-            data = json.loads(raw_text)
-        except json.JSONDecodeError:
-            match = re.search(r'\{.*\}', raw_text, re.DOTALL)
-            if not match:
-                logger.warning("Tier %d: cannot parse JSON for %r.", tier, topic)
-                return None
-            try:
-                data = json.loads(match.group())
-            except json.JSONDecodeError:
-                return None
-        if "has_conflict" not in data:
-            logger.warning("Tier %d: missing 'has_conflict' for %r.", tier, topic)
-            return None
-        return data
 
     # ── Record Construction ───────────────────────────────────────────────────
 
