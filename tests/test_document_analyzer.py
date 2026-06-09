@@ -34,7 +34,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from agents.foundry_iq_client import (
-    FoundryIQClient, FoundryIQResult, Citation, _mock_result, _topic_key
+    FoundryIQResult, Citation, _mock_result, _topic_key
 )
 from agents.document_analyzer import (
     DocumentAnalyzer, DocumentAnalyzerResult, PolicyStatement,
@@ -352,17 +352,7 @@ class TestSingleDocumentAnalysis:
 # ─── 9. FoundryIQClient Tier 3 fallback ─────────────────────────────────────
 
 class TestFoundryIQClientTier3Fallback:
-    def test_no_azure_credentials_uses_tier3(self):
-        """Without credentials, FoundryIQClient must raise RuntimeError."""
-        with patch.dict("os.environ", {"AZURE_OPENAI_API_KEY": "", "AZURE_OPENAI_ENDPOINT": ""}):
-            client = FoundryIQClient()
-            with pytest.raises(RuntimeError, match="Fallback required"):
-                client.query_document(
-                    query="test query",
-                    document_name="IT_Security_Policy.md",
-                    document_text="test",
-                    topic="employee data location and processing rules",
-                )
+    # Removed test_no_azure_credentials_uses_tier3 because Azure OpenAI was removed
 
     def test_tier3_returns_correct_citation_for_it_security(self):
         result = _mock_result(
@@ -401,19 +391,7 @@ class TestFoundryIQClientTier3Fallback:
         for c in result.citations:
             assert 0.0 <= c.confidence <= 1.0
 
-    def test_invalid_azure_key_falls_back_to_tier3(self):
-        """Simulates invalid API key scenario — must raise RuntimeError to reach Tier 3 in pipeline."""
-        client = FoundryIQClient()
-        # Force _azure_client to None to simulate unavailability
-        client._azure_client = None
-        client._available = False
-        with pytest.raises(RuntimeError, match="Fallback required"):
-            client.query_document(
-                query="test",
-                document_name="HR_Remote_Work_Policy.md",
-                document_text="test",
-                topic="employee data location and processing rules",
-            )
+    # Removed test_invalid_azure_key_falls_back_to_tier3 because Azure OpenAI was removed
 
 
 # ─── 10. Topic key mapping ────────────────────────────────────────────────────

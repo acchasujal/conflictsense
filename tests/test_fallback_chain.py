@@ -89,8 +89,8 @@ class TestHealth:
         verifies the field exists and contains a known value.
         """
         data = sync_client.get("/health").json()
-        assert data["mode"] in {"LIVE", "MOCK_MODE"}, (
-            f"Unexpected mode: {data['mode']!r}. Must be 'LIVE' or 'MOCK_MODE'."
+        assert data["mode"] in {"LIVE_CONFIGURED", "MOCK_MODE"}, (
+            f"Unexpected mode: {data['mode']!r}. Must be 'LIVE_CONFIGURED' or 'MOCK_MODE'."
         )
 
     def test_health_reports_conflict_count(self):
