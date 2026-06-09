@@ -1,7 +1,7 @@
 # ConflictSense — Policy Conflict Intelligence
 
 > AI-powered structural impossibility detection for enterprise policy documents.
-> Powered by Azure Foundry IQ. Built for the Microsoft Agents League Hackathon.
+> Powered by Azure AI Search and LLM Provider Chain. Built for the Microsoft Agents League Hackathon.
 
 **Status:** Phase 3 Implementation Complete. Core Reasoning Engine Hardened.
 
@@ -20,7 +20,7 @@
 ### Backend
 ```bash
 cp .env.example .env
-# Fill in AZURE_FOUNDRY_ENDPOINT and AZURE_API_KEY
+# Fill in AZURE_SEARCH_ENDPOINT, AZURE_SEARCH_KEY, and LLM Provider API keys (e.g. GEMINI_API_KEY)
 pip install -r requirements.txt
 uvicorn backend.main:app --reload
 ```
@@ -32,10 +32,7 @@ npm install
 npm run dev
 ```
 
-### Upload Knowledge Base to Foundry IQ
-```bash
-python scripts/upload_to_foundry_iq.py
-```
+
 
 ---
 
@@ -51,7 +48,7 @@ conflictsense/
 ├── mock_data/          ← Tier 3 pre-computed fallback responses
 ├── prompts/            ← Frozen system prompts (one file per agent)
 ├── tests/              ← Unit + integration + E2E tests
-├── scripts/            ← Upload to Foundry IQ, ablation test
+├── scripts/            ← Azure Search index build scripts
 ├── .env.example
 └── requirements.txt
 ```

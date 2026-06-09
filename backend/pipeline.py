@@ -111,16 +111,13 @@ async def run_live_pipeline(emit_fn: Callable[[str, dict], None]) -> bool:
 
 async def run_mock_pipeline(emit_fn: Callable[[str, dict], None]) -> None:
     """
-    Stream precomputed mock data from mock_data/ JSON files.
+    Stream dynamically generated mock data using real document chunks.
 
     This is Tier 3 — guaranteed to succeed. Called when the live pipeline
     fails or when Azure credentials are unavailable.
-
-    Replicates the original backend/main.py streaming logic with the same
-    CONFLICT_REVEAL_MAP and step interval.
     """
-    trace_steps: list[dict] = _load_mock_json("precomputed_trace.json")
-    conflicts:   list[dict] = _load_mock_json("precomputed_conflicts.json")
+    from agents.retrieval import LocalRetriever
+    import hashlib
 
     # Emit document_loaded events (Tier 3 still announces doc loading)
     kb_dir = _ROOT / "knowledge_base"
@@ -128,33 +125,95 @@ async def run_mock_pipeline(emit_fn: Callable[[str, dict], None]) -> None:
     for doc in docs:
         emit_fn("document_loaded", {"document": doc.name, "status": "loaded", "is_mock": True})
 
-    # Stream trace steps and conflict events
-    for step_idx, step_raw in enumerate(trace_steps):
-        emit_fn("trace_step", step_raw)
-        logger.info("Mock pipeline: trace_step[%d] %s", step_idx, step_raw.get("agent"))
+    retriever = LocalRetriever()
+    topics = ["data location", "anonymity", "byod", "vacation policy", "incident reporting"]
+    conflicts_emitted = 0
 
-        conflict_indexes = _CONFLICT_REVEAL_MAP.get(step_idx, [])
-        for ci in conflict_indexes:
-            if ci < len(conflicts):
-                conflict = conflicts[ci]
-                emit_fn("conflict_detected", conflict)
-                emit_fn("conflict_emitted",  conflict)
-                logger.info("Mock pipeline: conflict_detected id=%s", conflict.get("id"))
+    for topic in topics:
+        emit_fn("trace_step", {
+            "agent": "DocumentAnalyzer",
+            "action": f"Analyzing corpus for: {topic}",
+            "is_mock": True,
+            "topic": topic
+        })
+        await asyncio.sleep(MOCK_STEP_INTERVAL_S)
 
-        if step_idx < len(trace_steps) - 1:
+        chunks_by_doc = {}
+        for doc in docs:
+            top_chunks = retriever.retrieve_for_document(topic, doc.name, top_k=1)
+            if top_chunks:
+                chunks_by_doc[doc.name] = top_chunks[0]
+
+        if len(chunks_by_doc) >= 2:
+            doc_names = list(chunks_by_doc.keys())
+            doc_a = doc_names[0]
+            doc_b = doc_names[1]
+            chunk_a = chunks_by_doc[doc_a]
+            chunk_b = chunks_by_doc[doc_b]
+
+            conflict_id = hashlib.md5(f"{doc_a}{doc_b}{topic}".encode()).hexdigest()[:8]
+
+            emit_fn("trace_step", {
+                "agent": "ConflictDetector",
+                "action": f"Cross-referencing {doc_a} and {doc_b}",
+                "is_mock": True,
+                "topic": topic
+            })
+            await asyncio.sleep(MOCK_STEP_INTERVAL_S)
+
+            conflict_data = {
+                "id": conflict_id,
+                "title": f"MOCK: Structural impossibility in {topic}",
+                "severity": "CRITICAL",
+                "confidence": 95,
+                "sources": [f"{doc_a} {chunk_a.section_id}", f"{doc_b} {chunk_b.section_id}"],
+                "reasoning": f"Mock Conflict: {doc_a} {chunk_a.section_id} states '{chunk_a.text[:60]}...' while {doc_b} {chunk_b.section_id} states '{chunk_b.text[:60]}...'. These represent a deterministic structural impossibility based on actual document chunks.",
+                "status": "UNRESOLVED",
+                "conflict_type": "Direct Contradiction",
+                "is_mock_mode": True,
+                "citations": [
+                    {
+                        "document": doc_a,
+                        "section": chunk_a.section_id,
+                        "passage": chunk_a.text,
+                        "confidence": 0.95,
+                        "topic": topic
+                    },
+                    {
+                        "document": doc_b,
+                        "section": chunk_b.section_id,
+                        "passage": chunk_b.text,
+                        "confidence": 0.95,
+                        "topic": topic
+                    }
+                ],
+                "conflict_pairs": [
+                    {
+                        "statement_a": {"document": doc_a, "section": chunk_a.section_id},
+                        "statement_b": {"document": doc_b, "section": chunk_b.section_id},
+                        "conflict_type": "Direct Contradiction",
+                        "why_impossible": "Deterministic mock pairing based on retrieved chunks."
+                    }
+                ]
+            }
+
+            emit_fn("conflict_detected", conflict_data)
+            emit_fn("conflict_emitted", conflict_data)
+            logger.info("Mock pipeline: conflict_detected id=%s", conflict_id)
+            conflicts_emitted += 1
             await asyncio.sleep(MOCK_STEP_INTERVAL_S)
 
     emit_fn("analysis_complete", {
         "status": "complete",
-        "total_conflicts": len(conflicts),
+        "total_conflicts": conflicts_emitted,
         "is_mock_mode": True,
     })
     emit_fn("complete", {
         "status": "complete",
-        "total_conflicts": len(conflicts),
+        "total_conflicts": conflicts_emitted,
         "_meta": {"fallback": "MOCK_MODE"},
     })
-    logger.info("Mock pipeline complete. %d conflicts emitted.", len(conflicts))
+    logger.info("Mock pipeline complete. %d conflicts emitted.", conflicts_emitted)
 
 
 # ─── Router ───────────────────────────────────────────────────────────────────

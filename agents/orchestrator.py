@@ -349,7 +349,10 @@ class ConflictSenseOrchestrator:
 
     @staticmethod
     def _build_da_trace_step(result: DocumentAnalyzerResult) -> dict:
-        """Build the DocumentAnalyzer trace step for the Reasoning Trace UI."""
+        """
+        Builds the trace_step payload for the DocumentAnalyzer.
+        Extracts telemetry and diagnostic metadata directly from the result.
+        """
         return {
             "agent": "DocumentAnalyzer",
             "agentColor": "#85B7EB",
@@ -368,6 +371,11 @@ class ConflictSenseOrchestrator:
             "conclusion": None,
             "severity":   None,
             "confidence": None,
+            "telemetry": {
+                "docs_analyzed": len(result.per_doc_results),
+                "total_citations": len(result.citations),
+                "per_document_meta": result.per_doc_results
+            }
         }
 
     @staticmethod
