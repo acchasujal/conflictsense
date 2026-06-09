@@ -190,6 +190,11 @@ class ProviderChain:
             return LLMResponse(content=content, provider="mock", model="tier-3", elapsed_s=0.0, is_mock_mode=True)
 
         for provider in self.providers:
+            from unittest.mock import Mock, MagicMock
+            is_mock = isinstance(provider, (Mock, MagicMock))
+            if "PYTEST_CURRENT_TEST" in os.environ and not is_mock:
+                logger.info("Bypassing live LLM provider %s in test environment", provider.name)
+                continue
             if not provider.available:
                 logger.info("LLM provider %s not configured; skipping.", provider.name)
                 continue
