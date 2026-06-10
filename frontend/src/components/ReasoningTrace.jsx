@@ -22,11 +22,12 @@
  */
 
 import React, { useRef, useEffect } from 'react';
+import AgentPipeline from './AgentPipeline.jsx';
 
 // ─── Citation row inside a DocumentAnalyzer step ──────────────────────────────
 function CitationRow({ citation }) {
   const confPct = Math.round(citation.confidence * 100);
-  const confLabel = confPct >= 85 ? 'high' : confPct >= 65 ? 'medium' : 'low';
+  const confLabel = confPct >= 90 ? 'critical' : confPct >= 75 ? 'high' : confPct >= 60 ? 'needs review' : 'informational';
   const shortPassage =
     citation.passage.length > 90
       ? citation.passage.slice(0, 90) + '…'
@@ -206,7 +207,9 @@ export default function ReasoningTrace({ steps, phase, isMockMode, currentStep }
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        width: 340,
+        width: '45%',
+        minWidth: 400,
+        maxWidth: 600,
         flexShrink: 0,
       }}
     >
@@ -289,6 +292,12 @@ export default function ReasoningTrace({ steps, phase, isMockMode, currentStep }
           </span>
         </div>
       )}
+
+      {/* ── Agent Pipeline ────────────────────────────────────────────────── */}
+      <AgentPipeline 
+        phase={phase} 
+        currentAgent={steps[currentStep]?.agent} 
+      />
 
       {/* ── Trace body ──────────────────────────────────────────────────── */}
       <div

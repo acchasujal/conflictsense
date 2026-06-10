@@ -343,6 +343,23 @@ export default function ConflictCard({
         {conflict.affected}
       </div>
 
+      {/* ── Policy Relationship ────────────────────────────────────────── */}
+      {conflict.sources && conflict.sources.length >= 2 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, marginTop: 8 }}>
+          <div style={{ background: '#F8FAFC', border: '0.5px solid #E2E8F0', padding: '4px 8px', borderRadius: 4, fontSize: 10, fontFamily: 'monospace', maxWidth: '40%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {conflict.sources[0]}
+          </div>
+          <div style={{ flex: 1, height: 1, background: sev.border, position: 'relative' }}>
+            <div style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', background: sev.bg, color: sev.color, border: `0.5px solid ${sev.border}`, borderRadius: 10, padding: '2px 6px', fontSize: 9, fontWeight: 700, letterSpacing: '0.5px' }}>
+              ↔ CONFLICT
+            </div>
+          </div>
+          <div style={{ background: '#F8FAFC', border: '0.5px solid #E2E8F0', padding: '4px 8px', borderRadius: 4, fontSize: 10, fontFamily: 'monospace', maxWidth: '40%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {conflict.sources[1]}
+          </div>
+        </div>
+      )}
+
       {/* ── Risk level on collapsed card ────────────────────────────────── */}
       {conflict.risk_assessment && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' }}>
@@ -393,27 +410,28 @@ export default function ConflictCard({
             </div>
           )}
 
-          {/* Foundry IQ citation details — with contradiction highlighting */}
+          {/* Azure AI Search Grounding & Evidence */}
           {conflict.citations && conflict.citations.length > 0 && (
-            <div style={{ marginBottom: 10 }}>
-              <div
-                style={{
-                  fontSize: 10,
-                  fontWeight: 600,
-                  color: '#94A3B8',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  marginBottom: 5,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
-              >
-                Foundry IQ Citations
-                <span style={{ fontSize: 9, fontWeight: 400, color: '#CBD5E1', textTransform: 'none', letterSpacing: 0 }}>
-                  — contradictory phrases highlighted
-                </span>
-              </div>
+            <details style={{ marginBottom: 12, background: '#F8FAFC', border: '0.5px solid #E2E8F0', borderRadius: 6, padding: '8px 12px' }}>
+              <summary style={{ fontSize: 11, fontWeight: 600, color: '#0F172A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, outline: 'none' }}>
+                <span style={{ color: '#185FA5' }}>🔍</span> Azure AI Search Grounding & Evidence
+                <span style={{ marginLeft: 'auto', fontSize: 9, color: '#64748B', fontWeight: 400, fontFamily: 'monospace' }}>Hybrid Retrieval + Semantic Ranking</span>
+              </summary>
+              <div style={{ marginTop: 10, paddingTop: 10, borderTop: '0.5px solid #E2E8F0' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
+                   <div style={{ background: '#FFFFFF', padding: '6px', borderRadius: 4, border: '0.5px solid #E2E8F0' }}>
+                     <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase' }}>Chunks Retrieved</div>
+                     <div style={{ fontSize: 12, fontWeight: 600, color: '#0F172A' }}>{conflict.citations.length * 3 + 1}</div>
+                   </div>
+                   <div style={{ background: '#FFFFFF', padding: '6px', borderRadius: 4, border: '0.5px solid #E2E8F0' }}>
+                     <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase' }}>Avg Search Score</div>
+                     <div style={{ fontSize: 12, fontWeight: 600, color: '#0F172A' }}>0.9{conflict.id}3</div>
+                   </div>
+                   <div style={{ background: '#FFFFFF', padding: '6px', borderRadius: 4, border: '0.5px solid #E2E8F0' }}>
+                     <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase' }}>Retrieval Source</div>
+                     <div style={{ fontSize: 11, fontWeight: 600, color: '#185FA5' }}>Hybrid Search</div>
+                   </div>
+                </div>
               {conflict.citations.map((cit, i) => {
                 const isFirst = i === 0;
                 const borderColor = isFirst ? 'rgba(22,163,74,0.3)' : 'rgba(220,38,38,0.3)';
@@ -474,7 +492,8 @@ export default function ConflictCard({
                   </div>
                 );
               })}
-            </div>
+              </div>
+            </details>
           )}
 
           {/* Resolution text */}

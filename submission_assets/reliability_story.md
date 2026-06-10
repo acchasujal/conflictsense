@@ -4,15 +4,15 @@
 The demo should never fail on stage, and the product should never present low-trust output as if it were certain.
 
 ## Reliability Design
-- Primary path uses live Foundry IQ-backed analysis.
+- Primary path uses live Azure AI Search-backed analysis.
 - Backup path preserves the same workflow with a lighter model tier.
 - Mock fallback guarantees completion if live dependencies fail.
 
 ## Trust Controls
-- Findings must have enough grounded citations to be shown.
-- Low-confidence outputs are not promoted to the main dashboard.
-- The Approval Gate stops autonomous action.
-- The UI can surface a clear mock-mode indicator when fallback is active.
+- Findings must have enough grounded Azure AI Search citations to be shown.
+- Low-confidence outputs (<65%) are never promoted to the main dashboard.
+- The Human Approval Gate stops autonomous action, ensuring an enterprise "Human-in-the-loop" before any business impact occurs.
+- The UI surfaces a clear mock-mode indicator when fallback is active.
 
 ## Why Judges Should Notice
 Reliability is part of the product value, not a backstage detail.

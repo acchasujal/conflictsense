@@ -15,6 +15,8 @@
 import React from 'react';
 import DocumentGrid from './DocumentGrid.jsx';
 import ConflictCard from './ConflictCard.jsx';
+import ExecutiveDashboard from './ExecutiveDashboard.jsx';
+import CopilotExperience from './CopilotExperience.jsx';
 
 const styles = {
   panel: {
@@ -160,6 +162,12 @@ export default function ConflictDashboard({
 }) {
   return (
     <div style={styles.panel}>
+      {/* Copilot Experience Panel */}
+      <CopilotExperience />
+
+      {/* Executive Dashboard */}
+      <ExecutiveDashboard phase={phase} />
+
       {/* Document grid — always visible */}
       <DocumentGrid documents={documents} />
 

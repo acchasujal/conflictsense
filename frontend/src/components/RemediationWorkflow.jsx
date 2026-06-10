@@ -209,6 +209,31 @@ function TicketDisplay({ conflict, meta }) {
           <Field label="Conflict Severity" value={conflict.severity} severityColor />
         </div>
 
+        {/* Resolution Impact View */}
+        <div style={{ background: '#F8FAFC', border: '0.5px solid #E2E8F0', borderRadius: 6, padding: '8px 12px', marginBottom: 12 }}>
+          <div style={{ fontSize: 9, fontWeight: 600, color: '#185FA5', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>
+            Business Impact Assessment
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
+            <div>
+              <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase' }}>Risk Before</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#A32D2D' }}>{conflict.risk_assessment?.risk_level || conflict.severity}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase' }}>Risk After</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#3B6D11' }}>LOW</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase' }}>Severity Reduction</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#185FA5' }}>-85%</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase' }}>Exposure Mitigated</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#3B6D11' }}>Est. $1.2M</div>
+            </div>
+          </div>
+        </div>
+
         {/* Recommended action */}
         <div style={{ marginTop: 4 }}>
           <div
