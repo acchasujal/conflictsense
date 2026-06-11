@@ -1,34 +1,34 @@
 [
   {
-    "agent": "DocumentAnalyzer",
+    "agent": "Azure Search Grounding",
     "agentColor": "#85B7EB",
     "time": "0.3s",
     "query": "employee data location and processing rules",
     "citations": [
       {
         "document": "IT_Security_Policy.md",
-        "section": "§4.2",
+        "section": "\u00a74.2",
         "passage": "All company data processing shall occur exclusively on US-domiciled servers. VPN access restricted to US IP ranges.",
         "confidence": 0.96,
         "topic": "employee data location and processing rules"
       },
       {
         "document": "HR_Remote_Work_Policy.md",
-        "section": "§2.1",
+        "section": "\u00a72.1",
         "passage": "Employees may work from any global location without prior approval.",
         "confidence": 0.95,
         "topic": "employee data location and processing rules"
       },
       {
         "document": "DPDP_Compliance_Directive.md",
-        "section": "§3.1",
+        "section": "\u00a73.1",
         "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction. Effective July 1, 2026.",
         "confidence": 0.94,
         "topic": "employee data location and processing rules"
       },
       {
         "document": "Data_Governance_Policy.md",
-        "section": "§7.3",
+        "section": "\u00a77.3",
         "passage": "EU employee data subject to GDPR residency requirements.",
         "confidence": 0.74,
         "topic": "employee data location and processing rules"
@@ -39,27 +39,27 @@
     "confidence": null
   },
   {
-    "agent": "ConflictDetector",
+    "agent": "Conflict Detection",
     "agentColor": "#F09595",
     "time": "0.8s",
     "query": null,
     "citations": null,
-    "conclusion": "IT Security mandates US servers. The DPDP Directive requires Indian servers for Indian-resident employees. HR policy permits those same employees to work from anywhere — which means their data is processed wherever they sit. These rules apply to the same employee population simultaneously. They cannot all be satisfied. This is not ambiguity or edge-case overlap. It is a structural impossibility baked into the current architecture.",
+    "conclusion": "IT Security mandates US servers. The DPDP Directive requires Indian servers for Indian-resident employees. HR policy permits those same employees to work from anywhere \u2014 which means their data is processed wherever they sit. These rules apply to the same employee population simultaneously. They cannot all be satisfied. This is not ambiguity or edge-case overlap. It is a structural impossibility baked into the current architecture.",
     "severity": "CRITICAL",
     "confidence": 96
   },
   {
-    "agent": "ImpactAssessor",
+    "agent": "Impact Assessment",
     "agentColor": "#5DCAA5",
     "time": "1.1s",
     "query": null,
     "citations": null,
-    "conclusion": "34 employees in India-based roles currently fall in the non-compliant zone. Affected systems: primary VPN gateway, US East data pipelines. Affected teams: IT Infrastructure (server provisioning owner), HR (policy amendment owner), Legal (regulatory response). Regulatory deadline: July 1, 2026 — 24 days from today.",
+    "conclusion": "34 employees in India-based roles currently fall in the non-compliant zone. Affected systems: primary VPN gateway, US East data pipelines. Affected teams: IT Infrastructure (server provisioning owner), HR (policy amendment owner), Legal (regulatory response). Regulatory deadline: July 1, 2026 \u2014 24 days from today.",
     "severity": null,
     "confidence": null
   },
   {
-    "agent": "RiskQuantifier",
+    "agent": "Risk Quantification",
     "agentColor": "#FAC775",
     "time": "1.4s",
     "query": null,
@@ -69,21 +69,21 @@
     "confidence": null
   },
   {
-    "agent": "DocumentAnalyzer",
+    "agent": "Azure Search Grounding",
     "agentColor": "#85B7EB",
     "time": "1.9s",
     "query": "employee reporting channels and anonymity guarantees",
     "citations": [
       {
         "document": "Whistleblower_Policy.md",
-        "section": "§4.2",
+        "section": "\u00a74.2",
         "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.",
         "confidence": 0.91,
         "topic": "employee reporting channels and anonymity guarantees"
       },
       {
         "document": "IT_Security_Policy.md",
-        "section": "§12.1",
+        "section": "\u00a712.1",
         "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.",
         "confidence": 0.95,
         "topic": "employee reporting channels and anonymity guarantees"
@@ -94,23 +94,23 @@
     "confidence": null
   },
   {
-    "agent": "ConflictDetector",
+    "agent": "Conflict Detection",
     "agentColor": "#F09595",
     "time": "2.3s",
     "query": null,
     "citations": null,
-    "conclusion": "Nexora's Whistleblower Policy makes a legal commitment to every employee: your report cannot be traced. Its IT Security Policy makes a technical commitment: every system action is logged with user identity, no exceptions. These two statements cannot simultaneously be true. Every report filed through the ethics portal is traceable — full stop. The anonymity guarantee exists on paper. It does not exist in the system.",
+    "conclusion": "Nexora's Whistleblower Policy makes a legal commitment to every employee: your report cannot be traced. Its IT Security Policy makes a technical commitment: every system action is logged with user identity, no exceptions. These two statements cannot simultaneously be true. Every report filed through the ethics portal is traceable \u2014 full stop. The anonymity guarantee exists on paper. It does not exist in the system.",
     "severity": "CRITICAL",
     "confidence": 91,
     "isSurprise": true
   },
   {
-    "agent": "ResolutionRecommender",
+    "agent": "Resolution Generation",
     "agentColor": "#9FE1CB",
     "time": "2.7s",
     "query": null,
     "citations": null,
-    "conclusion": "Analysis complete. 9 conflicts detected across 7 policy documents — 3 Critical, 2 High, 4 Medium. Prioritised resolution roadmap generated with owner assignments and deadlines. All findings are pending human review. No autonomous action has been taken or will be taken without explicit approval.",
+    "conclusion": "Analysis complete. 9 conflicts detected across 7 policy documents \u2014 3 Critical, 2 High, 4 Medium. Prioritised resolution roadmap generated with owner assignments and deadlines. All findings are pending human review. No autonomous action has been taken or will be taken without explicit approval.",
     "severity": null,
     "confidence": null
   }

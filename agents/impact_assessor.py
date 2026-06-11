@@ -22,7 +22,15 @@ from agents.llm_provider import ProviderChain, get_provider_chain
 
 logger = logging.getLogger("conflictsense.impact_assessor")
 
-_SYSTEM_PROMPT = """You are an enterprise impact analyst. Based ONLY on the Foundry IQ entity extractions provided, quantify the affected systems, teams, and employee populations for the following policy conflict. Do not hallucinate numbers. If numbers are not in the text, state the affected departments broadly."""
+_SYSTEM_PROMPT = """You are an enterprise impact analyst. Based ONLY on the Foundry IQ entity extractions provided, quantify the affected systems, teams, and employee populations for the following policy conflict. Do not hallucinate numbers. If numbers are not in the text, state the affected departments broadly.
+
+Return ONLY a valid JSON object with exactly these keys:
+{
+  "summary": "2-3 sentence overview of the impact",
+  "systems": ["List", "of", "affected", "systems"],
+  "teams": ["List", "of", "affected", "teams"]
+}
+Do not include any markdown formatting or markdown code blocks (no ```json)."""
 
 class ImpactAssessor:
     """

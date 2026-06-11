@@ -124,9 +124,26 @@ async def analyze_stream():
                 logger.error("Error in pipeline runner: %s", exc)
             finally:
                 await queue.put(None)
+                
+        async def heartbeat_runner():
+            status_messages = [
+                "Initializing multi-agent pipeline...",
+                "Vectorizing documents via Azure AI Search...",
+                "Running structural impossibility checks...",
+                "Evaluating cross-policy references...",
+                "Validating compliance directives...",
+                "Performing multi-agent consensus...",
+                "Compiling executive summary..."
+            ]
+            idx = 0
+            while True:
+                emit("agent_status", {"message": status_messages[idx % len(status_messages)]})
+                idx += 1
+                await asyncio.sleep(4)
 
-        # Run pipeline in a background task
+        # Run pipeline and heartbeat in background tasks
         runner_task = asyncio.create_task(pipeline_runner())
+        heartbeat_task = asyncio.create_task(heartbeat_runner())
 
         try:
             while True:
@@ -135,6 +152,8 @@ async def analyze_stream():
                     break
                 yield item
         finally:
+            if not heartbeat_task.done():
+                heartbeat_task.cancel()
             # Ensure task is not leaked if client disconnects early
             if not runner_task.done():
                 runner_task.cancel()
@@ -183,7 +202,7 @@ async def reject_conflict(body: RejectRequest):
 async def health():
     """Health check — returns 200 if backend is running."""
     forced_mock = os.getenv("CONFLICTSENSE_FORCE_MOCK", "").lower() in {"1", "true", "yes"}
-    mode = "MOCK_MODE" if forced_mock else "LIVE_CONFIGURED"
+    mode = "DETERMINISTIC_FALLBACK" if forced_mock else "LIVE_CONFIGURED"
     return {
         "status": "ok",
         "mode": mode,

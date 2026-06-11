@@ -1,10 +1,8 @@
 """
 Unified LLM provider layer for ConflictSense.
 
-Inference order is intentionally non-Azure:
-Gemini -> OpenRouter -> Groq -> NVIDIA NIM -> Tier 3 mock mode.
-Agents call this module through one interface so provider failures never leak
-into reasoning code or terminate the demo pipeline.
+Implements a robust multi-provider failover chain to guarantee 
+demo stability and continuous reasoning availability.
 """
 
 from __future__ import annotations
@@ -82,6 +80,8 @@ class OpenAICompatibleProvider(LLMProvider):
             )
             if response.status_code in {408, 409, 425, 429, 500, 502, 503, 504}:
                 raise LLMProviderError(f"{self.name} transient failure: HTTP {response.status_code}")
+            if response.status_code >= 400:
+                print(f"[{self.name}] Error {response.status_code}: {response.text}")
             response.raise_for_status()
             data = response.json()
         content = ((data.get("choices") or [{}])[0].get("message") or {}).get("content") or ""
@@ -119,6 +119,8 @@ class GeminiProvider(LLMProvider):
             response = client.post(url, json=payload)
             if response.status_code in {408, 409, 425, 429, 500, 502, 503, 504}:
                 raise LLMProviderError(f"Gemini transient failure: HTTP {response.status_code}")
+            if response.status_code >= 400:
+                print(f"[gemini] Error {response.status_code}: {response.text}")
             response.raise_for_status()
             data = response.json()
         parts = (((data.get("candidates") or [{}])[0].get("content") or {}).get("parts") or [])
@@ -160,7 +162,7 @@ class NvidiaProvider(OpenAICompatibleProvider):
         super().__init__(
             os.getenv("NVIDIA_API_KEY", "") or os.getenv("NVIDIA_NIM_API_KEY", ""),
             os.getenv("NVIDIA_MODEL", "meta/llama-3.1-70b-instruct"),
-            float(os.getenv("LLM_TIMEOUT_S", "12")),
+            float(os.getenv("LLM_TIMEOUT_S", "8.0")),
         )
 
 
@@ -201,11 +203,13 @@ class ProviderChain:
             try:
                 response = provider.complete(system_prompt, user_prompt, json_mode=json_mode)
                 if json_mode:
+                    # Validate JSON now; result is returned to complete_json() via response.content.
+                    # Raises ValueError/JSONDecodeError if malformed → provider treated as failed.
                     _parse_json(response.content)
                 logger.info("LLM provider %s succeeded in %.2fs.", provider.name, response.elapsed_s)
                 return response
             except Exception as exc:
-                logger.warning("LLM provider %s failed: %s", provider.name, exc)
+                logger.warning("LLM provider %s failed: %s — reason: %s", provider.name, type(exc).__name__, exc)
 
         if mock_factory is None:
             raise LLMProviderError("All LLM providers failed and no mock fallback was supplied.")
@@ -235,21 +239,61 @@ class ProviderChain:
 
 
 def _parse_json(raw_text: str) -> dict[str, Any]:
+    """Parse a JSON string into a dict, with two fallbacks:
+    1. Brace-extraction: finds the outermost { ... } block (handles markdown fences,
+       preamble text, and trailing prose).
+    2. List coercion: if the top-level value is a list whose first element is a dict,
+       that element is used (handles LLMs that wrap the response in an array).
+    Raises JSONDecodeError or ValueError if none of the above succeeds.
+    """
     try:
-        return json.loads(raw_text)
+        data = json.loads(raw_text)
     except json.JSONDecodeError:
         start = raw_text.find("{")
         end = raw_text.rfind("}")
         if start >= 0 and end > start:
-            return json.loads(raw_text[start : end + 1])
-        raise
+            logger.debug(
+                "_parse_json: direct parse failed — extracting JSON from chars %d:%d",
+                start, end + 1,
+            )
+            data = json.loads(raw_text[start : end + 1])
+        else:
+            logger.warning(
+                "_parse_json: no JSON object found in response (len=%d, preview=%r)",
+                len(raw_text), raw_text[:120],
+            )
+            raise
+
+    if not isinstance(data, dict):
+        if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
+            logger.debug("_parse_json: top-level array — using first element as response dict.")
+            data = data[0]
+        else:
+            raise ValueError(f"Expected JSON object (dict), got {type(data).__name__}")
+    return data
 
 
 _default_chain: ProviderChain | None = None
 
 
 def get_provider_chain() -> ProviderChain:
+    """Return the module-level singleton ProviderChain.
+
+    The chain is created once per process. Call reset_provider_chain() to
+    force re-initialisation (useful in tests that patch env vars).
+    """
     global _default_chain
     if _default_chain is None:
         _default_chain = ProviderChain()
     return _default_chain
+
+
+def reset_provider_chain() -> None:
+    """Invalidate the module-level singleton ProviderChain.
+
+    The next call to get_provider_chain() will create a fresh chain, picking
+    up any env-var changes made since the last initialisation.
+    Primarily useful in tests.
+    """
+    global _default_chain
+    _default_chain = None

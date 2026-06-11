@@ -306,18 +306,18 @@ _CONFLICT_MOCKS: dict[str, dict] = {
         "severity": "MEDIUM", "confidence": 0.68, "is_surprise": False,
     },
     "vacation policy": {
-        "has_conflict": True,
-        "conflict_pairs": [{
-            "document_a": "Employee_Handbook.md", "section_a": "§5.1",
-            "document_b": "HR_Remote_Work_Policy.md", "section_b": "§7.2",
-            "conflict_type": "Direct Contradiction",
-            "why_impossible": "One uses the term 'vacation days', the other uses 'annual leave'.",
-        }],
+        # NOT a conflict: both policies grant 20 days; terminology differs (vacation vs annual
+        # leave) but the entitlement is identical. This is the canonical negative test case per
+        # test_corpus.md §2. Confidence is 0.0 — no structural impossibility exists.
+        "has_conflict": False,
+        "conflict_pairs": [],
         "reasoning": (
-            "The Employee Handbook specifies '20 vacation days' while the HR policy says "
-            "'20 working days of annual leave'. These two terms are different."
+            "The Employee Handbook specifies '20 vacation days' and the HR Remote Work "
+            "Policy specifies '20 working days of annual leave'. The entitlement is "
+            "identical; only the terminology differs. Both policies can be satisfied "
+            "simultaneously. This is a wording difference, not a structural conflict."
         ),
-        "severity": "LOW", "confidence": 0.85, "is_surprise": False,
+        "severity": None, "confidence": 0.0, "is_surprise": False,
     },
 }
 

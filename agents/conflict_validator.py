@@ -69,11 +69,19 @@ class ConflictValidatorAgent:
                 "confidence": 90
             }
 
-        data, response = self._provider_chain.complete_json(
-            _SYSTEM_PROMPT,
-            user_prompt,
-            mock_factory=mock_fallback
-        )
+        try:
+            data, response = self._provider_chain.complete_json(
+                _SYSTEM_PROMPT,
+                user_prompt,
+                mock_factory=mock_fallback,
+            )
+        except Exception as exc:
+            logger.warning(
+                "ConflictValidatorAgent: unexpected error from provider chain (%s: %s) — "
+                "using mock fallback for record %r.",
+                type(exc).__name__, exc, record.title,
+            )
+            data = mock_fallback()
         
         status_str = data.get("status", "APPROVED").upper()
         if status_str == "REJECTED":

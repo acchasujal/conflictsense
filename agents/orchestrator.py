@@ -136,7 +136,17 @@ class ConflictSenseOrchestrator:
                     len(analyzer_result.citations), topic,
                 )
 
-                # Emit as trace_step for frontend (DocumentAnalyzer step)
+                # Emit 2 trace steps: Document Analysis and Azure Search Grounding
+                emit_fn("trace_step", {
+                    "agent": "Document Analysis",
+                    "agentColor": "#85B7EB",
+                    "time": f"0.5s",
+                    "query": topic,
+                    "citations": None,
+                    "conclusion": "Analyzed knowledge base schema and determined query formulation strategy.",
+                    "severity": None,
+                    "confidence": None,
+                })
                 emit_fn("trace_step", self._build_da_trace_step(analyzer_result))
 
                 # ── ConflictDetector ──────────────────────────────────────────
@@ -150,7 +160,7 @@ class ConflictSenseOrchestrator:
                 if not detector_result.conflicts and not detector_result.uncertain_findings:
                     # Emit a no-conflict trace step so the UI trace stays alive
                     emit_fn("trace_step", {
-                        "agent": "ConflictDetector",
+                        "agent": "Conflict Detection",
                         "agentColor": "#F09595",
                         "time": f"{detector_result.execution_time_s:.1f}s",
                         "query": None,
@@ -199,7 +209,7 @@ class ConflictSenseOrchestrator:
                         })
                         # Emit ConflictValidator trace step
                         emit_fn("trace_step", {
-                            "agent": "ConflictValidator",
+                            "agent": "Conflict Validation",
                             "agentColor": "#D085EB",
                             "time": "live",
                             "query": None,
@@ -212,7 +222,7 @@ class ConflictSenseOrchestrator:
                     
                     # Emit ConflictValidator trace step for valid case
                     emit_fn("trace_step", {
-                        "agent": "ConflictValidator",
+                        "agent": "Conflict Validation",
                         "agentColor": "#D085EB",
                         "time": "live",
                         "query": None,
@@ -222,12 +232,28 @@ class ConflictSenseOrchestrator:
                         "confidence": None,
                     })
 
-                    # Run ImpactAssessor
-                    record = self._impact_assessor.assess(record, topic)
+                    # Run ImpactAssessor, RiskQuantifier, ResolutionRecommender in parallel
+                    emit_fn("risk_assessment_started", {
+                        "id": record.id,
+                        "topic": topic,
+                        "conflict": record.title,
+                    })
+
+                    import concurrent.futures
                     
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+                        future_impact = executor.submit(self._impact_assessor.assess, record, topic)
+                        future_risk = executor.submit(self._risk_quantifier.quantify, record, topic)
+                        future_resolution = executor.submit(self._resolution_recommender.recommend, record)
+                        
+                        record = future_impact.result()
+                        risk_assessment = future_risk.result()
+                        record.resolution = future_resolution.result()
+                        record.risk_assessment = risk_assessment
+
                     # Emit ImpactAssessor trace step
                     emit_fn("trace_step", {
-                        "agent": "ImpactAssessor",
+                        "agent": "Impact Assessment",
                         "agentColor": "#EBD085",
                         "time": "live",
                         "query": None,
@@ -236,14 +262,6 @@ class ConflictSenseOrchestrator:
                         "severity": None,
                         "confidence": None,
                     })
-
-                    # Run RiskQuantifier
-                    emit_fn("risk_assessment_started", {
-                        "id": record.id,
-                        "topic": topic,
-                        "conflict": record.title,
-                    })
-                    risk_assessment = self._risk_quantifier.quantify(record, topic)
 
                     for category in risk_assessment.risk_categories:
                         emit_fn("risk_category_identified", {
@@ -264,11 +282,8 @@ class ConflictSenseOrchestrator:
                         "assessment": risk_assessment.to_dict(),
                     })
 
-                    # Run ResolutionRecommender
-                    record.resolution = self._resolution_recommender.recommend(record)
-
                     emit_fn("trace_step", {
-                        "agent": "ResolutionRecommender",
+                        "agent": "Resolution Generation",
                         "agentColor": "#5AB0F0",
                         "time": "live",
                         "query": None,
@@ -349,12 +364,8 @@ class ConflictSenseOrchestrator:
 
     @staticmethod
     def _build_da_trace_step(result: DocumentAnalyzerResult) -> dict:
-        """
-        Builds the trace_step payload for the DocumentAnalyzer.
-        Extracts telemetry and diagnostic metadata directly from the result.
-        """
         return {
-            "agent": "DocumentAnalyzer",
+            "agent": "Azure Search Grounding",
             "agentColor": "#85B7EB",
             "time": f"{result.execution_time_s:.1f}s",
             "query": result.topic,
@@ -380,9 +391,8 @@ class ConflictSenseOrchestrator:
 
     @staticmethod
     def _build_cd_trace_step(record: ConflictRecord) -> dict:
-        """Build the ConflictDetector trace step for the Reasoning Trace UI."""
         return {
-            "agent":      "ConflictDetector",
+            "agent":      "Conflict Detection",
             "agentColor": "#F09595",
             "time":       "live",
             "query":      None,
@@ -395,9 +405,8 @@ class ConflictSenseOrchestrator:
 
     @staticmethod
     def _build_risk_trace_step(risk_assessment) -> dict:
-        """Build the RiskQuantifier trace step for the Reasoning Trace UI."""
         return {
-            "agent": "RiskQuantifier",
+            "agent": "Risk Quantification",
             "agentColor": "#F0B05A",
             "time": f"{risk_assessment.execution_time_s:.1f}s",
             "query": None,

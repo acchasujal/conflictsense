@@ -78,8 +78,8 @@ Explain, in plain language, WHY the conflict is logically impossible — not jus
 the statements differ. If a conflict requires a specific employee scenario to be impossible \
 (e.g. Indian-resident remote workers), specify that scenario precisely. \
 If no genuine conflict exists, say so. \
-Return JSON: {has_conflict: boolean, conflict_pairs: [...], reasoning: string, \
-severity: CRITICAL|HIGH|MEDIUM, confidence: float}
+Return JSON: {"has_conflict": boolean, "conflict_pairs": [{"policy_1": "doc A §X", "policy_2": "doc B §Y", "why_impossible": "reason"}], "reasoning": string, \
+"severity": "CRITICAL"|"HIGH"|"MEDIUM", "confidence": float}
 
 CRITICAL RULES:
 1. Only report conflicts where it is STRUCTURALLY IMPOSSIBLE to satisfy both policies \
@@ -169,6 +169,9 @@ class ConflictDetector:
         uncertain: list[ConflictRecord] = []
         blocked:   list[dict] = []
 
+        if not isinstance(raw, dict):
+            raw = {"has_conflict": False, "reasoning": str(raw)}
+
         if raw.get("has_conflict", False):
             record = self._build_conflict_record(topic, raw, citations, is_mock)
             if record is None:
@@ -232,8 +235,12 @@ class ConflictDetector:
                 user_prompt,
                 mock_factory=lambda: self._mock_response(topic),
             )
+            if not isinstance(data, dict):
+                data = {"has_conflict": False, "reasoning": str(data)}
             if "has_conflict" not in data:
                 raise ValueError("missing has_conflict")
+            if data.get("has_conflict") and not isinstance(data.get("conflict_pairs"), list):
+                raise ValueError("conflict response missing conflict_pairs or not a list")
             if data.get("has_conflict") and not data.get("conflict_pairs"):
                 raise ValueError("conflict response missing conflict_pairs")
             return data, 3 if response.is_mock_mode else 1
@@ -252,6 +259,9 @@ class ConflictDetector:
         citations: list[PolicyStatement], is_mock: bool,
     ) -> Optional[ConflictRecord]:
         """Build and validate a ConflictRecord from raw LLM output."""
+        if not isinstance(raw, dict):
+            raw = {"has_conflict": False, "reasoning": str(raw)}
+            
         # Confidence
         try:
             conf_float = max(0.0, min(1.0, float(raw.get("confidence", 0.0))))
@@ -385,6 +395,17 @@ class ConflictDetector:
 
         if raw_pairs:
             for rp in raw_pairs:
+                if not isinstance(rp, dict):
+                    # Handle if LLM returned a list of strings/lists instead of objects
+                    if isinstance(rp, list) and len(rp) >= 2:
+                        rp = {"policy_1": str(rp[0]), "policy_2": str(rp[1])}
+                    else:
+                        rp = {"policy_1": str(rp)}
+                        
+                # Ensure rp is dict before calling get
+                if not isinstance(rp, dict):
+                    continue
+                        
                 doc_a, sec_a = "", ""
                 doc_b, sec_b = "", ""
                 

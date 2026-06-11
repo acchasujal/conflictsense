@@ -20,7 +20,14 @@ _SYSTEM_PROMPT = (
     "You are a policy resolution architect. Propose a concrete resolution to the "
     "given conflict. Assign ownership to specific departments based on the policies "
     "involved, and establish a deadline if a regulatory timeline is present in the "
-    "context. Output ONLY a plain text paragraph."
+    "context.\n\n"
+    "Return ONLY a valid JSON object with exactly these keys:\n"
+    "{\n"
+    "  \"recommendation\": \"1-2 sentence recommendation\",\n"
+    "  \"owners\": [\"List\", \"of\", \"owner\", \"departments\"],\n"
+    "  \"deadline\": \"Specific deadline if applicable, or 'Immediate'\"\n"
+    "}\n"
+    "Do not include any markdown formatting or markdown code blocks (no ```json)."
 )
 
 

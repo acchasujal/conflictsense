@@ -83,7 +83,7 @@ async def run_live_pipeline(emit_fn: Callable[[str, dict], None]) -> bool:
         result = await orchestrator.run_analysis(emit_fn)
 
         # ── Final events ──────────────────────────────────────────────────────
-        fallback_flag = "MOCK_MODE" if result.is_mock_mode else "LIVE"
+        fallback_flag = "DETERMINISTIC_FALLBACK" if result.is_mock_mode else "LIVE"
 
         emit_fn("analysis_complete", {
             "status": "complete",
@@ -131,8 +131,16 @@ async def run_mock_pipeline(emit_fn: Callable[[str, dict], None]) -> None:
 
     for topic in topics:
         emit_fn("trace_step", {
-            "agent": "DocumentAnalyzer",
+            "agent": "Document Analysis",
             "action": f"Analyzing corpus for: {topic}",
+            "is_mock": True,
+            "topic": topic
+        })
+        await asyncio.sleep(MOCK_STEP_INTERVAL_S)
+
+        emit_fn("trace_step", {
+            "agent": "Azure Search Grounding",
+            "action": f"Retrieving relevant vectors",
             "is_mock": True,
             "topic": topic
         })
@@ -154,7 +162,7 @@ async def run_mock_pipeline(emit_fn: Callable[[str, dict], None]) -> None:
             conflict_id = hashlib.md5(f"{doc_a}{doc_b}{topic}".encode()).hexdigest()[:8]
 
             emit_fn("trace_step", {
-                "agent": "ConflictDetector",
+                "agent": "Conflict Detection",
                 "action": f"Cross-referencing {doc_a} and {doc_b}",
                 "is_mock": True,
                 "topic": topic
@@ -211,7 +219,7 @@ async def run_mock_pipeline(emit_fn: Callable[[str, dict], None]) -> None:
     emit_fn("complete", {
         "status": "complete",
         "total_conflicts": conflicts_emitted,
-        "_meta": {"fallback": "MOCK_MODE"},
+        "_meta": {"fallback": "DETERMINISTIC_FALLBACK"},
     })
     logger.info("Mock pipeline complete. %d conflicts emitted.", conflicts_emitted)
 

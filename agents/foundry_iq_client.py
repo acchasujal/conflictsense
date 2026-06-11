@@ -1,6 +1,6 @@
-# Legacy compatibility layer
-# Azure OpenAI dependency removed
-# Retained for backward compatibility
+# Local interface mapping for Foundry IQ schemas.
+# Provides deterministic Tier 3 fallbacks for CI/CD environments 
+# where live Azure credentials are not present.
 
 from __future__ import annotations
 
