@@ -144,6 +144,7 @@ function SeveritySummary({ conflicts }) {
  *   onApprove: (id: string) => void,
  *   onReject: (id: string) => void,
  *   onEscalate: (id: string) => void,
+ *   onRunAnalysis: () => void,
  * }} props
  */
 export default function ConflictDashboard({
@@ -159,11 +160,12 @@ export default function ConflictDashboard({
   onApprove,
   onReject,
   onEscalate,
+  onRunAnalysis,
 }) {
   return (
     <div style={styles.panel}>
       {/* Copilot Experience Panel */}
-      <CopilotExperience />
+      <CopilotExperience onRunAnalysis={onRunAnalysis} />
 
       {/* Executive Dashboard */}
       <ExecutiveDashboard phase={phase} />

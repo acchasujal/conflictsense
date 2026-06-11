@@ -45,30 +45,45 @@ const GLOBAL_CSS = `
 
   body {
     margin: 0;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: #F1F5F9;
-    color: #0F172A;
+    font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+    background: #FAFAFA;
+    color: #242424;
     -webkit-font-smoothing: antialiased;
   }
 
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(5px); }
+    from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes slideIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateX(10px); }
+    to   { opacity: 1; transform: translateX(0); }
   }
 
   @keyframes pulse {
     0%, 100% { opacity: 1; }
-    50%       { opacity: 0.45; }
+    50%       { opacity: 0.5; }
   }
 
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 `;
 
 // ─── Severity summary pills ───────────────────────────────────────────────────
@@ -78,7 +93,7 @@ function SummaryPills({ visibleConflicts }) {
   const med  = visibleConflicts.filter((c) => c.severity === 'MEDIUM').length;
   if (!visibleConflicts.length) return null;
   return (
-    <div style={{ display: 'flex', gap: 6, marginLeft: 10 }}>
+    <div style={{ display: 'flex', gap: 6, marginLeft: 10 }} aria-label="Conflict Severity Summary" role="group">
       {crit > 0 && (
         <span style={{ background: '#FCEBEB', color: '#A32D2D', border: '0.5px solid #F09595', padding: '2px 9px', borderRadius: 4, fontSize: 11, fontWeight: 600, animation: 'slideIn 0.25s ease' }}>
           {crit} Critical
@@ -106,6 +121,8 @@ function RunButton({ phase, onClick }) {
   return (
     <button
       id="btn-run-analysis"
+      aria-label="Run AI Conflict Analysis"
+      aria-busy={isScanning}
       onClick={onClick}
       disabled={isScanning}
       style={{
@@ -139,6 +156,7 @@ export default function App() {
   const [rejectedIds, setRejectedIds]           = useState(new Set());
   const [escalatedIds, setEscalatedIds]         = useState(new Set());
   const [isMockMode, setIsMockMode]             = useState(false);
+  const [agentStatus, setAgentStatus]           = useState(null);
 
   // Refs for cleanup
   const streamCancelRef = useRef(null);
@@ -202,6 +220,7 @@ export default function App() {
     setEscalatedIds(new Set());
     setSelectedId(null);
     setIsMockMode(false);
+    setAgentStatus(null);
 
     let stepIndex = 0;
 
@@ -221,10 +240,15 @@ export default function App() {
 
       onComplete: (payload) => {
         setPhase('done');
+        setAgentStatus(null);
         // Set MOCK_MODE if backend signals it
-        if (payload?._meta?.fallback === 'MOCK_MODE') {
+        if (payload?._meta?.fallback === 'DETERMINISTIC_FALLBACK') {
           setIsMockMode(true);
         }
+      },
+      
+      onAgentStatus: (status) => {
+        setAgentStatus(status.message);
       },
 
       onError: () => {
@@ -274,7 +298,7 @@ export default function App() {
       <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: '#F1F5F9', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
         {/* ── Header ──────────────────────────────────────────────────── */}
-        <div style={{ background: '#FFFFFF', borderBottom: '0.5px solid #E2E8F0', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
+        <header aria-label="Application Header" style={{ background: '#FFFFFF', borderBottom: '0.5px solid #E2E8F0', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.3px', color: '#0F172A', display: 'flex', alignItems: 'center', gap: 7 }}>
               <span style={{ color: '#185FA5', fontSize: 16 }}>◈</span>
@@ -287,10 +311,10 @@ export default function App() {
 
           <SummaryPills visibleConflicts={visibleConflicts} />
           <RunButton phase={phase} onClick={runAnalysis} />
-        </div>
+        </header>
 
         {/* ── Responsible AI banner ────────────────────────────────────── */}
-        <div style={{ background: '#FAEEDA', borderBottom: '0.5px solid #EF9F27', padding: '5px 16px', fontSize: 10, color: '#633806', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+        <div role="alert" aria-live="polite" style={{ background: '#FAEEDA', borderBottom: '0.5px solid #EF9F27', padding: '5px 16px', fontSize: 10, color: '#633806', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           <span>⚠</span>
           <span>ConflictSense uses AI to identify potential policy conflicts. All findings require human review before action. This tool does not constitute legal advice.</span>
         </div>
@@ -299,7 +323,7 @@ export default function App() {
         <EnterpriseRiskBanner conflicts={visibleConflicts} phase={phase} />
 
         {/* ── Two-panel body ───────────────────────────────────────────── */}
-        <div style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <main aria-label="Main Application Content" style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
 
           {/* Left: document grid + conflict list */}
           <ConflictDashboard
@@ -315,6 +339,7 @@ export default function App() {
             onApprove={handleApprove}
             onReject={handleReject}
             onEscalate={handleEscalate}
+            onRunAnalysis={runAnalysis}
           />
 
           {/* Right: reasoning trace terminal */}
@@ -323,8 +348,9 @@ export default function App() {
             phase={phase}
             isMockMode={isMockMode}
             currentStep={currentStep}
+            agentStatus={agentStatus}
           />
-        </div>
+        </main>
       </div>
     </>
   );

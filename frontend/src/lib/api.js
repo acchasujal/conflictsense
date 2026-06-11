@@ -30,11 +30,12 @@ const BASE_URL = "";   // Empty = same-origin via Vite proxy → http://localhos
  *   onConflictDetected: (conflict: object) => void,
  *   onComplete:         (payload: object) => void,
  *   onError:            (err: Event|Error) => void,
+ *   onAgentStatus:      (status: object) => void,
  * }} callbacks
  *
  * @returns {{ cancel: () => void }}   Call cancel() to close the stream early.
  */
-export function streamAnalysis({ onTraceStep, onConflictDetected, onComplete, onError }) {
+export function streamAnalysis({ onTraceStep, onConflictDetected, onComplete, onError, onAgentStatus }) {
   const url = `${BASE_URL}/analyze/stream`;
   const es = new EventSource(url);
 
@@ -44,6 +45,17 @@ export function streamAnalysis({ onTraceStep, onConflictDetected, onComplete, on
       onTraceStep(step);
     } catch (err) {
       console.error("[api] Failed to parse trace_step event:", err, e.data);
+    }
+  });
+
+  es.addEventListener("agent_status", (e) => {
+    try {
+      if (onAgentStatus) {
+        const status = JSON.parse(e.data);
+        onAgentStatus(status);
+      }
+    } catch (err) {
+      console.error("[api] Failed to parse agent_status event:", err, e.data);
     }
   });
 

@@ -1,10 +1,10 @@
 import React from 'react';
 
-export default function CopilotExperience() {
+export default function CopilotExperience({ onRunAnalysis }) {
   return (
     <div
       style={{
-        background: 'linear-gradient(135deg, #F3F4F6 0%, #FFFFFF 100%)',
+        background: '#FFFFFF',
         border: '1px solid #E2E8F0',
         borderRadius: 12,
         padding: '20px 24px',
@@ -21,15 +21,6 @@ export default function CopilotExperience() {
         backgroundSize: '200% 100%',
         animation: 'gradientShift 5s ease infinite'
       }} />
-      <style>
-        {`
-          @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-        `}
-      </style>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <div style={{
@@ -37,14 +28,14 @@ export default function CopilotExperience() {
           background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center',
           color: '#3730A3', fontSize: 20
         }}>
-          ✨
+          🎯
         </div>
         <div>
           <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.3px' }}>
-            Designed for Microsoft 365 Copilot
+            Try Enterprise Scenarios
           </h2>
           <div style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>
-            Enterprise Governance Agent Companion
+            Click a scenario below to launch the multi-agent detection pipeline
           </div>
         </div>
       </div>
@@ -54,25 +45,91 @@ export default function CopilotExperience() {
         gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         gap: 12
       }}>
-        <PromptCard role="Compliance Officer" prompt="Do any of our policies conflict?" color="#185FA5" bg="#E6F1FB" border="#85B7EB" />
-        <PromptCard role="HR Director" prompt="Will this new policy create governance risk?" color="#854F0B" bg="#FAEEDA" border="#EF9F27" />
-        <PromptCard role="Security Team" prompt="Does this policy violate existing controls?" color="#A32D2D" bg="#FCEBEB" border="#F09595" />
-        <PromptCard role="Legal Team" prompt="What policies must be updated before rollout?" color="#3730A3" bg="#EEF2FF" border="#A5B4FC" />
+        <ScenarioCard 
+          title="Data Residency Conflict" 
+          desc="Test cross-border IT policies vs HR flexibility." 
+          onClick={onRunAnalysis} 
+        />
+        <ScenarioCard 
+          title="Anonymous Reporting Conflict" 
+          desc="Test whistleblower protection vs IT identity logging." 
+          onClick={onRunAnalysis} 
+        />
+        <ScenarioCard 
+          title="Cross-Border Access Conflict" 
+          desc="Test VPN access vs export control rules." 
+          onClick={onRunAnalysis} 
+        />
+        <ScenarioCard 
+          title="Vendor Compliance Conflict" 
+          desc="Test third-party software SLAs vs internal security audits." 
+          onClick={onRunAnalysis} 
+        />
       </div>
     </div>
   );
 }
 
-function PromptCard({ role, prompt, color, bg, border }) {
+function ScenarioCard({ title, desc, onClick }) {
+  const [hover, setHover] = React.useState(false);
+  return (
+    <div 
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        background: hover ? '#F8FAFC' : '#FFFFFF',
+        border: `1px solid ${hover ? '#CBD5E1' : '#E2E8F0'}`,
+        borderRadius: 8,
+        padding: '12px 14px',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+        boxShadow: hover ? '0 2px 4px rgba(0,0,0,0.02)' : 'none',
+      }}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter') onClick(); }}
+      aria-label={`Run scenario: ${title}`}
+    >
+      <div style={{
+        fontSize: 13,
+        color: '#0F172A',
+        fontWeight: 600,
+      }}>
+        {title}
+      </div>
+      <div style={{
+        fontSize: 11,
+        color: '#64748B',
+        lineHeight: 1.4
+      }}>
+        {desc}
+      </div>
+      <div style={{
+        marginTop: 'auto',
+        fontSize: 11,
+        color: '#2563EB',
+        fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 4
+      }}>
+        Run Analysis ➔
+      </div>
+    </div>
+  );
+}
+
+function TelemetryCard({ label, value, status, color }) {
   return (
     <div style={{
-      background: '#FFFFFF',
+      background: '#F8FAFC',
       border: '1px solid #E2E8F0',
       borderRadius: 8,
       padding: '12px 14px',
-      cursor: 'pointer',
-      transition: 'all 0.2s ease',
-      boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
       display: 'flex',
       flexDirection: 'column',
       gap: 6
@@ -80,32 +137,30 @@ function PromptCard({ role, prompt, color, bg, border }) {
       <div style={{
         fontSize: 10,
         fontWeight: 600,
-        color: color,
-        background: bg,
-        padding: '2px 8px',
-        borderRadius: 4,
-        alignSelf: 'flex-start',
-        border: `0.5px solid ${border}`
+        color: '#64748B',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5
       }}>
-        {role}
+        {label}
       </div>
       <div style={{
         fontSize: 13,
-        color: '#334155',
-        fontWeight: 500,
-        lineHeight: 1.4
+        color: '#0F172A',
+        fontWeight: 600,
       }}>
-        "{prompt}"
+        {value}
       </div>
       <div style={{
         marginTop: 'auto',
-        fontSize: 10,
-        color: '#94A3B8',
+        fontSize: 11,
+        color: color,
+        fontWeight: 600,
         display: 'flex',
         alignItems: 'center',
         gap: 4
       }}>
-        <span>Ask Copilot</span> <span style={{fontSize: 12}}>→</span>
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: color }} />
+        {status}
       </div>
     </div>
   );

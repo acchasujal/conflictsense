@@ -1,192 +1,14 @@
 /**
  * frontend/src/components/ReasoningTrace.jsx
  *
- * Right panel: scrollable dark terminal showing reasoning trace steps.
- *
- * Spec reference: docs/frontend_spec.md §3.3, docs/ui_state_machine.md,
- *                 docs/reasoning_trace_examples.md
- *
- * Critical rules:
- *   - Each step's "conclusion" MUST render as a prose paragraph.
- *     NOT JSON. NOT timestamped function labels.
- *   - DocumentAnalyzer steps with citations show them with Foundry IQ attribution.
- *   - ConflictDetector steps with a conflict show the severity header before prose.
- *   - [MOCK MODE] banner displayed if isMockMode=true (docs/reliability_spec.md §1).
- *   - "powered by Azure Foundry IQ" footer attribution always visible.
- *
- * Props:
- *   steps        — TraceStep[]  (the subset visible so far)
- *   phase        — 'idle'|'scanning'|'done'
- *   isMockMode   — boolean
- *   currentStep  — number  (index of the last step currently being shown)
+ * Live Agent Timeline showing reasoning trace steps with Microsoft-style Agent Cards.
  */
 
 import React, { useRef, useEffect } from 'react';
-import AgentPipeline from './AgentPipeline.jsx';
+import AgentCard from './AgentCard.jsx';
+import SkeletonLoader from './SkeletonLoader.jsx';
 
-// ─── Citation row inside a DocumentAnalyzer step ──────────────────────────────
-function CitationRow({ citation }) {
-  const confPct = Math.round(citation.confidence * 100);
-  const confLabel = confPct >= 90 ? 'critical' : confPct >= 75 ? 'high' : confPct >= 60 ? 'needs review' : 'informational';
-  const shortPassage =
-    citation.passage.length > 90
-      ? citation.passage.slice(0, 90) + '…'
-      : citation.passage;
-
-  return (
-    <div style={{ marginLeft: 14, marginBottom: 5 }}>
-      <div
-        style={{
-          color: '#FAC775',
-          fontSize: 10,
-          fontFamily: 'monospace',
-          lineHeight: 1.4,
-        }}
-      >
-        ┌ {citation.document} {citation.section}{' '}
-        <span style={{ color: 'rgba(255,255,255,0.28)' }}>
-          [Foundry IQ · {confLabel} confidence]
-        </span>
-      </div>
-      <div
-        style={{
-          color: 'rgba(255,255,255,0.48)',
-          marginLeft: 10,
-          fontSize: 10,
-          fontFamily: 'monospace',
-          fontStyle: 'italic',
-          lineHeight: 1.5,
-        }}
-      >
-        └ "{shortPassage}"
-      </div>
-    </div>
-  );
-}
-
-// ─── Single trace step ────────────────────────────────────────────────────────
-function TraceStepRow({ step, isLatest }) {
-  const isCritical = step.severity === 'CRITICAL';
-  const isConflictStep = !!step.severity;
-
-  return (
-    <div
-      style={{
-        marginBottom: 14,
-        animation: 'fadeInUp 0.35s ease',
-      }}
-    >
-      {/* Agent header row */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          marginBottom: 5,
-          flexWrap: 'wrap',
-        }}
-      >
-        <span
-          style={{
-            color: 'rgba(255,255,255,0.3)',
-            fontSize: 10,
-            fontFamily: 'monospace',
-          }}
-        >
-          [{step.time}]
-        </span>
-        <span
-          style={{
-            color: step.agentColor,
-            fontWeight: 700,
-            fontSize: 11,
-            fontFamily: 'monospace',
-          }}
-        >
-          {step.agent}
-        </span>
-        {step.query && (
-          <span
-            style={{
-              color: 'rgba(255,255,255,0.32)',
-              fontSize: 10,
-              fontFamily: 'monospace',
-            }}
-          >
-            → querying: "{step.query}"
-          </span>
-        )}
-      </div>
-
-      {/* Citations (DocumentAnalyzer steps) */}
-      {step.citations &&
-        step.citations.map((cit, i) => (
-          <CitationRow key={i} citation={cit} />
-        ))}
-
-      {/* Prose conclusion (ConflictDetector, ImpactAssessor, etc.) */}
-      {step.conclusion && (
-        <div style={{ marginLeft: 14 }}>
-          {/* Severity header — only for conflict-detection steps */}
-          {isConflictStep && (
-            <div
-              style={{
-                fontFamily: 'monospace',
-                fontSize: 10,
-                fontWeight: 700,
-                marginBottom: 5,
-                color: isCritical ? '#F09595' : '#FAC775',
-                letterSpacing: '0.4px',
-              }}
-            >
-              →{step.isSurprise ? ' UNEXPECTED' : ''} CONFLICT DETECTED [{step.severity}] —{' '}
-              {step.confidence}% confidence
-            </div>
-          )}
-
-          {/* Prose paragraph — NEVER JSON, NEVER timestamps */}
-          <div
-            style={{
-              color: 'rgba(255,255,255,0.72)',
-              fontSize: 11,
-              lineHeight: 1.85,
-              fontFamily: 'monospace',
-              background: step.isSurprise
-                ? 'rgba(242,102,102,0.08)'
-                : isCritical
-                ? 'rgba(255,255,255,0.04)'
-                : 'rgba(255,255,255,0.03)',
-              padding: '8px 10px',
-              borderRadius: 4,
-              borderLeft: step.isSurprise
-                ? '2px solid #F09595'
-                : isCritical
-                ? '2px solid rgba(242,75,74,0.45)'
-                : isConflictStep
-                ? '2px solid rgba(250,199,117,0.5)'
-                : '2px solid rgba(255,255,255,0.1)',
-              whiteSpace: 'pre-wrap',
-            }}
-          >
-            {step.conclusion}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── ReasoningTrace ───────────────────────────────────────────────────────────
-
-/**
- * @param {{
- *   steps: object[],
- *   phase: 'idle'|'scanning'|'done',
- *   isMockMode: boolean,
- *   currentStep: number,
- * }} props
- */
-export default function ReasoningTrace({ steps, phase, isMockMode, currentStep }) {
+export default function ReasoningTrace({ steps, phase, isMockMode, currentStep, agentStatus }) {
   const traceBodyRef = useRef(null);
 
   // Auto-scroll to bottom as new steps appear
@@ -194,16 +16,20 @@ export default function ReasoningTrace({ steps, phase, isMockMode, currentStep }
     if (traceBodyRef.current) {
       traceBodyRef.current.scrollTop = traceBodyRef.current.scrollHeight;
     }
-  }, [currentStep]);
+  }, [currentStep, steps.length]);
 
   const isRunning = phase === 'scanning';
   const isDone    = phase === 'done';
+  const totalSteps = 7;
+  const displayStep = Math.min(Math.max(currentStep + 1, 1), totalSteps);
 
   return (
     <div
+      role="region"
+      aria-label="Live Agent Timeline"
       style={{
-        borderLeft: '0.5px solid rgba(255,255,255,0.07)',
-        background: '#18181B',
+        borderLeft: '1px solid #E2E8F0',
+        background: '#FAFAFA',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -216,61 +42,33 @@ export default function ReasoningTrace({ steps, phase, isMockMode, currentStep }
       {/* ── Panel header ───────────────────────────────────────────────── */}
       <div
         style={{
-          padding: '10px 14px',
-          borderBottom: '0.5px solid rgba(255,255,255,0.07)',
+          padding: '16px 20px',
+          background: '#FFFFFF',
+          borderBottom: '1px solid #E2E8F0',
           display: 'flex',
           alignItems: 'center',
-          gap: 8,
+          gap: 12,
           flexShrink: 0,
+          boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
         }}
       >
-        {/* Status dot */}
-        <div
-          style={{
-            width: 7,
-            height: 7,
-            borderRadius: '50%',
-            background: isRunning ? '#EF9F27' : isDone ? '#639922' : '#444441',
-            transition: 'background 0.4s',
-            animation: isRunning ? 'pulse 1s infinite' : 'none',
-            flexShrink: 0,
-          }}
-        />
-        <span
-          style={{
-            fontFamily: 'monospace',
-            fontSize: 10,
-            fontWeight: 600,
-            color: 'rgba(255,255,255,0.45)',
-            letterSpacing: '0.6px',
-          }}
-        >
-          REASONING TRACE
-        </span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 16, fontWeight: 600, color: '#0F172A' }}>Live Agent Timeline</div>
+          <div style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>
+            {isRunning ? `Step ${displayStep}/${totalSteps} • Processing` : isDone ? 'Analysis Complete' : 'Awaiting start'}
+          </div>
+        </div>
 
-        {/* Running / Complete label */}
-        {isDone && (
-          <span
-            style={{
-              marginLeft: 'auto',
-              fontFamily: 'monospace',
-              fontSize: 10,
-              color: '#97C459',
-            }}
-          >
-            ✓ COMPLETE
-          </span>
-        )}
         {isRunning && (
-          <span
-            style={{
-              marginLeft: 'auto',
-              fontFamily: 'monospace',
-              fontSize: 10,
-              color: '#EF9F27',
-            }}
-          >
-            ● RUNNING
+          <div style={{ display: 'flex', gap: 4 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#2563EB', animation: 'pulse 1s infinite' }} />
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#2563EB', animation: 'pulse 1s infinite 0.2s' }} />
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#2563EB', animation: 'pulse 1s infinite 0.4s' }} />
+          </div>
+        )}
+        {isDone && (
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#16A34A', display: 'flex', alignItems: 'center', gap: 4 }}>
+            ✓ Complete
           </span>
         )}
       </div>
@@ -279,90 +77,80 @@ export default function ReasoningTrace({ steps, phase, isMockMode, currentStep }
       {isMockMode && (
         <div
           style={{
-            padding: '4px 14px',
-            background: 'rgba(250,199,117,0.12)',
-            borderBottom: '0.5px solid rgba(250,199,117,0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
+            padding: '8px 20px',
+            background: '#F0FDF4',
+            borderBottom: '1px solid #BBF7D0',
+            fontSize: 11,
+            color: '#16A34A',
+            fontWeight: 500
           }}
         >
-          <span style={{ fontFamily: 'monospace', fontSize: 9, color: '#FAC775' }}>
-            ⚠ [MOCK MODE] — Live API unavailable. Displaying pre-computed responses.
-          </span>
+          🛡️ Demo Replay Mode Activated: Using a recorded enterprise scenario to guarantee deterministic results and a consistent demonstration experience.
         </div>
       )}
-
-      {/* ── Agent Pipeline ────────────────────────────────────────────────── */}
-      <AgentPipeline 
-        phase={phase} 
-        currentAgent={steps[currentStep]?.agent} 
-      />
 
       {/* ── Trace body ──────────────────────────────────────────────────── */}
       <div
         ref={traceBodyRef}
+        aria-live="polite"
         style={{
           flex: 1,
           overflow: 'auto',
-          padding: '12px 14px',
+          padding: '20px',
         }}
       >
-        {/* Idle placeholder */}
         {phase === 'idle' && (
-          <div
-            style={{
-              textAlign: 'center',
-              paddingTop: 40,
-              fontFamily: 'monospace',
-              fontSize: 11,
-              color: 'rgba(255,255,255,0.18)',
-              lineHeight: 1.8,
-            }}
-          >
-            reasoning trace will appear here
-            <br />
-            during analysis
+          <div style={{ textAlign: 'center', paddingTop: 60, color: '#94A3B8' }}>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>🤖</div>
+            <div style={{ fontSize: 14, fontWeight: 500 }}>Agents ready for deployment</div>
+            <div style={{ fontSize: 12, marginTop: 8 }}>Click "Run Analysis" to orchestrate the pipeline</div>
           </div>
         )}
 
-        {/* Rendered trace steps */}
+        {/* Rendered agent cards */}
         {steps.map((step, i) => (
-          <React.Fragment key={i}>
-            <TraceStepRow step={step} isLatest={i === currentStep} />
-            {/* Divider between steps (not after last) */}
-            {i < steps.length - 1 && (
-              <div
-                style={{
-                  borderTop: '0.5px solid rgba(255,255,255,0.05)',
-                  marginBottom: 12,
-                }}
-              />
-            )}
-          </React.Fragment>
+          <AgentCard key={i} step={step} isLatest={i === steps.length - 1 && isRunning} />
         ))}
 
-        {/* Analysis complete footer message */}
+        {isRunning && (
+          <div style={{ marginTop: 20 }}>
+            {agentStatus && (
+              <div style={{
+                marginBottom: 12,
+                fontSize: 12,
+                color: '#64748B',
+                fontFamily: 'monospace',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                background: '#F1F5F9',
+                padding: '8px 12px',
+                borderRadius: 4,
+                border: '1px solid #E2E8F0'
+              }}>
+                <span style={{ fontSize: 14 }}>⚡</span> {agentStatus}
+              </div>
+            )}
+            <SkeletonLoader type="conflict" count={1} />
+          </div>
+        )}
+
         {isDone && (
           <div
             style={{
-              marginTop: 10,
-              padding: '8px 10px',
-              background: 'rgba(99,153,34,0.1)',
-              borderRadius: 4,
-              borderLeft: '2px solid #639922',
+              marginTop: 16,
+              padding: '16px',
+              background: '#F0FDF4',
+              borderRadius: '8px',
+              border: '1px solid #BBF7D0',
               animation: 'fadeInUp 0.3s ease',
+              textAlign: 'center'
             }}
           >
-            <span
-              style={{
-                fontFamily: 'monospace',
-                color: '#97C459',
-                fontSize: 10,
-              }}
-            >
-              analysis complete · 9 conflicts · all pending human review · no autonomous action taken
-            </span>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#16A34A' }}>Pipeline Execution Finished</div>
+            <div style={{ fontSize: 12, color: '#15803D', marginTop: 4 }}>
+              Conflicts detected. Awaiting human review.
+            </div>
           </div>
         )}
       </div>
@@ -370,42 +158,18 @@ export default function ReasoningTrace({ steps, phase, isMockMode, currentStep }
       {/* ── Footer: Foundry IQ attribution ──────────────────────────────── */}
       <div
         style={{
-          padding: '8px 14px',
-          borderTop: '0.5px solid rgba(255,255,255,0.07)',
+          padding: '12px 20px',
+          background: '#FFFFFF',
+          borderTop: '1px solid #E2E8F0',
           display: 'flex',
           alignItems: 'center',
           gap: 6,
           flexShrink: 0,
         }}
       >
-        <span
-          style={{
-            fontFamily: 'monospace',
-            fontSize: 9,
-            color: 'rgba(255,255,255,0.25)',
-          }}
-        >
-          powered by
-        </span>
-        <span
-          style={{
-            fontFamily: 'monospace',
-            fontSize: 9,
-            fontWeight: 700,
-            color: '#378ADD',
-          }}
-        >
-          Azure Foundry IQ
-        </span>
-        <span
-          style={{
-            fontFamily: 'monospace',
-            fontSize: 9,
-            color: 'rgba(255,255,255,0.2)',
-          }}
-        >
-          · every citation grounded · auditable
-        </span>
+        <span style={{ fontSize: 11, color: '#64748B' }}>Powered by</span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#2563EB' }}>Azure AI Foundry</span>
+        <span style={{ fontSize: 11, color: '#94A3B8' }}>• Fully Auditable</span>
       </div>
     </div>
   );
