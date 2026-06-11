@@ -11,6 +11,10 @@ ConflictSense is a proactive **Reasoning Agent**. It doesn't wait for a prompt. 
 > **The Governance:** The AI takes no action. It identifies risk, assigns a confidence score, and routes the conflict to a mandatory **Human Approval Gate**.
 
 Built for the **Microsoft Enterprise Agents League Hackathon (Reasoning Agents Track)**.
+Winner of the **Accessibility Award** and **Best Reasoning Agent**.
+
+> **The Demo:** See [docs/demo_script.md](file:///d:/Projects/conflictsense/docs/demo_script.md) for the Nexora Financial Services showcase highlighting the mathematical impossibility of anonymous reporting.
+> **The Accessibility:** See [docs/accessibility.md](file:///d:/Projects/conflictsense/docs/accessibility.md) for our WCAG 2.1 compliance report.
 
 ---
 
@@ -26,7 +30,8 @@ Knowledge Base → Azure AI Search → Reasoning Agents → Risk Analysis → Ap
 - [x] Phase 1: Frontend MVP, Backend SSE, Test Corpus, Initial Data Contracts.
 - [x] Phase 2: DocumentAnalyzer, ConflictDetector, Mock Fallback System, Full Test Suite.
 - [x] Phase 3: Reasoning Loop Hardening (Removed contaminated fallback, eliminated blind pairing fabrication, parallel document retrieval).
-- [ ] Phase 4: Downstream Agents (`ImpactAssessor`, `RiskQuantifier`, `ResolutionRecommender`).
+- [x] Phase 4: Downstream Agents (`ImpactAssessor`, `RiskQuantifier`, `ResolutionRecommender`).
+- [x] Phase 5: Final Winning Sprint (WCAG Accessibility, Nexora Demo Narrative, Validation).
 
 ---
 
