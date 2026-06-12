@@ -375,7 +375,7 @@ export default function ConflictCard({
                     <div>
                       <div style={{ fontSize: 10, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', marginBottom: 4 }}>Affected Systems</div>
                       <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: '#334155', lineHeight: 1.6 }}>
-                        {aff.systems.map(s => <li key={s}>{s}</li>)}
+                        {(aff.systems ?? []).map(s => <li key={s}>{s}</li>)}
                       </ul>
                     </div>
                   )}
@@ -383,7 +383,7 @@ export default function ConflictCard({
                     <div>
                       <div style={{ fontSize: 10, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', marginBottom: 4 }}>Affected Teams</div>
                       <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: '#334155', lineHeight: 1.6 }}>
-                        {aff.teams.map(t => <li key={t}>{t}</li>)}
+                        {(aff.teams ?? []).map(t => <li key={t}>{t}</li>)}
                       </ul>
                     </div>
                   )}
@@ -391,7 +391,7 @@ export default function ConflictCard({
                     <div>
                       <div style={{ fontSize: 10, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', marginBottom: 4 }}>Affected Employees</div>
                       <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: '#334155', lineHeight: 1.6 }}>
-                        {aff.employees.map(e => <li key={e}>{e}</li>)}
+                        {(aff.employees ?? []).map(e => <li key={e}>{e}</li>)}
                       </ul>
                     </div>
                   )}
@@ -436,7 +436,7 @@ export default function ConflictCard({
 
       {/* ── Source citation badges ──────────────────────────────────────── */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-        {conflict.sources.map((src, i) => (
+        {(conflict.sources ?? []).map((src, i) => (
           <CitationBadge key={i} src={src} />
         ))}
       </div>
@@ -477,7 +477,7 @@ export default function ConflictCard({
                 <span style={{ marginLeft: 'auto', fontSize: 9, color: '#64748B', fontWeight: 400, fontFamily: 'monospace' }}>Hybrid Retrieval + Semantic Ranking</span>
               </summary>
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: '0.5px solid #E2E8F0' }}>
-              {conflict.citations.map((cit, i) => {
+              {(conflict.citations ?? []).map((cit, i) => {
                 const isFirst = i === 0;
                 const borderColor = isFirst ? 'rgba(22,163,74,0.3)' : 'rgba(220,38,38,0.3)';
                 const hasHighlight = !!CONTRADICTION_PHRASES[cit.document];

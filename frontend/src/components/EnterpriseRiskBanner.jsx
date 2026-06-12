@@ -131,7 +131,7 @@ export default function EnterpriseRiskBanner({ conflicts, phase }) {
           {hero.title}
         </div>
         <div style={{ fontSize: 10, color: sev.color, opacity: 0.75, marginTop: 2 }}>
-          {hero.sources.slice(0, 2).join(' vs. ')}
+          {(hero.sources ?? []).slice(0, 2).join(' vs. ')}
         </div>
       </div>
 
