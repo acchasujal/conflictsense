@@ -12,30 +12,24 @@ import logging
 import time
 
 from agents.conflict_types import ConflictRecord
-from agents.llm_provider import ProviderChain, get_provider_chain
+from agents.llm_provider import ProviderChain, get_provider_chain, LLMProviderError
 
 logger = logging.getLogger("conflictsense.resolution_recommender")
 
 _SYSTEM_PROMPT = (
-    "You are a policy resolution architect. Propose a concrete resolution to the "
-    "given conflict. Assign ownership to specific departments based on the policies "
-    "involved, and establish a deadline if a regulatory timeline is present in the "
-    "context.\n\n"
-    "Return ONLY a valid JSON object with exactly these keys:\n"
-    "{\n"
-    "  \"recommendation\": \"1-2 sentence recommendation\",\n"
-    "  \"owners\": [\"List\", \"of\", \"owner\", \"departments\"],\n"
-    "  \"deadline\": \"Specific deadline if applicable, or 'Immediate'\"\n"
-    "}\n"
-    "Do not include any markdown formatting or markdown code blocks (no ```json)."
+    "You are a policy resolution architect. Propose a concrete resolution to the given conflict. "
+    "Assign ownership to specific departments and include a deadline if a regulatory timeline is present.\n"
+    "Return JSON only: {\"recommendation\": \"1-2 sentence action\", \"owners\": [\"departments\"], \"deadline\": \"deadline or Immediate\"}\n"
+    "No markdown code blocks."
 )
 
 
 class ResolutionRecommender:
-    def __init__(self, provider_chain: ProviderChain | None = None, azure_client=None) -> None:
+    def __init__(self, provider_chain: ProviderChain | None = None, azure_client=None, allow_mock: bool = True) -> None:
         if azure_client is not None:
             logger.warning("ResolutionRecommender ignores Azure clients; using non-Azure provider chain.")
         self._provider_chain = provider_chain or get_provider_chain()
+        self._allow_mock = allow_mock
 
     def recommend(self, record: ConflictRecord) -> str:
         t0 = time.monotonic()
@@ -52,7 +46,10 @@ class ResolutionRecommender:
             _SYSTEM_PROMPT,
             user_prompt,
             mock_factory=lambda: fallback,
+            allow_mock=self._allow_mock,
         )
+        if not self._allow_mock and response.is_mock_mode:
+            raise LLMProviderError("ResolutionRecommender mock fallback forbidden in strict live mode")
         elapsed = time.monotonic() - t0
         logger.info(
             "ResolutionRecommender: recommended %r via %s in %.2fs",

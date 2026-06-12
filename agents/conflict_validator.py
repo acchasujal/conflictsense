@@ -12,28 +12,14 @@ import time
 import logging
 
 from agents.conflict_types import ConflictRecord, ConflictStatus
-from agents.llm_provider import ProviderChain, get_provider_chain
+from agents.llm_provider import ProviderChain, get_provider_chain, LLMProviderError
 
 logger = logging.getLogger("conflictsense.conflict_validator")
 
-_SYSTEM_PROMPT = """You are a Conflict Validator. You review proposed policy conflicts.
-Determine if the conflict is a genuine structural impossibility.
-Explicitly REJECT:
-- wording differences
-- terminology differences
-- synonyms
-- stylistic variation
-- unsupported inference
-
-APPROVE only:
-- mutually unsatisfiable policies
-
-You MUST return a JSON object with this exact structure:
-{
-  "status": "APPROVED" or "REJECTED",
-  "reasoning": "plain text reasoning",
-  "confidence": integer 0 to 100
-}"""
+_SYSTEM_PROMPT = """You are a Conflict Validator. Determine if the proposed conflict is a genuine structural impossibility.
+REJECT: wording/terminology differences, synonyms, stylistic variation, unsupported inference.
+APPROVE: only mutually unsatisfiable policies.
+Return JSON: {"status": "APPROVED" or "REJECTED", "reasoning": "plain text", "confidence": 0-100}"""
 
 class ConflictValidatorAgent:
     """
@@ -41,8 +27,9 @@ class ConflictValidatorAgent:
     If the conflict is merely semantic ambiguity, marks it as REJECTED.
     """
 
-    def __init__(self, provider_chain: ProviderChain | None = None) -> None:
+    def __init__(self, provider_chain: ProviderChain | None = None, allow_mock: bool = True) -> None:
         self._provider_chain = provider_chain or get_provider_chain()
+        self._allow_mock = allow_mock
 
     def validate(self, record: ConflictRecord) -> ConflictRecord:
         """
@@ -74,14 +61,23 @@ class ConflictValidatorAgent:
                 _SYSTEM_PROMPT,
                 user_prompt,
                 mock_factory=mock_fallback,
+                allow_mock=self._allow_mock,
             )
         except Exception as exc:
+            if not self._allow_mock:
+                raise
             logger.warning(
                 "ConflictValidatorAgent: unexpected error from provider chain (%s: %s) — "
                 "using mock fallback for record %r.",
                 type(exc).__name__, exc, record.title,
             )
             data = mock_fallback()
+            response = None
+
+        if response is not None and response.is_mock_mode:
+            if not self._allow_mock:
+                raise LLMProviderError("ConflictValidator mock fallback forbidden in strict live mode")
+            record.is_mock_mode = True
         
         status_str = data.get("status", "APPROVED").upper()
         if status_str == "REJECTED":

@@ -18,7 +18,7 @@ import time
 
 from agents.conflict_types import ConflictRecord
 from agents.iq_mock_data import topic_key_for, IMPACT_MOCKS
-from agents.llm_provider import ProviderChain, get_provider_chain
+from agents.llm_provider import ProviderChain, get_provider_chain, LLMProviderError
 
 logger = logging.getLogger("conflictsense.impact_assessor")
 
@@ -38,10 +38,11 @@ class ImpactAssessor:
     Implements Tier 1 Azure call with Tier 3 Mock Mode fallback.
     """
 
-    def __init__(self, provider_chain: ProviderChain | None = None, azure_client=None) -> None:
+    def __init__(self, provider_chain: ProviderChain | None = None, azure_client=None, allow_mock: bool = True) -> None:
         if azure_client is not None:
             logger.warning("ImpactAssessor ignores Azure clients; using non-Azure provider chain.")
         self._provider_chain = provider_chain or get_provider_chain()
+        self._allow_mock = allow_mock
 
     def assess(self, record: ConflictRecord, topic: str) -> ConflictRecord:
         """
@@ -58,7 +59,10 @@ class ImpactAssessor:
             _SYSTEM_PROMPT,
             user_prompt,
             mock_factory=lambda: fallback,
+            allow_mock=self._allow_mock,
         )
+        if not self._allow_mock and response.is_mock_mode:
+            raise LLMProviderError("ImpactAssessor mock fallback forbidden in strict live mode")
         
         record.affected = response.content.strip() or fallback
         

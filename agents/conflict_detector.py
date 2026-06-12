@@ -70,29 +70,16 @@ from agents.conflict_helpers import (
 # ─── System Prompt (verbatim from docs/prompt_registry.md §2) ─────────────────
 
 _SYSTEM_PROMPT = """\
-You are a policy conflict analyst. You receive N policy statements about the same topic, \
-each from a different authoritative source document with a Foundry IQ citation. \
-Your task: identify any pair or group of statements that make incompatible claims — \
-claims that cannot simultaneously be satisfied for the same employee population. \
-Explain, in plain language, WHY the conflict is logically impossible — not just that \
-the statements differ. If a conflict requires a specific employee scenario to be impossible \
-(e.g. Indian-resident remote workers), specify that scenario precisely. \
-If no genuine conflict exists, say so. \
-Return JSON: {"has_conflict": boolean, "conflict_pairs": [{"policy_1": "doc A §X", "policy_2": "doc B §Y", "why_impossible": "reason"}], "reasoning": string, \
-"severity": "CRITICAL"|"HIGH"|"MEDIUM", "confidence": float}
+You are a policy conflict analyst. Identify pairs of policy statements that make logically or operationally IMPOSSIBLE simultaneous claims for the same employee population.
 
-CRITICAL RULES:
-1. Only report conflicts where it is STRUCTURALLY IMPOSSIBLE to satisfy both policies \
-simultaneously for the same employee population. Wording differences, style differences, \
-and complementary policies are NOT conflicts.
-2. Every conflict_pair must reference the exact document names and section numbers provided.
-3. The "reasoning" field must be a single prose paragraph written as a human compliance \
-officer explaining the issue to a judge. Name both policies, state the exact logical \
-impossibility, and explain the real-world consequence.
-4. "confidence" must be a float 0.0–1.0.
-5. If no genuine conflict: return {"has_conflict": false, "conflict_pairs": [], \
-"reasoning": "No structural conflict found.", "severity": null, "confidence": 0.0}
-6. Do NOT add any text outside the JSON object.
+Return JSON: {"has_conflict": boolean, "conflict_pairs": [{"policy_1": "doc A §X", "policy_2": "doc B §Y", "why_impossible": "reason"}], "reasoning": string, "severity": "CRITICAL"|"HIGH"|"MEDIUM"|null, "confidence": float}
+
+Rules:
+1. Only report STRUCTURAL impossibilities — both cannot be satisfied simultaneously. Wording differences are NOT conflicts.
+2. Every conflict_pair must reference exact document names and section numbers provided.
+3. "reasoning" must be a single prose paragraph naming both policies and the exact logical impossibility.
+4. "confidence" is 0.0–1.0. No genuine conflict: {"has_conflict": false, "conflict_pairs": [], "reasoning": "No structural conflict found.", "severity": null, "confidence": 0.0}
+5. Return ONLY the JSON object.
 """
 
 _USER_PROMPT_TEMPLATE = """\
@@ -122,10 +109,16 @@ class ConflictDetector:
             print(conflict.reasoning)
     """
 
-    def __init__(self, provider_chain: Optional[ProviderChain] = None, azure_client=None) -> None:
+    def __init__(
+        self,
+        provider_chain: Optional[ProviderChain] = None,
+        azure_client=None,
+        allow_mock: bool = True,
+    ) -> None:
         if azure_client is not None:
             logger.warning("ConflictDetector ignores Azure clients; using non-Azure provider chain.")
         self._provider_chain = provider_chain or get_provider_chain()
+        self._allow_mock = allow_mock
         self._validator = SchemaValidator()
         self._dup_filter = DuplicateFilter()
         self._confidence_fw = ConfidenceFramework()
@@ -234,6 +227,7 @@ class ConflictDetector:
                 _SYSTEM_PROMPT,
                 user_prompt,
                 mock_factory=lambda: self._mock_response(topic),
+                allow_mock=self._allow_mock,
             )
             if not isinstance(data, dict):
                 data = {"has_conflict": False, "reasoning": str(data)}
@@ -245,6 +239,9 @@ class ConflictDetector:
                 raise ValueError("conflict response missing conflict_pairs")
             return data, 3 if response.is_mock_mode else 1
         except Exception as exc:
+            if not self._allow_mock:
+                logger.error("ConflictDetector strict live mode — provider chain failed for %r: %s", topic, exc)
+                raise
             logger.warning("Provider chain produced unusable output for %r: %s", topic, exc)
             return self._mock_response(topic), 3
 

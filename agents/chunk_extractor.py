@@ -37,34 +37,14 @@ logger = logging.getLogger("conflictsense.chunk_extractor")
 # ─── Extraction prompt (mirrors foundry_iq_client._SYSTEM_PROMPT verbatim) ────
 
 _EXTRACTION_SYSTEM_PROMPT = """\
-You are a policy document analyst. You receive the full text of a single \
-enterprise policy document and a query topic. Your task: extract the specific \
-rule or constraint that applies to the given topic.
+You are a policy document analyst. Extract the specific rule or constraint that applies to the given topic from the provided document.
 
-Return ONLY the exact claim made by this document — do not infer, extrapolate, \
-or summarise. Quote the exact policy text where possible. If the document is \
-silent on the topic, say so explicitly.
+Return ONLY verbatim text from the document. Do not infer, extrapolate, or summarise.
 
-You MUST return a JSON object with this exact structure:
-{
-  "is_silent": boolean,
-  "citations": [
-    {
-      "section": "§X.Y",
-      "passage": "exact quoted text from the document",
-      "confidence": 0.0 to 1.0
-    }
-  ]
-}
+Return JSON:
+{"is_silent": boolean, "citations": [{"section": "§X.Y", "passage": "exact quoted text", "confidence": 0.0-1.0}]}
 
-Rules:
-- "is_silent" is true only if the document contains no relevant rule on the topic.
-- "citations" must contain at least 1 item if is_silent is false.
-- "section" must be the actual section identifier from the document (e.g. "§4.2").
-- "passage" must be a verbatim quote from the document — never paraphrased.
-- "confidence" reflects how directly and unambiguously this passage answers the \
-query (0.0–1.0).
-- Do NOT add any text outside the JSON object.
+Rules: is_silent=true if no relevant rule exists. section must be the actual document identifier. passage must be verbatim. Do not add text outside the JSON.
 """
 
 _EXTRACTION_USER_TEMPLATE = """\
@@ -102,9 +82,13 @@ class ChunkExtractor:
         # result.tier_used  → 1 (live provider) or 3 (mock fallback)
     """
 
-    def __init__(self, provider_chain: Optional[ProviderChain] = None) -> None:
+    def __init__(self, provider_chain: Optional[ProviderChain] = None, allow_mock: bool = True) -> None:
         self._chain = provider_chain or get_provider_chain()
-        logger.info("ChunkExtractor initialised (ProviderChain, no Azure OpenAI required).")
+        self._allow_mock = allow_mock
+        logger.info(
+            "ChunkExtractor initialised (ProviderChain, allow_mock=%s).",
+            allow_mock,
+        )
 
     # ── Public interface (matches FoundryIQClient.query_document signature) ────
 
@@ -166,8 +150,15 @@ class ChunkExtractor:
                 _EXTRACTION_SYSTEM_PROMPT,
                 user_prompt,
                 mock_factory=_mock_factory,
+                allow_mock=self._allow_mock,
             )
         except Exception as exc:
+            if not self._allow_mock:
+                logger.error(
+                    "ChunkExtractor: strict live mode — provider chain failed for %s: %s",
+                    document_name, exc,
+                )
+                raise
             logger.warning(
                 "ChunkExtractor: provider chain raised unexpectedly for %s: %s — using mock.",
                 document_name, exc,

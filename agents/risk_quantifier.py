@@ -15,21 +15,13 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from agents.conflict_types import ConflictRecord, ConflictSeverity, ConflictStatus
-from agents.llm_provider import ProviderChain, get_provider_chain
+from agents.llm_provider import ProviderChain, get_provider_chain, LLMProviderError
 
 logger = logging.getLogger("conflictsense.risk_quantifier")
 
-_SYSTEM_PROMPT = """You are a regulatory risk analyst. Based on the provided regulatory excerpts and the policy conflict, estimate the Regulatory, Operational, Legal, and Reputational risks. Provide your reasoning in plain text. Reference specific laws (e.g., DPDP Act) only if provided in the context.
-
-You MUST return a JSON object with this exact structure:
-{
-  "risk_level": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
-  "risk_score": integer (1-100),
-  "risk_categories": ["list", "of", "strings"],
-  "reasoning": "plain text reasoning",
-  "potential_consequences": ["list", "of", "strings"],
-  "uncertainty": "string or null"
-}"""
+_SYSTEM_PROMPT = """You are a regulatory risk analyst. Estimate Regulatory, Operational, Legal, and Reputational risk from the provided policy conflict and evidence.
+Reference specific laws only if provided in context.
+Return JSON: {"risk_level": "LOW"|"MEDIUM"|"HIGH"|"CRITICAL", "risk_score": 1-100, "risk_categories": ["strings"], "reasoning": "plain text", "potential_consequences": ["strings"], "uncertainty": "string or null"}"""
 
 class RiskLevel(str, Enum):
     LOW = "LOW"
@@ -69,10 +61,11 @@ class RiskAssessment:
 class RiskQuantifier:
     """Grounded enterprise risk analyst for validated conflict records."""
 
-    def __init__(self, provider_chain: ProviderChain | None = None, azure_client=None):
+    def __init__(self, provider_chain: ProviderChain | None = None, azure_client=None, allow_mock: bool = True):
         if azure_client is not None:
             logger.warning("RiskQuantifier ignores Azure clients; using non-Azure provider chain.")
         self._provider_chain = provider_chain or get_provider_chain()
+        self._allow_mock = allow_mock
 
     def quantify(self, record: ConflictRecord, topic: str | None = None) -> RiskAssessment:
         if record.status == ConflictStatus.REJECTED:
@@ -111,7 +104,10 @@ class RiskQuantifier:
                     _SYSTEM_PROMPT,
                     user_prompt,
                     mock_factory=lambda: fallback_data,
+                    allow_mock=self._allow_mock,
                 )
+                if not self._allow_mock and response.is_mock_mode:
+                    raise LLMProviderError("RiskQuantifier mock fallback forbidden in strict live mode")
                 risk_level = RiskLevel(data.get("risk_level", fallback_data["risk_level"]))
                 risk_score = int(data.get("risk_score", fallback_data["risk_score"]))
                 categories = list(data.get("risk_categories", fallback_data["risk_categories"]))
@@ -120,6 +116,8 @@ class RiskQuantifier:
                 reasoning = str(data.get("reasoning", fallback_data["reasoning"]))
                 logger.info("RiskQuantifier: provider %s supplied risk assessment.", response.provider)
             except Exception as exc:
+                if not self._allow_mock:
+                    raise
                 logger.warning("RiskQuantifier: provider output invalid (%s), using rule-based fallback.", exc)
                 reasoning = fallback_data["reasoning"]
 
