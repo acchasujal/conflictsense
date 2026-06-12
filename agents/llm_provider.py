@@ -1,8 +1,8 @@
 """
 Unified LLM provider layer for ConflictSense.
 
-Implements a robust multi-provider failover chain to guarantee 
-demo stability and continuous reasoning availability.
+Provider priority: Groq (fast) → Nvidia (reliable) → Mock (Tier 3).
+OpenRouter has been removed — it returns 402 Payment Required.
 """
 
 from __future__ import annotations
@@ -19,6 +19,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 logger = logging.getLogger("conflictsense.llm_provider")
+
+# Groq 429 retry config
+_GROQ_MAX_RETRIES = 2
+_GROQ_RETRY_DELAY_S = 2.0
 
 
 class LLMProviderError(RuntimeError):
@@ -61,7 +65,7 @@ class OpenAICompatibleProvider(LLMProvider):
                 {"role": "user", "content": user_prompt},
             ],
             "temperature": 0.0,
-            "max_tokens": 2048,
+            "max_tokens": 512,
         }
         if json_mode:
             payload["response_format"] = {"type": "json_object"}
@@ -111,7 +115,7 @@ class GeminiProvider(LLMProvider):
         payload: dict[str, Any] = {
             "systemInstruction": {"parts": [{"text": system_prompt}]},
             "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
-            "generationConfig": {"temperature": 0.0, "maxOutputTokens": 2048},
+            "generationConfig": {"temperature": 0.0, "maxOutputTokens": 1024},
         }
         if json_mode:
             payload["generationConfig"]["responseMimeType"] = "application/json"
@@ -130,28 +134,31 @@ class GeminiProvider(LLMProvider):
         return LLMResponse(content, self.name, self.model, time.monotonic() - started)
 
 
-class OpenRouterProvider(OpenAICompatibleProvider):
-    name = "openrouter"
-    base_url = "https://openrouter.ai/api/v1"
-
-    def __init__(self) -> None:
-        super().__init__(
-            os.getenv("OPENROUTER_API_KEY", ""),
-            os.getenv("OPENROUTER_MODEL", "openai/gpt-4o-mini"),
-            float(os.getenv("LLM_TIMEOUT_S", "12")),
-        )
-
-
 class GroqProvider(OpenAICompatibleProvider):
+    """Groq with automatic 429 retry (up to _GROQ_MAX_RETRIES times)."""
     name = "groq"
     base_url = "https://api.groq.com/openai/v1"
 
     def __init__(self) -> None:
         super().__init__(
             os.getenv("GROQ_API_KEY", ""),
-            os.getenv("GROQ_MODEL", "llama-3.1-70b-versatile"),
-            float(os.getenv("LLM_TIMEOUT_S", "12")),
+            os.getenv("GROQ_MODEL", "llama-3.1-8b-instant"),
+            float(os.getenv("LLM_TIMEOUT_S", "8.0")),
         )
+
+    def complete(self, system_prompt: str, user_prompt: str, *, json_mode: bool) -> LLMResponse:
+        last_exc: Exception | None = None
+        for attempt in range(_GROQ_MAX_RETRIES + 1):
+            try:
+                return super().complete(system_prompt, user_prompt, json_mode=json_mode)
+            except LLMProviderError as exc:
+                if "429" in str(exc) and attempt < _GROQ_MAX_RETRIES:
+                    logger.info("Groq 429 — retrying in %.1fs (attempt %d/%d)", _GROQ_RETRY_DELAY_S, attempt + 1, _GROQ_MAX_RETRIES)
+                    time.sleep(_GROQ_RETRY_DELAY_S)
+                    last_exc = exc
+                else:
+                    raise
+        raise last_exc  # type: ignore[misc]
 
 
 class NvidiaProvider(OpenAICompatibleProvider):
@@ -162,17 +169,16 @@ class NvidiaProvider(OpenAICompatibleProvider):
         super().__init__(
             os.getenv("NVIDIA_API_KEY", "") or os.getenv("NVIDIA_NIM_API_KEY", ""),
             os.getenv("NVIDIA_MODEL", "meta/llama-3.1-70b-instruct"),
-            float(os.getenv("LLM_TIMEOUT_S", "8.0")),
+            float(os.getenv("LLM_TIMEOUT_S", "15.0")),
         )
 
 
 class ProviderChain:
     def __init__(self, providers: Optional[list[LLMProvider]] = None) -> None:
         self.providers = providers or [
-            GeminiProvider(),
-            OpenRouterProvider(),
             GroqProvider(),
             NvidiaProvider(),
+            # GeminiProvider(),  # 404 on embeddings endpoint; disabled
         ]
 
     def complete(
@@ -182,8 +188,11 @@ class ProviderChain:
         *,
         json_mode: bool = False,
         mock_factory: Optional[Callable[[], str | dict[str, Any]]] = None,
+        allow_mock: bool = True,
     ) -> LLMResponse:
         if os.getenv("CONFLICTSENSE_FORCE_MOCK", "").lower() in {"1", "true", "yes"}:
+            if not allow_mock:
+                raise LLMProviderError("Mock fallback forbidden in strict live mode.")
             if mock_factory is None:
                 raise LLMProviderError("Forced mock mode but no mock fallback was supplied.")
             content = mock_factory()
@@ -203,14 +212,14 @@ class ProviderChain:
             try:
                 response = provider.complete(system_prompt, user_prompt, json_mode=json_mode)
                 if json_mode:
-                    # Validate JSON now; result is returned to complete_json() via response.content.
-                    # Raises ValueError/JSONDecodeError if malformed → provider treated as failed.
                     _parse_json(response.content)
                 logger.info("LLM provider %s succeeded in %.2fs.", provider.name, response.elapsed_s)
                 return response
             except Exception as exc:
                 logger.warning("LLM provider %s failed: %s — reason: %s", provider.name, type(exc).__name__, exc)
 
+        if not allow_mock:
+            raise LLMProviderError("All LLM providers failed and mock fallback is forbidden.")
         if mock_factory is None:
             raise LLMProviderError("All LLM providers failed and no mock fallback was supplied.")
         content = mock_factory()
@@ -224,8 +233,15 @@ class ProviderChain:
         user_prompt: str,
         *,
         mock_factory: Callable[[], str | dict[str, Any]],
+        allow_mock: bool = True,
     ) -> tuple[dict[str, Any], LLMResponse]:
-        response = self.complete(system_prompt, user_prompt, json_mode=True, mock_factory=mock_factory)
+        response = self.complete(
+            system_prompt,
+            user_prompt,
+            json_mode=True,
+            mock_factory=mock_factory,
+            allow_mock=allow_mock,
+        )
         return _parse_json(response.content), response
 
     def complete_text(
@@ -234,39 +250,37 @@ class ProviderChain:
         user_prompt: str,
         *,
         mock_factory: Callable[[], str],
+        allow_mock: bool = True,
     ) -> LLMResponse:
-        return self.complete(system_prompt, user_prompt, json_mode=False, mock_factory=mock_factory)
+        return self.complete(
+            system_prompt,
+            user_prompt,
+            json_mode=False,
+            mock_factory=mock_factory,
+            allow_mock=allow_mock,
+        )
 
 
 def _parse_json(raw_text: str) -> dict[str, Any]:
-    """Parse a JSON string into a dict, with two fallbacks:
-    1. Brace-extraction: finds the outermost { ... } block (handles markdown fences,
-       preamble text, and trailing prose).
-    2. List coercion: if the top-level value is a list whose first element is a dict,
-       that element is used (handles LLMs that wrap the response in an array).
-    Raises JSONDecodeError or ValueError if none of the above succeeds.
-    """
+    """Parse JSON with brace-extraction fallback for markdown fences and preamble text."""
     try:
         data = json.loads(raw_text)
     except json.JSONDecodeError:
         start = raw_text.find("{")
         end = raw_text.rfind("}")
         if start >= 0 and end > start:
-            logger.debug(
-                "_parse_json: direct parse failed — extracting JSON from chars %d:%d",
-                start, end + 1,
-            )
+            logger.debug("_parse_json: extracting JSON from chars %d:%d", start, end + 1)
             data = json.loads(raw_text[start : end + 1])
         else:
             logger.warning(
-                "_parse_json: no JSON object found in response (len=%d, preview=%r)",
+                "_parse_json: no JSON object found (len=%d, preview=%r)",
                 len(raw_text), raw_text[:120],
             )
             raise
 
     if not isinstance(data, dict):
         if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
-            logger.debug("_parse_json: top-level array — using first element as response dict.")
+            logger.debug("_parse_json: top-level array — using first element.")
             data = data[0]
         else:
             raise ValueError(f"Expected JSON object (dict), got {type(data).__name__}")
@@ -277,11 +291,7 @@ _default_chain: ProviderChain | None = None
 
 
 def get_provider_chain() -> ProviderChain:
-    """Return the module-level singleton ProviderChain.
-
-    The chain is created once per process. Call reset_provider_chain() to
-    force re-initialisation (useful in tests that patch env vars).
-    """
+    """Return the module-level singleton ProviderChain."""
     global _default_chain
     if _default_chain is None:
         _default_chain = ProviderChain()
@@ -289,11 +299,6 @@ def get_provider_chain() -> ProviderChain:
 
 
 def reset_provider_chain() -> None:
-    """Invalidate the module-level singleton ProviderChain.
-
-    The next call to get_provider_chain() will create a fresh chain, picking
-    up any env-var changes made since the last initialisation.
-    Primarily useful in tests.
-    """
+    """Invalidate the singleton so tests can re-initialise with new env vars."""
     global _default_chain
     _default_chain = None

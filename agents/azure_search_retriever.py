@@ -1,14 +1,15 @@
 """
 agents/azure_search_retriever.py
 
-Connects to Azure AI Search to retrieve document chunks.
-Uses REST API to perform retrieval.
+Connects to Azure AI Search for document chunk retrieval.
+Uses pure semantic search — no OpenRouter embeddings.
 """
 
 from __future__ import annotations
 
 import logging
 import os
+import time
 import httpx
 from typing import Optional
 from dotenv import load_dotenv
@@ -17,8 +18,6 @@ from agents.retrieval import Chunk
 
 load_dotenv()
 logger = logging.getLogger("conflictsense.azure_search")
-
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
 AZURE_SEARCH_ENDPOINT = os.getenv("AZURE_SEARCH_ENDPOINT", "")
 AZURE_SEARCH_KEY = os.getenv("AZURE_SEARCH_KEY", "")
@@ -29,66 +28,39 @@ API_VERSION = os.getenv("AZURE_SEARCH_API_VERSION", "2023-11-01")
 class AzureSearchRetriever:
     """
     Retrieves document chunks from Azure AI Search using REST API.
+    Pure semantic search — no vector embedding call required.
     """
     def __init__(self):
         self._available = bool(AZURE_SEARCH_ENDPOINT and AZURE_SEARCH_KEY and AZURE_SEARCH_INDEX)
+        self.last_latency = 0
         if not self._available:
             logger.warning("AzureSearchRetriever: Missing Azure Search credentials. Will fallback.")
 
     def search(self, query: str, top_k: int = 5) -> list[Chunk]:
         """
-        Query Azure AI Search for the top_k most relevant chunks across all documents.
+        Query Azure AI Search for the top_k most relevant chunks using semantic search.
+        No external embedding call needed.
         """
         if not self._available:
             raise RuntimeError("Azure Search credentials not configured")
 
-        url = f"{AZURE_SEARCH_ENDPOINT.rstrip('/')}/indexes/{AZURE_SEARCH_INDEX}/docs/search?api-version={API_VERSION}"
+        url = (
+            f"{AZURE_SEARCH_ENDPOINT.rstrip('/')}/indexes/"
+            f"{AZURE_SEARCH_INDEX}/docs/search?api-version={API_VERSION}"
+        )
         headers = {
             "Content-Type": "application/json",
-            "api-key": AZURE_SEARCH_KEY
+            "api-key": AZURE_SEARCH_KEY,
         }
-        
         payload = {
             "search": query,
             "top": top_k,
             "searchFields": "chunk,title",
             "queryType": "semantic",
-            "semanticConfiguration": "rag-1781022790838-semantic-configuration"
+            "semanticConfiguration": f"{AZURE_SEARCH_INDEX}-semantic-configuration",
         }
-        
-        # Get query embedding
-        if OPENROUTER_API_KEY:
-            try:
-                emb_url = "https://openrouter.ai/api/v1/embeddings"
-                emb_headers = {
-                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                    "Content-Type": "application/json"
-                }
-                emb_payload = {
-                    "model": "openai/text-embedding-3-small",
-                    "input": query,
-                    "dimensions": 1024
-                }
-                with httpx.Client() as client:
-                    emb_res = client.post(emb_url, headers=emb_headers, json=emb_payload, timeout=10.0)
-                    emb_res.raise_for_status()
-                    emb_data = emb_res.json()
-                    query_vector = emb_data['data'][0]['embedding']
-                    
-                payload["vectorQueries"] = [
-                    {
-                        "kind": "vector",
-                        "vector": query_vector,
-                        "exhaustive": True,
-                        "fields": "text_vector",
-                        "k": top_k
-                    }
-                ]
-            except Exception as e:
-                logger.warning("Failed to get query embedding, falling back to pure semantic search: %s", e)
 
         try:
-            import time
             t0 = time.monotonic()
             with httpx.Client(timeout=10.0) as client:
                 response = client.post(url, headers=headers, json=payload)
@@ -107,22 +79,18 @@ class AzureSearchRetriever:
             section_id = item.get("parent_id", "unknown_section")
             text = item.get("chunk", "")
             score = item.get("@search.score", 0.0)
-            
+
             chunk = Chunk(
                 id=str(c_id),
                 document_name=str(doc_name),
                 section_id=str(section_id),
                 text=str(text),
-                embedding=None
+                embedding=None,
             )
-            # Store the score in the Chunk dynamically (if python allows extending dataclass, or we can just append it).
-            # We will patch it temporarily.
             setattr(chunk, "retrieval_score", score)
             chunks.append(chunk)
 
         if not chunks:
-            # Task 4 specifies "If Azure Search returns zero results automatically switch to LocalRetriever."
-            # Raising an exception will trigger the except block in DocumentAnalyzer
             raise RuntimeError("Azure Search returned zero results")
 
         return chunks
