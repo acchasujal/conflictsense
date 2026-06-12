@@ -90,7 +90,7 @@ class LocalRetriever:
 
     def _load_and_chunk(self) -> None:
         if not self.kb_dir.exists():
-            logger.error("knowledge_base/ directory not found at %s", self.kb_dir)
+            logger.error("Document directory not found at %s", self.kb_dir)
             return
 
         existing_chunks, existing_hashes = self._load_index()
@@ -100,7 +100,11 @@ class LocalRetriever:
         docs_processed = 0
         docs_rebuilt = 0
         
-        for path in sorted(self.kb_dir.glob("*.md")):
+        for path in sorted(self.kb_dir.glob("*")):
+            if not path.is_file():
+                continue
+            if path.suffix.lower() not in {".md", ".txt"}:
+                continue
             try:
                 text = path.read_text(encoding="utf-8")
                 file_hash = self._get_file_hash(text)
