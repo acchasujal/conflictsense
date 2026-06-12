@@ -21,7 +21,7 @@ logger = logging.getLogger("conflictsense.risk_quantifier")
 
 _SYSTEM_PROMPT = """You are a regulatory risk analyst. Estimate Regulatory, Operational, Legal, and Reputational risk from the provided policy conflict and evidence.
 Reference specific laws only if provided in context.
-Return JSON: {"risk_level": "LOW"|"MEDIUM"|"HIGH"|"CRITICAL", "risk_score": 1-100, "risk_categories": ["strings"], "reasoning": "plain text", "potential_consequences": ["strings"], "uncertainty": "string or null"}"""
+CRITICAL: Do NOT use markdown code blocks or `json fences. Return JSON: {"risk_level": "LOW"|"MEDIUM"|"HIGH"|"CRITICAL", "risk_score": 1-100, "risk_categories": ["strings"], "reasoning": "plain text", "potential_consequences": ["strings"], "uncertainty": "string or null"}"""
 
 class RiskLevel(str, Enum):
     LOW = "LOW"

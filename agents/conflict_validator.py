@@ -19,7 +19,7 @@ logger = logging.getLogger("conflictsense.conflict_validator")
 _SYSTEM_PROMPT = """You are a Conflict Validator. Determine if the proposed conflict is a genuine structural impossibility.
 REJECT: wording/terminology differences, synonyms, stylistic variation, unsupported inference.
 APPROVE: only mutually unsatisfiable policies.
-Return JSON: {"status": "APPROVED" or "REJECTED", "reasoning": "plain text", "confidence": 0-100}"""
+CRITICAL: Do NOT use markdown code blocks or `json fences. Return JSON: {"status": "APPROVED" or "REJECTED", "reasoning": "plain text", "confidence": 0-100}"""
 
 class ConflictValidatorAgent:
     """

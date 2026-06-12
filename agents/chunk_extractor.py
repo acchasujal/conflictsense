@@ -41,7 +41,7 @@ You are a policy document analyst. Extract the specific rule or constraint that 
 
 Return ONLY verbatim text from the document. Do not infer, extrapolate, or summarise.
 
-Return JSON:
+CRITICAL: Do NOT use markdown code blocks or `json fences. Return JSON:
 {"is_silent": boolean, "citations": [{"section": "§X.Y", "passage": "exact quoted text", "confidence": 0.0-1.0}]}
 
 Rules: is_silent=true if no relevant rule exists. section must be the actual document identifier. passage must be verbatim. Do not add text outside the JSON.

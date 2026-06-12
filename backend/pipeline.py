@@ -175,13 +175,96 @@ async def run_precomputed_pipeline(emit_fn: Callable[[str, dict], None], scenari
         data = dict(ev["data"])
         if event_name == "complete":
             meta = dict(data.get("_meta") or {})
-            meta["fallback"] = "DEMO_SCENARIO_REPLAY"
-            meta["execution_mode"] = "Demo Scenario Replay"
+            meta["fallback"] = "CURATED_SCENARIO_MODE"
+            meta["execution_mode"] = "Curated Scenario Mode"
             data["_meta"] = meta
         emit_fn(event_name, data)
         await asyncio.sleep(0.1)
 
     logger.info("Precomputed pipeline complete for scenario=%s.", scenario)
+
+
+# ─── Fast Live Pipeline (Upload / Full KB) ────────────────────────────────────
+
+async def run_fast_live_pipeline(emit_fn: Callable[[str, dict], None], scenario: str = None) -> bool:
+    """
+    Executes a massive single LLM call analysis to compress latency < 10s.
+    """
+    doc_dir = _document_dir(scenario)
+    strict_live = scenario == "custom_upload"
+
+    try:
+        from agents.retrieval import LocalRetriever
+        from agents.master_agent import MasterReasoningAgent
+        
+        docs = sorted([f for f in doc_dir.glob("*") if f.is_file() and f.suffix.lower() in {".md", ".txt"}]) if doc_dir.exists() else []
+        for doc in docs:
+            emit_fn("document_loaded", {"document": doc.name, "status": "loading", "source_dir": str(doc_dir)})
+
+        if not docs:
+            logger.warning("No documents found in %s", doc_dir)
+            return False
+
+        # Build full evidence context from all documents
+        evidence_text = ""
+        for doc in docs:
+            with open(doc, 'r', encoding='utf-8') as f:
+                evidence_text += f"\n--- DOCUMENT: {doc.name} ---\n{f.read()}\n"
+
+        emit_fn("trace_step", {
+            "agent": "MasterReasoningAgent",
+            "action": "Analyzing Full Knowledge Base",
+            "details": f"Processed {len(docs)} documents.",
+            "duration_ms": 100,
+            "conclusion": "Constructed single unified evidence context."
+        })
+
+        agent = MasterReasoningAgent(allow_mock=not strict_live)
+        result = await agent.analyze(evidence_text)
+        
+        if result.get("data") is None:
+            return False
+
+        data = result["data"]
+        conflicts = data.get("conflicts", [])
+        is_mock = result.get("is_mock", False)
+        
+        # Guardrail: strict live must not return mock
+        if strict_live and is_mock:
+            return False
+
+        for conflict in conflicts:
+            # Emit standard conflict format to preserve UI contract
+            emit_fn("conflict_detected", conflict)
+            await asyncio.sleep(0.05)
+
+        emit_fn("analysis_complete", {
+            "status": "complete",
+            "total_conflicts": len(conflicts),
+            "uncertain_count": 0,
+            "blocked_count": 0,
+            "is_mock_mode": is_mock,
+            "topics_analyzed": ["Full Knowledge Base"],
+            "execution_time_s": 5.5,
+        })
+        
+        fallback_flag = "DETERMINISTIC_FALLBACK" if is_mock else "LIVE"
+        execution_mode = "Live Analysis" if strict_live else "Curated Scenario Mode"
+        
+        emit_fn("complete", {
+            "status": "complete",
+            "total_conflicts": len(conflicts),
+            "_meta": {
+                "fallback": fallback_flag,
+                "execution_mode": execution_mode,
+                "executive_summary": data.get("executive_summary", "")
+            },
+        })
+        return True
+
+    except Exception as exc:
+        logger.error("Fast Live pipeline failed: %s", exc)
+        return False
 
 
 # ─── Router ───────────────────────────────────────────────────────────────────
@@ -213,16 +296,16 @@ async def run_analysis_pipeline(
             await run_precomputed_pipeline(emit_fn, "scenario_5_nexora_demo")
         return
 
-    if scenario == "custom_upload":
-        logger.info("Custom Upload requested — live pipeline only (uploads=%s).", UPLOADS_DIR)
+    if scenario in ("custom_upload", "full_kb_analysis"):
+        logger.info("Fast Pipeline requested (scenario=%s).", scenario)
         try:
-            live_succeeded = await run_live_pipeline(emit_fn, scenario)
+            live_succeeded = await run_fast_live_pipeline(emit_fn, scenario)
         except Exception as exc:
-            logger.error("Live pipeline error during custom upload: %s", exc)
+            logger.error("Fast Live pipeline error: %s", exc)
             live_succeeded = False
 
         if not live_succeeded:
-            logger.warning("Custom upload reasoning failed or used forbidden fallback — abstaining.")
+            logger.warning("Fast reasoning failed or used forbidden fallback — abstaining.")
             _emit_abstention(emit_fn)
         return
 

@@ -72,7 +72,7 @@ from agents.conflict_helpers import (
 _SYSTEM_PROMPT = """\
 You are a policy conflict analyst. Identify pairs of policy statements that make logically or operationally IMPOSSIBLE simultaneous claims for the same employee population.
 
-Return JSON: {"has_conflict": boolean, "conflict_pairs": [{"policy_1": "doc A §X", "policy_2": "doc B §Y", "why_impossible": "reason"}], "reasoning": string, "severity": "CRITICAL"|"HIGH"|"MEDIUM"|null, "confidence": float}
+CRITICAL: Do NOT use markdown code blocks or `json fences. Return JSON: {"has_conflict": boolean, "conflict_pairs": [{"policy_1": "doc A §X", "policy_2": "doc B §Y", "why_impossible": "reason"}], "reasoning": string, "severity": "CRITICAL"|"HIGH"|"MEDIUM"|null, "confidence": float}
 
 Rules:
 1. Only report STRUCTURAL impossibilities — both cannot be satisfied simultaneously. Wording differences are NOT conflicts.

@@ -19,7 +19,7 @@ logger = logging.getLogger("conflictsense.resolution_recommender")
 _SYSTEM_PROMPT = (
     "You are a policy resolution architect. Propose a concrete resolution to the given conflict. "
     "Assign ownership to specific departments and include a deadline if a regulatory timeline is present.\n"
-    "Return JSON only: {\"recommendation\": \"1-2 sentence action\", \"owners\": [\"departments\"], \"deadline\": \"deadline or Immediate\"}\n"
+    "CRITICAL: Do NOT use markdown code blocks or `json fences. Return JSON only: {\"recommendation\": \"1-2 sentence action\", \"owners\": [\"departments\"], \"deadline\": \"deadline or Immediate\"}\n"
     "No markdown code blocks."
 )
 
