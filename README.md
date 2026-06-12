@@ -1,6 +1,6 @@
 # ConflictSense — Autonomous Policy Reasoning Engine
 
-**Solo student from Mumbai. Built in 10 days.**
+**Built solo over 10 days by a final-year engineering student from Mumbai. No team. Free-tier infrastructure.**
 
 **Enterprise policy conflicts are invisible to traditional tools.** 
 
