@@ -8,6 +8,14 @@ Fortune 500 companies lose millions to regulatory fines because standard keyword
 
 ConflictSense is a proactive **Reasoning Agent**. It doesn't wait for a prompt. It autonomously ingests the Knowledge Base, cross-references mandates, and identifies logical collisions before they become legal liabilities.
 
+### 🧠 Not Just Another Chatbot
+A standard enterprise chatbot summarizes policies when asked. **ConflictSense does the opposite:**
+- **Detects contradictions** automatically without a prompt.
+- **Validates conflicts** through multi-agent consensus.
+- **Quantifies risk** and identifies legally exposed groups.
+- **Explains consequences** showing the exact structural impossibility.
+- **Recommends remediation** paths to harmonize the policies.
+
 ## 🏆 Award Focus: Hack for Good & Accessibility
 
 ConflictSense transforms governance from a "compliance tool" into a **human-centered governance platform**, explicitly targeting the **Hack for Good** and **Accessibility** awards.

@@ -469,76 +469,42 @@ export default function ConflictCard({
             </div>
           )}
 
-          {/* Azure AI Search Grounding & Evidence */}
-          {conflict.citations && conflict.citations.length > 0 && (
-            <details style={{ marginBottom: 12, background: '#F8FAFC', border: '0.5px solid #E2E8F0', borderRadius: 6, padding: '8px 12px' }}>
-              <summary style={{ fontSize: 11, fontWeight: 600, color: '#0F172A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, outline: 'none' }}>
-                <span style={{ color: '#185FA5' }}>🔍</span> Azure AI Search Grounding & Evidence
-                <span style={{ marginLeft: 'auto', fontSize: 9, color: '#64748B', fontWeight: 400, fontFamily: 'monospace' }}>Hybrid Retrieval + Semantic Ranking</span>
-              </summary>
-              <div style={{ marginTop: 10, paddingTop: 10, borderTop: '0.5px solid #E2E8F0' }}>
-              {(conflict.citations ?? []).map((cit, i) => {
-                const isFirst = i === 0;
-                const borderColor = isFirst ? 'rgba(22,163,74,0.3)' : 'rgba(220,38,38,0.3)';
-                const hasHighlight = !!CONTRADICTION_PHRASES[cit.document];
-                return (
-                  <div
-                    key={i}
-                    style={{
-                      background: '#F8FAFC',
-                      border: `0.5px solid ${hasHighlight ? borderColor : '#E2E8F0'}`,
-                      borderLeft: hasHighlight ? `3px solid ${isFirst ? '#16A34A' : '#DC2626'}` : '0.5px solid #E2E8F0',
-                      borderRadius: 4,
-                      padding: '6px 9px',
-                      marginBottom: 4,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontFamily: 'monospace',
-                        fontSize: 10,
-                        color: '#378ADD',
-                        marginBottom: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 5,
-                      }}
-                    >
-                      {cit.document} {cit.section}{' '}
-                      <span style={{ color: '#94A3B8' }}>
-                        [{Math.round(cit.confidence * 100)}% conf]
-                      </span>
-                      {hasHighlight && (
-                        <span
-                          style={{
-                            marginLeft: 'auto',
-                            fontSize: 9,
-                            background: isFirst ? 'rgba(22,163,74,0.1)' : 'rgba(220,38,38,0.1)',
-                            color: isFirst ? '#16A34A' : '#DC2626',
-                            padding: '1px 5px',
-                            borderRadius: 2,
-                            fontFamily: 'inherit',
-                          }}
-                        >
-                          {isFirst ? '✓ guarantees' : '✗ contradicts'}
-                        </span>
-                      )}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 10,
-                        color: '#475569',
-                        fontStyle: 'italic',
-                        lineHeight: 1.6,
-                      }}
-                    >
-                      "{highlightPassage(cit.passage, cit.document)}"
-                    </div>
-                  </div>
-                );
-              })}
+          {/* High-Impact Visual Contradiction */}
+          {conflict.citations && conflict.citations.length >= 2 && (
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '16px', marginBottom: 16 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#DC2626', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <span style={{ fontSize: 16 }}>🚨</span> Critical Policy Contradiction
               </div>
-            </details>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderLeft: '3px solid #16A34A', borderRadius: 6, padding: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#0F172A', marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
+                    <span>{conflict.citations[0].document} {conflict.citations[0].section}</span>
+                    <span style={{ color: '#16A34A', background: '#F0FDF4', padding: '2px 6px', borderRadius: 4, fontSize: 9 }}>✓ GUARANTEES</span>
+                  </div>
+                  <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.5 }}>"{conflict.citations[0].passage}"</div>
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', fontSize: 10, fontWeight: 800, padding: '4px 12px', borderRadius: 12, textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', zIndex: 1 }}>
+                    ↓ Contradicts ↓
+                  </div>
+                </div>
+                
+                <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderLeft: '3px solid #DC2626', borderRadius: 6, padding: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#0F172A', marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
+                    <span>{conflict.citations[1].document} {conflict.citations[1].section}</span>
+                    <span style={{ color: '#DC2626', background: '#FEF2F2', padding: '2px 6px', borderRadius: 4, fontSize: 9 }}>✗ PROHIBITS</span>
+                  </div>
+                  <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.5 }}>"{conflict.citations[1].passage}"</div>
+                </div>
+              </div>
+              
+              <div style={{ marginTop: 16, fontSize: 13, color: '#0F172A', background: '#FEF2F2', padding: '12px', borderRadius: 6, borderLeft: '3px solid #DC2626', lineHeight: 1.5 }}>
+                <span style={{ fontWeight: 800, color: '#991B1B', marginRight: 6 }}>RESULT:</span> 
+                {conflict.risk_assessment?.reasoning || 'Structural impossibility preventing lawful compliance.'}
+              </div>
+            </div>
           )}
 
           {/* Trust Panel & Confidence Evolution */}
