@@ -1,15 +1,27 @@
 [
   {
     "event": "document_loaded",
-    "data": {"document": "IT_Security_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "IT_Security_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "Data_Governance_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "Data_Governance_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "HR_Remote_Work_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "HR_Remote_Work_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "evidence_retrieved",
@@ -17,7 +29,12 @@
       "topic": "BYOD device data deletion and retention obligations",
       "citation_count": 2,
       "documents_queried": 7,
-      "silent_documents": ["Whistleblower_Policy.md", "DPDP_Compliance_Directive.md", "Employee_Handbook.md", "Finance_Expense_Policy.md"],
+      "silent_documents": [
+        "Whistleblower_Policy.md",
+        "DPDP_Compliance_Directive.md",
+        "Employee_Handbook.md",
+        "Finance_Expense_Policy.md"
+      ],
       "is_mock_mode": true
     }
   },
@@ -42,13 +59,29 @@
       "time": "1.7s",
       "query": "BYOD device data deletion and retention obligations",
       "citations": [
-        {"document": "IT_Security_Policy.md", "section": "\u00a76.3", "passage": "Upon employee termination or device transfer, all company data must be permanently and immediately deleted from personal devices. Verified deletion certificate required within 24 hours.", "confidence": 0.89, "topic": "BYOD device data deletion and retention obligations"},
-        {"document": "Data_Governance_Policy.md", "section": "\u00a711.2", "passage": "All employee communications, work products, and associated metadata must be retained for a minimum of 7 years for audit and legal compliance purposes.", "confidence": 0.86, "topic": "BYOD device data deletion and retention obligations"}
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a76.3",
+          "passage": "Upon employee termination or device transfer, all company data must be permanently and immediately deleted from personal devices. Verified deletion certificate required within 24 hours.",
+          "confidence": 0.89,
+          "topic": "BYOD device data deletion and retention obligations"
+        },
+        {
+          "document": "Data_Governance_Policy.md",
+          "section": "\u00a711.2",
+          "passage": "All employee communications, work products, and associated metadata must be retained for a minimum of 7 years for audit and legal compliance purposes.",
+          "confidence": 0.86,
+          "topic": "BYOD device data deletion and retention obligations"
+        }
       ],
       "conclusion": null,
       "severity": null,
       "confidence": null,
-      "telemetry": {"docs_analyzed": 7, "total_citations": 2, "per_document_meta": []}
+      "telemetry": {
+        "docs_analyzed": 7,
+        "total_citations": 2,
+        "per_document_meta": []
+      }
     }
   },
   {
@@ -57,12 +90,19 @@
       "topic": "BYOD device data deletion and retention obligations",
       "raw_confidence": 83,
       "severity": "HIGH",
-      "sources": ["IT_Security_Policy.md \u00a76.3", "Data_Governance_Policy.md \u00a711.2"]
+      "sources": [
+        "IT_Security_Policy.md \u00a76.3",
+        "Data_Governance_Policy.md \u00a711.2"
+      ]
     }
   },
   {
     "event": "conflict_validated",
-    "data": {"id": "c9d23b8e", "passed": true, "reason": "ok"}
+    "data": {
+      "id": "c9d23b8e",
+      "passed": true,
+      "reason": "ok"
+    }
   },
   {
     "event": "trace_step",
@@ -79,7 +119,11 @@
   },
   {
     "event": "risk_assessment_started",
-    "data": {"id": "c9d23b8e", "topic": "BYOD device data deletion and retention obligations", "conflict": "BYOD termination: instant deletion vs 7-year retention"}
+    "data": {
+      "id": "c9d23b8e",
+      "topic": "BYOD device data deletion and retention obligations",
+      "conflict": "BYOD termination: instant deletion vs 7-year retention"
+    }
   },
   {
     "event": "trace_step",
@@ -96,19 +140,36 @@
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "c9d23b8e", "category": "Security Risk (undeleted company data on personal devices)", "risk_level": "HIGH"}
+    "data": {
+      "id": "c9d23b8e",
+      "category": "Security Risk (undeleted company data on personal devices)",
+      "risk_level": "HIGH"
+    }
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "c9d23b8e", "category": "Governance Risk (audit trail gap on retention)", "risk_level": "HIGH"}
+    "data": {
+      "id": "c9d23b8e",
+      "category": "Governance Risk (audit trail gap on retention)",
+      "risk_level": "HIGH"
+    }
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "c9d23b8e", "category": "Operational Risk (impossible compliance on every termination)", "risk_level": "HIGH"}
+    "data": {
+      "id": "c9d23b8e",
+      "category": "Operational Risk (impossible compliance on every termination)",
+      "risk_level": "HIGH"
+    }
   },
   {
     "event": "risk_validated",
-    "data": {"id": "c9d23b8e", "risk_level": "HIGH", "risk_score": 71, "confidence": 83}
+    "data": {
+      "id": "c9d23b8e",
+      "risk_level": "HIGH",
+      "risk_score": 71,
+      "confidence": 83
+    }
   },
   {
     "event": "trace_step",
@@ -118,8 +179,20 @@
       "time": "1.2s",
       "query": null,
       "citations": [
-        {"document": "IT_Security_Policy.md", "section": "\u00a76.3", "passage": "Upon employee termination or device transfer, all company data must be permanently and immediately deleted from personal devices.", "confidence": 0.89, "topic": "BYOD device data deletion and retention obligations"},
-        {"document": "Data_Governance_Policy.md", "section": "\u00a711.2", "passage": "All employee communications, work products, and associated metadata must be retained for a minimum of 7 years.", "confidence": 0.86, "topic": "BYOD device data deletion and retention obligations"}
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a76.3",
+          "passage": "Upon employee termination or device transfer, all company data must be permanently and immediately deleted from personal devices.",
+          "confidence": 0.89,
+          "topic": "BYOD device data deletion and retention obligations"
+        },
+        {
+          "document": "Data_Governance_Policy.md",
+          "section": "\u00a711.2",
+          "passage": "All employee communications, work products, and associated metadata must be retained for a minimum of 7 years.",
+          "confidence": 0.86,
+          "topic": "BYOD device data deletion and retention obligations"
+        }
       ],
       "conclusion": "Every termination of a BYOD user creates a forced policy violation. The conflict is not theoretical \u2014 it fires for each of 450 active BYOD users. Risk is HIGH, not CRITICAL, because no regulatory deadline is imminent; however, any litigation discovery request will expose the gap.",
       "severity": "HIGH",
@@ -134,13 +207,33 @@
         "risk_level": "HIGH",
         "risk_score": 71,
         "confidence": 83,
-        "risk_categories": ["Security Risk (undeleted company data on personal devices)", "Governance Risk (audit trail gap on retention)", "Operational Risk (impossible compliance on every termination)"],
+        "risk_categories": [
+          "Security Risk (undeleted company data on personal devices)",
+          "Governance Risk (audit trail gap on retention)",
+          "Operational Risk (impossible compliance on every termination)"
+        ],
         "reasoning": "IT Security Policy \u00a76.3 mandates immediate permanent deletion of company data from personal devices at termination. Data Governance Policy \u00a711.2 requires 7-year retention of all employee work products. Both obligations activate at the same instant for the same data on the same device. Deletion prevents retention. Retention prevents deletion. There is no path to simultaneous compliance. 450 BYOD users are currently exposed.",
         "supporting_evidence": [
-          {"document": "IT_Security_Policy.md", "section": "\u00a76.3", "passage": "Upon employee termination or device transfer, all company data must be permanently and immediately deleted from personal devices.", "confidence": 0.89, "topic": "BYOD device data deletion and retention obligations"},
-          {"document": "Data_Governance_Policy.md", "section": "\u00a711.2", "passage": "All employee communications, work products, and associated metadata must be retained for a minimum of 7 years.", "confidence": 0.86, "topic": "BYOD device data deletion and retention obligations"}
+          {
+            "document": "IT_Security_Policy.md",
+            "section": "\u00a76.3",
+            "passage": "Upon employee termination or device transfer, all company data must be permanently and immediately deleted from personal devices.",
+            "confidence": 0.89,
+            "topic": "BYOD device data deletion and retention obligations"
+          },
+          {
+            "document": "Data_Governance_Policy.md",
+            "section": "\u00a711.2",
+            "passage": "All employee communications, work products, and associated metadata must be retained for a minimum of 7 years.",
+            "confidence": 0.86,
+            "topic": "BYOD device data deletion and retention obligations"
+          }
         ],
-        "affected_entities": ["450 active BYOD users", "IT Security team (deletion owner)", "Legal/Compliance (retention owner)"],
+        "affected_entities": [
+          "450 active BYOD users",
+          "IT Security team (deletion owner)",
+          "Legal/Compliance (retention owner)"
+        ],
         "potential_consequences": [
           "Terminated employees retain access pathways to undeleted company data on personal devices.",
           "Litigation discovery requests will reveal 7-year retention gaps for terminated BYOD users.",
@@ -172,23 +265,50 @@
       "title": "BYOD termination: instant deletion vs 7-year retention",
       "severity": "HIGH",
       "confidence": 83,
-      "sources": ["IT_Security_Policy.md \u00a76.3", "Data_Governance_Policy.md \u00a711.2"],
+      "sources": [
+        "IT_Security_Policy.md \u00a76.3",
+        "Data_Governance_Policy.md \u00a711.2"
+      ],
       "affected": "450 active BYOD users. Every termination triggers a forced simultaneous violation of both policies.",
       "deadline": "Q3 2026 \u2014 align before next termination cycle",
       "resolution": "Implement MDM with encrypted corporate container on personal devices. Remote-wipe satisfies IT Security \u00a76.3; MDM cloud copy satisfies Data Governance \u00a711.2 7-year retention. IT and Legal co-own within Q3 2026.",
       "citations": [
-        {"document": "IT_Security_Policy.md", "section": "\u00a76.3", "passage": "Upon employee termination or device transfer, all company data must be permanently and immediately deleted from personal devices. Verified deletion certificate required within 24 hours.", "confidence": 0.89, "topic": "BYOD device data deletion and retention obligations"},
-        {"document": "Data_Governance_Policy.md", "section": "\u00a711.2", "passage": "All employee communications, work products, and associated metadata must be retained for a minimum of 7 years for audit and legal compliance purposes.", "confidence": 0.86, "topic": "BYOD device data deletion and retention obligations"}
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a76.3",
+          "passage": "Upon employee termination or device transfer, all company data must be permanently and immediately deleted from personal devices. Verified deletion certificate required within 24 hours.",
+          "confidence": 0.89,
+          "topic": "BYOD device data deletion and retention obligations"
+        },
+        {
+          "document": "Data_Governance_Policy.md",
+          "section": "\u00a711.2",
+          "passage": "All employee communications, work products, and associated metadata must be retained for a minimum of 7 years for audit and legal compliance purposes.",
+          "confidence": 0.86,
+          "topic": "BYOD device data deletion and retention obligations"
+        }
       ],
       "risk_assessment": {
         "risk_level": "HIGH",
         "risk_score": 71,
         "confidence": 83,
-        "risk_categories": ["Security Risk (undeleted company data on personal devices)", "Governance Risk (audit trail gap on retention)", "Operational Risk (impossible compliance on every termination)"],
-        "reasoning": "Deletion and retention both activate at termination for the same data. 450 BYOD users exposed. HIGH risk — no imminent regulatory deadline, but litigation discovery will expose the gap.",
+        "risk_categories": [
+          "Security Risk (undeleted company data on personal devices)",
+          "Governance Risk (audit trail gap on retention)",
+          "Operational Risk (impossible compliance on every termination)"
+        ],
+        "reasoning": "Deletion and retention both activate at termination for the same data. 450 BYOD users exposed. HIGH risk \u2014 no imminent regulatory deadline, but litigation discovery will expose the gap.",
         "supporting_evidence": [],
-        "affected_entities": ["450 active BYOD users", "IT Security team", "Legal/Compliance"],
-        "potential_consequences": ["Undeleted data risk", "7-year retention gap", "12 terminations this quarter each create a forced violation"],
+        "affected_entities": [
+          "450 active BYOD users",
+          "IT Security team",
+          "Legal/Compliance"
+        ],
+        "potential_consequences": [
+          "Undeleted data risk",
+          "7-year retention gap",
+          "12 terminations this quarter each create a forced violation"
+        ],
         "uncertainty": "Specific financial penalties not quantified without grounded regulatory evidence.",
         "execution_time_s": 1.2
       }
@@ -202,23 +322,48 @@
       "title": "BYOD termination: instant deletion vs 7-year retention",
       "severity": "HIGH",
       "confidence": 83,
-      "sources": ["IT_Security_Policy.md \u00a76.3", "Data_Governance_Policy.md \u00a711.2"],
+      "sources": [
+        "IT_Security_Policy.md \u00a76.3",
+        "Data_Governance_Policy.md \u00a711.2"
+      ],
       "affected": "450 active BYOD users. Every termination triggers a forced violation of both policies.",
       "deadline": "Q3 2026 \u2014 align before next termination cycle",
       "resolution": "Implement MDM with encrypted corporate container. Remote-wipe satisfies IT Security; MDM cloud copy satisfies 7-year retention.",
       "citations": [
-        {"document": "IT_Security_Policy.md", "section": "\u00a76.3", "passage": "Upon employee termination or device transfer, all company data must be permanently and immediately deleted from personal devices. Verified deletion certificate required within 24 hours.", "confidence": 0.89, "topic": "BYOD device data deletion and retention obligations"},
-        {"document": "Data_Governance_Policy.md", "section": "\u00a711.2", "passage": "All employee communications, work products, and associated metadata must be retained for a minimum of 7 years for audit and legal compliance purposes.", "confidence": 0.86, "topic": "BYOD device data deletion and retention obligations"}
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a76.3",
+          "passage": "Upon employee termination or device transfer, all company data must be permanently and immediately deleted from personal devices. Verified deletion certificate required within 24 hours.",
+          "confidence": 0.89,
+          "topic": "BYOD device data deletion and retention obligations"
+        },
+        {
+          "document": "Data_Governance_Policy.md",
+          "section": "\u00a711.2",
+          "passage": "All employee communications, work products, and associated metadata must be retained for a minimum of 7 years for audit and legal compliance purposes.",
+          "confidence": 0.86,
+          "topic": "BYOD device data deletion and retention obligations"
+        }
       ],
       "risk_assessment": {
         "risk_level": "HIGH",
         "risk_score": 71,
         "confidence": 83,
-        "risk_categories": ["Security Risk", "Governance Risk", "Operational Risk"],
+        "risk_categories": [
+          "Security Risk",
+          "Governance Risk",
+          "Operational Risk"
+        ],
         "reasoning": "Deletion and retention both activate at termination. 450 BYOD users exposed.",
         "supporting_evidence": [],
-        "affected_entities": ["450 BYOD users"],
-        "potential_consequences": ["Undeleted data", "Retention gap", "12 terminations this quarter each in violation"],
+        "affected_entities": [
+          "450 BYOD users"
+        ],
+        "potential_consequences": [
+          "Undeleted data",
+          "Retention gap",
+          "12 terminations this quarter each in violation"
+        ],
         "uncertainty": "Penalties not quantified without grounded evidence.",
         "execution_time_s": 1.2
       }
@@ -246,7 +391,10 @@
       "uncertain_count": 0,
       "blocked_count": 0,
       "is_mock_mode": true,
-      "topics_analyzed": ["BYOD device data deletion and retention obligations", "remote work security and device compliance requirements"],
+      "topics_analyzed": [
+        "BYOD device data deletion and retention obligations",
+        "remote work security and device compliance requirements"
+      ],
       "execution_time_s": 7.1
     }
   },

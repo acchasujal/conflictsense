@@ -1,19 +1,35 @@
 [
   {
     "event": "document_loaded",
-    "data": {"document": "IT_Security_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "IT_Security_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "HR_Remote_Work_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "HR_Remote_Work_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "DPDP_Compliance_Directive.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "DPDP_Compliance_Directive.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "Data_Governance_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "Data_Governance_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "evidence_retrieved",
@@ -21,7 +37,11 @@
       "topic": "employee data location and processing rules",
       "citation_count": 4,
       "documents_queried": 7,
-      "silent_documents": ["Whistleblower_Policy.md", "Finance_Expense_Policy.md", "Employee_Handbook.md"],
+      "silent_documents": [
+        "Whistleblower_Policy.md",
+        "Finance_Expense_Policy.md",
+        "Employee_Handbook.md"
+      ],
       "is_mock_mode": true
     }
   },
@@ -46,15 +66,43 @@
       "time": "1.8s",
       "query": "employee data location and processing rules",
       "citations": [
-        {"document": "IT_Security_Policy.md", "section": "\u00a74.2", "passage": "All company data processing shall occur exclusively on US-domiciled servers. VPN access restricted to US IP ranges.", "confidence": 0.96, "topic": "employee data location and processing rules"},
-        {"document": "IT_Security_Policy.md", "section": "\u00a74.3", "passage": "No employee data may be transferred to non-US cloud providers without CISO written approval.", "confidence": 0.94, "topic": "employee data location and processing rules"},
-        {"document": "DPDP_Compliance_Directive.md", "section": "\u00a73.1", "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction. Effective July 1, 2026.", "confidence": 0.94, "topic": "employee data location and processing rules"},
-        {"document": "HR_Remote_Work_Policy.md", "section": "\u00a76.2", "passage": "Employees may work from any global location without prior approval. Data access follows the employee\u2019s location.", "confidence": 0.91, "topic": "employee data location and processing rules"}
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a74.2",
+          "passage": "All company data processing shall occur exclusively on US-domiciled servers. VPN access restricted to US IP ranges.",
+          "confidence": 0.96,
+          "topic": "employee data location and processing rules"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a74.3",
+          "passage": "No employee data may be transferred to non-US cloud providers without CISO written approval.",
+          "confidence": 0.94,
+          "topic": "employee data location and processing rules"
+        },
+        {
+          "document": "DPDP_Compliance_Directive.md",
+          "section": "\u00a73.1",
+          "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction. Effective July 1, 2026.",
+          "confidence": 0.94,
+          "topic": "employee data location and processing rules"
+        },
+        {
+          "document": "HR_Remote_Work_Policy.md",
+          "section": "\u00a76.2",
+          "passage": "Employees may work from any global location without prior approval. Data access follows the employee\u2019s location.",
+          "confidence": 0.91,
+          "topic": "employee data location and processing rules"
+        }
       ],
       "conclusion": null,
       "severity": null,
       "confidence": null,
-      "telemetry": {"docs_analyzed": 7, "total_citations": 4, "per_document_meta": []}
+      "telemetry": {
+        "docs_analyzed": 7,
+        "total_citations": 4,
+        "per_document_meta": []
+      }
     }
   },
   {
@@ -63,12 +111,20 @@
       "topic": "employee data location and processing rules",
       "raw_confidence": 96,
       "severity": "CRITICAL",
-      "sources": ["IT_Security_Policy.md \u00a74.2", "DPDP_Compliance_Directive.md \u00a73.1", "HR_Remote_Work_Policy.md \u00a76.2"]
+      "sources": [
+        "IT_Security_Policy.md \u00a74.2",
+        "DPDP_Compliance_Directive.md \u00a73.1",
+        "HR_Remote_Work_Policy.md \u00a76.2"
+      ]
     }
   },
   {
     "event": "conflict_validated",
-    "data": {"id": "a3f91c2d", "passed": true, "reason": "ok"}
+    "data": {
+      "id": "a3f91c2d",
+      "passed": true,
+      "reason": "ok"
+    }
   },
   {
     "event": "trace_step",
@@ -78,14 +134,18 @@
       "time": "1.1s",
       "query": null,
       "citations": null,
-      "conclusion": "Validation passed: three-way structural impossibility confirmed — US-only server mandate vs. India-resident jurisdiction vs. global location permission.",
+      "conclusion": "Validation passed: three-way structural impossibility confirmed \u2014 US-only server mandate vs. India-resident jurisdiction vs. global location permission.",
       "severity": null,
       "confidence": null
     }
   },
   {
     "event": "risk_assessment_started",
-    "data": {"id": "a3f91c2d", "topic": "employee data location and processing rules", "conflict": "Data residency: structural impossibility"}
+    "data": {
+      "id": "a3f91c2d",
+      "topic": "employee data location and processing rules",
+      "conflict": "Data residency: structural impossibility"
+    }
   },
   {
     "event": "trace_step",
@@ -95,26 +155,43 @@
       "time": "1.2s",
       "query": null,
       "citations": null,
-      "conclusion": "Affects Bangalore engineering team (240 FTEs) and all EU remote workers. DPDP effective July 1, 2026 — 19 days from policy review date.",
+      "conclusion": "Affects Bangalore engineering team (240 FTEs) and all EU remote workers. DPDP effective July 1, 2026 \u2014 19 days from policy review date.",
       "severity": null,
       "confidence": null
     }
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "a3f91c2d", "category": "Compliance Risk (DPDP Act 2023)", "risk_level": "CRITICAL"}
+    "data": {
+      "id": "a3f91c2d",
+      "category": "Compliance Risk (DPDP Act 2023)",
+      "risk_level": "CRITICAL"
+    }
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "a3f91c2d", "category": "Legal Risk (GDPR cross-border transfer)", "risk_level": "CRITICAL"}
+    "data": {
+      "id": "a3f91c2d",
+      "category": "Legal Risk (GDPR cross-border transfer)",
+      "risk_level": "CRITICAL"
+    }
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "a3f91c2d", "category": "Operational Risk (data pipeline redesign)", "risk_level": "HIGH"}
+    "data": {
+      "id": "a3f91c2d",
+      "category": "Operational Risk (data pipeline redesign)",
+      "risk_level": "HIGH"
+    }
   },
   {
     "event": "risk_validated",
-    "data": {"id": "a3f91c2d", "risk_level": "CRITICAL", "risk_score": 89, "confidence": 96}
+    "data": {
+      "id": "a3f91c2d",
+      "risk_level": "CRITICAL",
+      "risk_score": 89,
+      "confidence": 96
+    }
   },
   {
     "event": "trace_step",
@@ -124,10 +201,22 @@
       "time": "1.4s",
       "query": null,
       "citations": [
-        {"document": "DPDP_Compliance_Directive.md", "section": "\u00a73.1", "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction.", "confidence": 0.94, "topic": "employee data location and processing rules"},
-        {"document": "IT_Security_Policy.md", "section": "\u00a74.2", "passage": "All company data processing shall occur exclusively on US-domiciled servers.", "confidence": 0.96, "topic": "employee data location and processing rules"}
+        {
+          "document": "DPDP_Compliance_Directive.md",
+          "section": "\u00a73.1",
+          "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction.",
+          "confidence": 0.94,
+          "topic": "employee data location and processing rules"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a74.2",
+          "passage": "All company data processing shall occur exclusively on US-domiciled servers.",
+          "confidence": 0.96,
+          "topic": "employee data location and processing rules"
+        }
       ],
-      "conclusion": "Three policies make simultaneous compliance structurally impossible. DPDP enforcement begins July 1, 2026 — 19 days. Non-compliance risks Indian Data Protection Board investigation and GDPR cross-border transfer violations.",
+      "conclusion": "Three policies make simultaneous compliance structurally impossible. DPDP enforcement begins July 1, 2026 \u2014 19 days. Non-compliance risks Indian Data Protection Board investigation and GDPR cross-border transfer violations.",
       "severity": "CRITICAL",
       "confidence": 96
     }
@@ -140,16 +229,41 @@
         "risk_level": "CRITICAL",
         "risk_score": 89,
         "confidence": 96,
-        "risk_categories": ["Compliance Risk (DPDP Act 2023)", "Legal Risk (GDPR cross-border transfer)", "Operational Risk (data pipeline redesign)"],
-        "reasoning": "IT Security mandates US-only server processing. The DPDP Directive requires Indian-jurisdiction processing for Indian-resident employees effective July 1, 2026. HR Remote Work permits those employees to work globally — meaning their data is processed at their location. All three rules apply to the same 240-person Bangalore engineering population simultaneously. They cannot all be satisfied. DPDP enforcement begins in 19 days.",
-        "supporting_evidence": [
-          {"document": "IT_Security_Policy.md", "section": "\u00a74.2", "passage": "All company data processing shall occur exclusively on US-domiciled servers.", "confidence": 0.96, "topic": "employee data location and processing rules"},
-          {"document": "DPDP_Compliance_Directive.md", "section": "\u00a73.1", "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction.", "confidence": 0.94, "topic": "employee data location and processing rules"},
-          {"document": "HR_Remote_Work_Policy.md", "section": "\u00a76.2", "passage": "Employees may work from any global location without prior approval.", "confidence": 0.91, "topic": "employee data location and processing rules"}
+        "risk_categories": [
+          "Compliance Risk (DPDP Act 2023)",
+          "Legal Risk (GDPR cross-border transfer)",
+          "Operational Risk (data pipeline redesign)"
         ],
-        "affected_entities": ["Bangalore engineering team (240 FTEs)", "EU remote workers (estimated 85 employees)"],
+        "reasoning": "IT Security mandates US-only server processing. The DPDP Directive requires Indian-jurisdiction processing for Indian-resident employees effective July 1, 2026. HR Remote Work permits those employees to work globally \u2014 meaning their data is processed at their location. All three rules apply to the same 240-person Bangalore engineering population simultaneously. They cannot all be satisfied. DPDP enforcement begins in 19 days.",
+        "supporting_evidence": [
+          {
+            "document": "IT_Security_Policy.md",
+            "section": "\u00a74.2",
+            "passage": "All company data processing shall occur exclusively on US-domiciled servers.",
+            "confidence": 0.96,
+            "topic": "employee data location and processing rules"
+          },
+          {
+            "document": "DPDP_Compliance_Directive.md",
+            "section": "\u00a73.1",
+            "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction.",
+            "confidence": 0.94,
+            "topic": "employee data location and processing rules"
+          },
+          {
+            "document": "HR_Remote_Work_Policy.md",
+            "section": "\u00a76.2",
+            "passage": "Employees may work from any global location without prior approval.",
+            "confidence": 0.91,
+            "topic": "employee data location and processing rules"
+          }
+        ],
+        "affected_entities": [
+          "Bangalore engineering team (240 FTEs)",
+          "EU remote workers (estimated 85 employees)"
+        ],
         "potential_consequences": [
-          "Indian Data Protection Board investigation under DPDP Act 2023 (effective July 1, 2026 — 19 days).",
+          "Indian Data Protection Board investigation under DPDP Act 2023 (effective July 1, 2026 \u2014 19 days).",
           "GDPR cross-border transfer violation for EU employees.",
           "Engineering data pipeline redesign required before deadline."
         ],
@@ -179,23 +293,52 @@
       "title": "Data residency: structural impossibility",
       "severity": "CRITICAL",
       "confidence": 96,
-      "sources": ["IT_Security_Policy.md \u00a74.2", "DPDP_Compliance_Directive.md \u00a73.1", "HR_Remote_Work_Policy.md \u00a76.2"],
+      "sources": [
+        "IT_Security_Policy.md \u00a74.2",
+        "DPDP_Compliance_Directive.md \u00a73.1",
+        "HR_Remote_Work_Policy.md \u00a76.2"
+      ],
       "affected": "Bangalore engineering team (240 FTEs) and EU remote workers. DPDP effective July 1, 2026.",
       "deadline": "June 30, 2026 (DPDP enforcement)",
       "resolution": "Implement geo-fenced data processing with Indian-region and EU-region server carve-outs. Amend IT Security Policy \u00a74.2 to recognize jurisdictional exceptions. CISO and Legal must co-sign before June 30, 2026.",
       "citations": [
-        {"document": "IT_Security_Policy.md", "section": "\u00a74.2", "passage": "All company data processing shall occur exclusively on US-domiciled servers. VPN access restricted to US IP ranges.", "confidence": 0.96, "topic": "employee data location and processing rules"},
-        {"document": "DPDP_Compliance_Directive.md", "section": "\u00a73.1", "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction. Effective July 1, 2026.", "confidence": 0.94, "topic": "employee data location and processing rules"},
-        {"document": "HR_Remote_Work_Policy.md", "section": "\u00a76.2", "passage": "Employees may work from any global location without prior approval. Data access follows the employee\u2019s location.", "confidence": 0.91, "topic": "employee data location and processing rules"}
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a74.2",
+          "passage": "All company data processing shall occur exclusively on US-domiciled servers. VPN access restricted to US IP ranges.",
+          "confidence": 0.96,
+          "topic": "employee data location and processing rules"
+        },
+        {
+          "document": "DPDP_Compliance_Directive.md",
+          "section": "\u00a73.1",
+          "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction. Effective July 1, 2026.",
+          "confidence": 0.94,
+          "topic": "employee data location and processing rules"
+        },
+        {
+          "document": "HR_Remote_Work_Policy.md",
+          "section": "\u00a76.2",
+          "passage": "Employees may work from any global location without prior approval. Data access follows the employee\u2019s location.",
+          "confidence": 0.91,
+          "topic": "employee data location and processing rules"
+        }
       ],
       "risk_assessment": {
         "risk_level": "CRITICAL",
         "risk_score": 89,
         "confidence": 96,
-        "risk_categories": ["Compliance Risk (DPDP Act 2023)", "Legal Risk (GDPR cross-border transfer)", "Operational Risk (data pipeline redesign)"],
+        "risk_categories": [
+          "Compliance Risk (DPDP Act 2023)",
+          "Legal Risk (GDPR cross-border transfer)",
+          "Operational Risk (data pipeline redesign)"
+        ],
         "reasoning": "IT Security mandates US-only server processing. DPDP requires Indian-jurisdiction processing for Indian-resident employees effective July 1, 2026. HR Remote Work permits those employees to work globally. All three rules apply simultaneously to the same population. DPDP enforcement begins in 19 days.",
         "supporting_evidence": [],
-        "affected_entities": ["Bangalore engineering team (240 FTEs)", "EU remote workers (estimated 85 employees)"],
+        "affected_entities": [
+          "Bangalore engineering team (240 FTEs)",
+          "EU remote workers (estimated 85 employees)"
+        ],
         "potential_consequences": [
           "Indian Data Protection Board investigation under DPDP Act 2023.",
           "GDPR cross-border transfer violation for EU employees.",
@@ -214,23 +357,52 @@
       "title": "Data residency: structural impossibility",
       "severity": "CRITICAL",
       "confidence": 96,
-      "sources": ["IT_Security_Policy.md \u00a74.2", "DPDP_Compliance_Directive.md \u00a73.1", "HR_Remote_Work_Policy.md \u00a76.2"],
+      "sources": [
+        "IT_Security_Policy.md \u00a74.2",
+        "DPDP_Compliance_Directive.md \u00a73.1",
+        "HR_Remote_Work_Policy.md \u00a76.2"
+      ],
       "affected": "Bangalore engineering team (240 FTEs) and EU remote workers. DPDP effective July 1, 2026.",
       "deadline": "June 30, 2026 (DPDP enforcement)",
       "resolution": "Implement geo-fenced data processing with Indian-region and EU-region server carve-outs. Amend IT Security Policy \u00a74.2 to recognize jurisdictional exceptions. CISO and Legal must co-sign before June 30, 2026.",
       "citations": [
-        {"document": "IT_Security_Policy.md", "section": "\u00a74.2", "passage": "All company data processing shall occur exclusively on US-domiciled servers. VPN access restricted to US IP ranges.", "confidence": 0.96, "topic": "employee data location and processing rules"},
-        {"document": "DPDP_Compliance_Directive.md", "section": "\u00a73.1", "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction. Effective July 1, 2026.", "confidence": 0.94, "topic": "employee data location and processing rules"},
-        {"document": "HR_Remote_Work_Policy.md", "section": "\u00a76.2", "passage": "Employees may work from any global location without prior approval. Data access follows the employee\u2019s location.", "confidence": 0.91, "topic": "employee data location and processing rules"}
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a74.2",
+          "passage": "All company data processing shall occur exclusively on US-domiciled servers. VPN access restricted to US IP ranges.",
+          "confidence": 0.96,
+          "topic": "employee data location and processing rules"
+        },
+        {
+          "document": "DPDP_Compliance_Directive.md",
+          "section": "\u00a73.1",
+          "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction. Effective July 1, 2026.",
+          "confidence": 0.94,
+          "topic": "employee data location and processing rules"
+        },
+        {
+          "document": "HR_Remote_Work_Policy.md",
+          "section": "\u00a76.2",
+          "passage": "Employees may work from any global location without prior approval. Data access follows the employee\u2019s location.",
+          "confidence": 0.91,
+          "topic": "employee data location and processing rules"
+        }
       ],
       "risk_assessment": {
         "risk_level": "CRITICAL",
         "risk_score": 89,
         "confidence": 96,
-        "risk_categories": ["Compliance Risk (DPDP Act 2023)", "Legal Risk (GDPR cross-border transfer)", "Operational Risk (data pipeline redesign)"],
+        "risk_categories": [
+          "Compliance Risk (DPDP Act 2023)",
+          "Legal Risk (GDPR cross-border transfer)",
+          "Operational Risk (data pipeline redesign)"
+        ],
         "reasoning": "IT Security mandates US-only server processing. DPDP requires Indian-jurisdiction processing effective July 1, 2026. HR Remote Work permits global work. DPDP enforcement begins in 19 days.",
         "supporting_evidence": [],
-        "affected_entities": ["Bangalore engineering team (240 FTEs)", "EU remote workers (estimated 85 employees)"],
+        "affected_entities": [
+          "Bangalore engineering team (240 FTEs)",
+          "EU remote workers (estimated 85 employees)"
+        ],
         "potential_consequences": [
           "Indian Data Protection Board investigation under DPDP Act 2023.",
           "GDPR cross-border transfer violation.",
@@ -263,7 +435,10 @@
       "uncertain_count": 0,
       "blocked_count": 0,
       "is_mock_mode": true,
-      "topics_analyzed": ["employee data location and processing rules", "remote work geographic restrictions and VPN policy"],
+      "topics_analyzed": [
+        "employee data location and processing rules",
+        "remote work geographic restrictions and VPN policy"
+      ],
       "execution_time_s": 8.4
     }
   },

@@ -1,31 +1,59 @@
 [
   {
     "event": "document_loaded",
-    "data": {"document": "IT_Security_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "IT_Security_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "HR_Remote_Work_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "HR_Remote_Work_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "Whistleblower_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "Whistleblower_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "DPDP_Compliance_Directive.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "DPDP_Compliance_Directive.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "Data_Governance_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "Data_Governance_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "Finance_Expense_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "Finance_Expense_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "Employee_Handbook.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "Employee_Handbook.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "evidence_retrieved",
@@ -33,7 +61,10 @@
       "topic": "employee data location and processing rules",
       "citation_count": 4,
       "documents_queried": 7,
-      "silent_documents": ["Finance_Expense_Policy.md", "Employee_Handbook.md"],
+      "silent_documents": [
+        "Finance_Expense_Policy.md",
+        "Employee_Handbook.md"
+      ],
       "is_mock_mode": true
     }
   },
@@ -58,15 +89,43 @@
       "time": "1.8s",
       "query": "employee data location and processing rules",
       "citations": [
-        {"document": "IT_Security_Policy.md", "section": "\u00a74.2", "passage": "All company data processing shall occur exclusively on US-domiciled servers. VPN access restricted to US IP ranges.", "confidence": 0.96, "topic": "employee data location and processing rules"},
-        {"document": "DPDP_Compliance_Directive.md", "section": "\u00a73.1", "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction. Effective July 1, 2026.", "confidence": 0.94, "topic": "employee data location and processing rules"},
-        {"document": "HR_Remote_Work_Policy.md", "section": "\u00a76.2", "passage": "Employees may work from any global location without prior approval. Data access follows the employee\u2019s location.", "confidence": 0.91, "topic": "employee data location and processing rules"},
-        {"document": "Data_Governance_Policy.md", "section": "\u00a77.3", "passage": "EU employee data subject to GDPR residency requirements.", "confidence": 0.74, "topic": "employee data location and processing rules"}
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a74.2",
+          "passage": "All company data processing shall occur exclusively on US-domiciled servers. VPN access restricted to US IP ranges.",
+          "confidence": 0.96,
+          "topic": "employee data location and processing rules"
+        },
+        {
+          "document": "DPDP_Compliance_Directive.md",
+          "section": "\u00a73.1",
+          "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction. Effective July 1, 2026.",
+          "confidence": 0.94,
+          "topic": "employee data location and processing rules"
+        },
+        {
+          "document": "HR_Remote_Work_Policy.md",
+          "section": "\u00a76.2",
+          "passage": "Employees may work from any global location without prior approval. Data access follows the employee\u2019s location.",
+          "confidence": 0.91,
+          "topic": "employee data location and processing rules"
+        },
+        {
+          "document": "Data_Governance_Policy.md",
+          "section": "\u00a77.3",
+          "passage": "EU employee data subject to GDPR residency requirements.",
+          "confidence": 0.74,
+          "topic": "employee data location and processing rules"
+        }
       ],
       "conclusion": null,
       "severity": null,
       "confidence": null,
-      "telemetry": {"docs_analyzed": 7, "total_citations": 4, "per_document_meta": []}
+      "telemetry": {
+        "docs_analyzed": 7,
+        "total_citations": 4,
+        "per_document_meta": []
+      }
     }
   },
   {
@@ -75,12 +134,20 @@
       "topic": "employee data location and processing rules",
       "raw_confidence": 96,
       "severity": "CRITICAL",
-      "sources": ["IT_Security_Policy.md \u00a74.2", "DPDP_Compliance_Directive.md \u00a73.1", "HR_Remote_Work_Policy.md \u00a76.2"]
+      "sources": [
+        "IT_Security_Policy.md \u00a74.2",
+        "DPDP_Compliance_Directive.md \u00a73.1",
+        "HR_Remote_Work_Policy.md \u00a76.2"
+      ]
     }
   },
   {
     "event": "conflict_validated",
-    "data": {"id": "e1f30d7a", "passed": true, "reason": "ok"}
+    "data": {
+      "id": "e1f30d7a",
+      "passed": true,
+      "reason": "ok"
+    }
   },
   {
     "event": "trace_step",
@@ -97,7 +164,11 @@
   },
   {
     "event": "risk_assessment_started",
-    "data": {"id": "e1f30d7a", "topic": "employee data location and processing rules", "conflict": "Data residency: structural impossibility"}
+    "data": {
+      "id": "e1f30d7a",
+      "topic": "employee data location and processing rules",
+      "conflict": "Data residency: structural impossibility"
+    }
   },
   {
     "event": "trace_step",
@@ -114,19 +185,36 @@
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "e1f30d7a", "category": "Compliance Risk (DPDP Act 2023)", "risk_level": "CRITICAL"}
+    "data": {
+      "id": "e1f30d7a",
+      "category": "Compliance Risk (DPDP Act 2023)",
+      "risk_level": "CRITICAL"
+    }
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "e1f30d7a", "category": "Legal Risk (GDPR cross-border transfer)", "risk_level": "CRITICAL"}
+    "data": {
+      "id": "e1f30d7a",
+      "category": "Legal Risk (GDPR cross-border transfer)",
+      "risk_level": "CRITICAL"
+    }
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "e1f30d7a", "category": "Operational Risk (pipeline redesign)", "risk_level": "HIGH"}
+    "data": {
+      "id": "e1f30d7a",
+      "category": "Operational Risk (pipeline redesign)",
+      "risk_level": "HIGH"
+    }
   },
   {
     "event": "risk_validated",
-    "data": {"id": "e1f30d7a", "risk_level": "CRITICAL", "risk_score": 89, "confidence": 96}
+    "data": {
+      "id": "e1f30d7a",
+      "risk_level": "CRITICAL",
+      "risk_score": 89,
+      "confidence": 96
+    }
   },
   {
     "event": "trace_step",
@@ -149,10 +237,17 @@
         "risk_level": "CRITICAL",
         "risk_score": 89,
         "confidence": 96,
-        "risk_categories": ["Compliance Risk (DPDP Act 2023)", "Legal Risk (GDPR cross-border transfer)", "Operational Risk (data pipeline redesign)"],
+        "risk_categories": [
+          "Compliance Risk (DPDP Act 2023)",
+          "Legal Risk (GDPR cross-border transfer)",
+          "Operational Risk (data pipeline redesign)"
+        ],
         "reasoning": "IT Security mandates US-only server processing. DPDP requires Indian-jurisdiction processing for Indian-resident employees effective July 1, 2026. HR Remote Work permits those employees to work globally. All three rules apply simultaneously to the same 240-person Bangalore population. DPDP enforcement begins in 19 days.",
         "supporting_evidence": [],
-        "affected_entities": ["Bangalore engineering team (240 FTEs)", "EU remote workers (~85 employees)"],
+        "affected_entities": [
+          "Bangalore engineering team (240 FTEs)",
+          "EU remote workers (~85 employees)"
+        ],
         "potential_consequences": [
           "Indian Data Protection Board investigation under DPDP Act 2023 (effective July 1, 2026).",
           "GDPR cross-border transfer violation for EU employees.",
@@ -184,24 +279,57 @@
       "title": "Data residency: structural impossibility",
       "severity": "CRITICAL",
       "confidence": 96,
-      "sources": ["IT_Security_Policy.md \u00a74.2", "DPDP_Compliance_Directive.md \u00a73.1", "HR_Remote_Work_Policy.md \u00a76.2"],
+      "sources": [
+        "IT_Security_Policy.md \u00a74.2",
+        "DPDP_Compliance_Directive.md \u00a73.1",
+        "HR_Remote_Work_Policy.md \u00a76.2"
+      ],
       "affected": "Bangalore engineering team (240 FTEs) and EU remote workers. DPDP effective July 1, 2026.",
       "deadline": "June 30, 2026 (DPDP enforcement)",
       "resolution": "Implement geo-fenced data processing. Amend IT Security Policy \u00a74.2 with jurisdictional carve-outs. CISO and Legal co-sign before June 30, 2026.",
       "citations": [
-        {"document": "IT_Security_Policy.md", "section": "\u00a74.2", "passage": "All company data processing shall occur exclusively on US-domiciled servers. VPN access restricted to US IP ranges.", "confidence": 0.96, "topic": "employee data location and processing rules"},
-        {"document": "DPDP_Compliance_Directive.md", "section": "\u00a73.1", "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction. Effective July 1, 2026.", "confidence": 0.94, "topic": "employee data location and processing rules"},
-        {"document": "HR_Remote_Work_Policy.md", "section": "\u00a76.2", "passage": "Employees may work from any global location without prior approval.", "confidence": 0.91, "topic": "employee data location and processing rules"}
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a74.2",
+          "passage": "All company data processing shall occur exclusively on US-domiciled servers. VPN access restricted to US IP ranges.",
+          "confidence": 0.96,
+          "topic": "employee data location and processing rules"
+        },
+        {
+          "document": "DPDP_Compliance_Directive.md",
+          "section": "\u00a73.1",
+          "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction. Effective July 1, 2026.",
+          "confidence": 0.94,
+          "topic": "employee data location and processing rules"
+        },
+        {
+          "document": "HR_Remote_Work_Policy.md",
+          "section": "\u00a76.2",
+          "passage": "Employees may work from any global location without prior approval.",
+          "confidence": 0.91,
+          "topic": "employee data location and processing rules"
+        }
       ],
       "risk_assessment": {
         "risk_level": "CRITICAL",
         "risk_score": 89,
         "confidence": 96,
-        "risk_categories": ["Compliance Risk (DPDP Act 2023)", "Legal Risk (GDPR cross-border transfer)", "Operational Risk"],
-        "reasoning": "Three-way structural impossibility. DPDP enforcement begins July 1, 2026 — 19 days.",
+        "risk_categories": [
+          "Compliance Risk (DPDP Act 2023)",
+          "Legal Risk (GDPR cross-border transfer)",
+          "Operational Risk"
+        ],
+        "reasoning": "Three-way structural impossibility. DPDP enforcement begins July 1, 2026 \u2014 19 days.",
         "supporting_evidence": [],
-        "affected_entities": ["Bangalore engineering team (240 FTEs)", "EU remote workers (~85 employees)"],
-        "potential_consequences": ["DPDP investigation", "GDPR violation", "Pipeline redesign required"],
+        "affected_entities": [
+          "Bangalore engineering team (240 FTEs)",
+          "EU remote workers (~85 employees)"
+        ],
+        "potential_consequences": [
+          "DPDP investigation",
+          "GDPR violation",
+          "Pipeline redesign required"
+        ],
         "uncertainty": null,
         "execution_time_s": 1.4
       }
@@ -215,7 +343,11 @@
       "title": "Data residency: structural impossibility",
       "severity": "CRITICAL",
       "confidence": 96,
-      "sources": ["IT_Security_Policy.md \u00a74.2", "DPDP_Compliance_Directive.md \u00a73.1", "HR_Remote_Work_Policy.md \u00a76.2"],
+      "sources": [
+        "IT_Security_Policy.md \u00a74.2",
+        "DPDP_Compliance_Directive.md \u00a73.1",
+        "HR_Remote_Work_Policy.md \u00a76.2"
+      ],
       "affected": "Bangalore engineering team (240 FTEs) and EU remote workers. DPDP effective July 1, 2026.",
       "deadline": "June 30, 2026 (DPDP enforcement)"
     }
@@ -240,7 +372,12 @@
       "topic": "employee reporting channels and anonymity guarantees",
       "citation_count": 2,
       "documents_queried": 7,
-      "silent_documents": ["HR_Remote_Work_Policy.md", "Data_Governance_Policy.md", "DPDP_Compliance_Directive.md", "Finance_Expense_Policy.md"],
+      "silent_documents": [
+        "HR_Remote_Work_Policy.md",
+        "Data_Governance_Policy.md",
+        "DPDP_Compliance_Directive.md",
+        "Finance_Expense_Policy.md"
+      ],
       "is_mock_mode": true
     }
   },
@@ -252,13 +389,29 @@
       "time": "1.6s",
       "query": "employee reporting channels and anonymity guarantees",
       "citations": [
-        {"document": "Whistleblower_Policy.md", "section": "\u00a74.2", "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.", "confidence": 0.91, "topic": "employee reporting channels and anonymity guarantees"},
-        {"document": "IT_Security_Policy.md", "section": "\u00a79.3", "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.", "confidence": 0.95, "topic": "employee reporting channels and anonymity guarantees"}
+        {
+          "document": "Whistleblower_Policy.md",
+          "section": "\u00a74.2",
+          "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.",
+          "confidence": 0.91,
+          "topic": "employee reporting channels and anonymity guarantees"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a79.3",
+          "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.",
+          "confidence": 0.95,
+          "topic": "employee reporting channels and anonymity guarantees"
+        }
       ],
       "conclusion": null,
       "severity": null,
       "confidence": null,
-      "telemetry": {"docs_analyzed": 7, "total_citations": 2, "per_document_meta": []}
+      "telemetry": {
+        "docs_analyzed": 7,
+        "total_citations": 2,
+        "per_document_meta": []
+      }
     }
   },
   {
@@ -267,12 +420,19 @@
       "topic": "employee reporting channels and anonymity guarantees",
       "raw_confidence": 91,
       "severity": "CRITICAL",
-      "sources": ["Whistleblower_Policy.md \u00a74.2", "IT_Security_Policy.md \u00a79.3"]
+      "sources": [
+        "Whistleblower_Policy.md \u00a74.2",
+        "IT_Security_Policy.md \u00a79.3"
+      ]
     }
   },
   {
     "event": "conflict_validated",
-    "data": {"id": "f2b48c5e", "passed": true, "reason": "ok"}
+    "data": {
+      "id": "f2b48c5e",
+      "passed": true,
+      "reason": "ok"
+    }
   },
   {
     "event": "trace_step",
@@ -289,7 +449,11 @@
   },
   {
     "event": "risk_assessment_started",
-    "data": {"id": "f2b48c5e", "topic": "employee reporting channels and anonymity guarantees", "conflict": "Anonymity guarantee vs mandatory identity logging"}
+    "data": {
+      "id": "f2b48c5e",
+      "topic": "employee reporting channels and anonymity guarantees",
+      "conflict": "Anonymity guarantee vs mandatory identity logging"
+    }
   },
   {
     "event": "trace_step",
@@ -306,19 +470,36 @@
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "f2b48c5e", "category": "Reputational Risk (employee trust collapse)", "risk_level": "CRITICAL"}
+    "data": {
+      "id": "f2b48c5e",
+      "category": "Reputational Risk (employee trust collapse)",
+      "risk_level": "CRITICAL"
+    }
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "f2b48c5e", "category": "Legal Risk (false anonymity promise)", "risk_level": "CRITICAL"}
+    "data": {
+      "id": "f2b48c5e",
+      "category": "Legal Risk (false anonymity promise)",
+      "risk_level": "CRITICAL"
+    }
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "f2b48c5e", "category": "Security Risk (whistleblower identity exposed via audit logs)", "risk_level": "HIGH"}
+    "data": {
+      "id": "f2b48c5e",
+      "category": "Security Risk (whistleblower identity exposed via audit logs)",
+      "risk_level": "HIGH"
+    }
   },
   {
     "event": "risk_validated",
-    "data": {"id": "f2b48c5e", "risk_level": "CRITICAL", "risk_score": 94, "confidence": 91}
+    "data": {
+      "id": "f2b48c5e",
+      "risk_level": "CRITICAL",
+      "risk_score": 94,
+      "confidence": 91
+    }
   },
   {
     "event": "trace_step",
@@ -341,10 +522,18 @@
         "risk_level": "CRITICAL",
         "risk_score": 94,
         "confidence": 91,
-        "risk_categories": ["Reputational Risk (employee trust collapse)", "Legal Risk (false anonymity promise)", "Security Risk (whistleblower identity exposed)"],
+        "risk_categories": [
+          "Reputational Risk (employee trust collapse)",
+          "Legal Risk (false anonymity promise)",
+          "Security Risk (whistleblower identity exposed)"
+        ],
         "reasoning": "Whistleblower Policy \u00a74.2 guarantees anonymity. IT Security Policy \u00a79.3 mandates full identity logging with no exceptions. Ethics portal access is a system access event. These cannot simultaneously be satisfied.",
         "supporting_evidence": [],
-        "affected_entities": ["All ethics portal users", "HR Compliance team", "CISO team"],
+        "affected_entities": [
+          "All ethics portal users",
+          "HR Compliance team",
+          "CISO team"
+        ],
         "potential_consequences": [
           "Identity exposure of whistleblowers in any audit or legal discovery.",
           "Retroactive exposure of historic reports through audit logs.",
@@ -363,24 +552,51 @@
       "title": "Anonymity guarantee vs mandatory identity logging",
       "severity": "CRITICAL",
       "confidence": 91,
-      "sources": ["Whistleblower_Policy.md \u00a74.2", "IT_Security_Policy.md \u00a79.3"],
+      "sources": [
+        "Whistleblower_Policy.md \u00a74.2",
+        "IT_Security_Policy.md \u00a79.3"
+      ],
       "affected": "All ethics portal users. Anonymity promise is technically unenforceable.",
       "deadline": "Immediate \u2014 every new report compounds exposure",
       "resolution": "Deploy third-party anonymized reporting channel outside corporate IT perimeter. Named exception in IT Security \u00a79.3 for ethics portal approved by CISO. HR Compliance and CISO co-own within 30 days.",
       "isSurprise": true,
       "citations": [
-        {"document": "Whistleblower_Policy.md", "section": "\u00a74.2", "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.", "confidence": 0.91, "topic": "employee reporting channels and anonymity guarantees"},
-        {"document": "IT_Security_Policy.md", "section": "\u00a79.3", "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.", "confidence": 0.95, "topic": "employee reporting channels and anonymity guarantees"}
+        {
+          "document": "Whistleblower_Policy.md",
+          "section": "\u00a74.2",
+          "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.",
+          "confidence": 0.91,
+          "topic": "employee reporting channels and anonymity guarantees"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a79.3",
+          "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.",
+          "confidence": 0.95,
+          "topic": "employee reporting channels and anonymity guarantees"
+        }
       ],
       "risk_assessment": {
         "risk_level": "CRITICAL",
         "risk_score": 94,
         "confidence": 91,
-        "risk_categories": ["Reputational Risk (employee trust collapse)", "Legal Risk (false anonymity promise)", "Security Risk"],
+        "risk_categories": [
+          "Reputational Risk (employee trust collapse)",
+          "Legal Risk (false anonymity promise)",
+          "Security Risk"
+        ],
         "reasoning": "The anonymity guarantee exists on paper. It does not exist in the system.",
         "supporting_evidence": [],
-        "affected_entities": ["All ethics portal users", "HR Compliance", "CISO"],
-        "potential_consequences": ["Identity exposure", "Retroactive log exposure", "Legal liability"],
+        "affected_entities": [
+          "All ethics portal users",
+          "HR Compliance",
+          "CISO"
+        ],
+        "potential_consequences": [
+          "Identity exposure",
+          "Retroactive log exposure",
+          "Legal liability"
+        ],
         "uncertainty": null,
         "execution_time_s": 1.3
       }
@@ -394,7 +610,10 @@
       "title": "Anonymity guarantee vs mandatory identity logging",
       "severity": "CRITICAL",
       "confidence": 91,
-      "sources": ["Whistleblower_Policy.md \u00a74.2", "IT_Security_Policy.md \u00a79.3"],
+      "sources": [
+        "Whistleblower_Policy.md \u00a74.2",
+        "IT_Security_Policy.md \u00a79.3"
+      ],
       "affected": "All ethics portal users. Anonymity promise unenforceable.",
       "deadline": "Immediate",
       "isSurprise": true
@@ -422,7 +641,10 @@
       "uncertain_count": 0,
       "blocked_count": 0,
       "is_mock_mode": true,
-      "topics_analyzed": ["employee data location and processing rules", "employee reporting channels and anonymity guarantees"],
+      "topics_analyzed": [
+        "employee data location and processing rules",
+        "employee reporting channels and anonymity guarantees"
+      ],
       "execution_time_s": 14.2
     }
   },

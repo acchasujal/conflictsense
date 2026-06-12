@@ -1,15 +1,27 @@
 [
   {
     "event": "document_loaded",
-    "data": {"document": "Finance_Expense_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "Finance_Expense_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "IT_Security_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "IT_Security_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "Employee_Handbook.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "Employee_Handbook.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "evidence_retrieved",
@@ -17,7 +29,12 @@
       "topic": "software procurement authorization and IT security review",
       "citation_count": 2,
       "documents_queried": 7,
-      "silent_documents": ["Whistleblower_Policy.md", "Data_Governance_Policy.md", "HR_Remote_Work_Policy.md", "DPDP_Compliance_Directive.md"],
+      "silent_documents": [
+        "Whistleblower_Policy.md",
+        "Data_Governance_Policy.md",
+        "HR_Remote_Work_Policy.md",
+        "DPDP_Compliance_Directive.md"
+      ],
       "is_mock_mode": true
     }
   },
@@ -42,13 +59,29 @@
       "time": "1.4s",
       "query": "software procurement authorization and IT security review",
       "citations": [
-        {"document": "Finance_Expense_Policy.md", "section": "\u00a73.1", "passage": "Department managers are authorized to approve SaaS subscriptions and software purchases under $5,000 without additional sign-off.", "confidence": 0.83, "topic": "software procurement authorization and IT security review"},
-        {"document": "IT_Security_Policy.md", "section": "\u00a711.4", "passage": "All software, regardless of cost or subscription type, must undergo a formal IT Security risk assessment prior to procurement. No exceptions.", "confidence": 0.87, "topic": "software procurement authorization and IT security review"}
+        {
+          "document": "Finance_Expense_Policy.md",
+          "section": "\u00a73.1",
+          "passage": "Department managers are authorized to approve SaaS subscriptions and software purchases under $5,000 without additional sign-off.",
+          "confidence": 0.83,
+          "topic": "software procurement authorization and IT security review"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a711.4",
+          "passage": "All software, regardless of cost or subscription type, must undergo a formal IT Security risk assessment prior to procurement. No exceptions.",
+          "confidence": 0.87,
+          "topic": "software procurement authorization and IT security review"
+        }
       ],
       "conclusion": null,
       "severity": null,
       "confidence": null,
-      "telemetry": {"docs_analyzed": 7, "total_citations": 2, "per_document_meta": []}
+      "telemetry": {
+        "docs_analyzed": 7,
+        "total_citations": 2,
+        "per_document_meta": []
+      }
     }
   },
   {
@@ -57,12 +90,19 @@
       "topic": "software procurement authorization and IT security review",
       "raw_confidence": 77,
       "severity": "MEDIUM",
-      "sources": ["Finance_Expense_Policy.md \u00a73.1", "IT_Security_Policy.md \u00a711.4"]
+      "sources": [
+        "Finance_Expense_Policy.md \u00a73.1",
+        "IT_Security_Policy.md \u00a711.4"
+      ]
     }
   },
   {
     "event": "conflict_validated",
-    "data": {"id": "d5a17e9c", "passed": true, "reason": "ok"}
+    "data": {
+      "id": "d5a17e9c",
+      "passed": true,
+      "reason": "ok"
+    }
   },
   {
     "event": "trace_step",
@@ -79,7 +119,11 @@
   },
   {
     "event": "risk_assessment_started",
-    "data": {"id": "d5a17e9c", "topic": "software procurement authorization and IT security review", "conflict": "SaaS procurement: Finance authority vs IT Security gate"}
+    "data": {
+      "id": "d5a17e9c",
+      "topic": "software procurement authorization and IT security review",
+      "conflict": "SaaS procurement: Finance authority vs IT Security gate"
+    }
   },
   {
     "event": "trace_step",
@@ -96,15 +140,28 @@
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "d5a17e9c", "category": "Governance Risk (authority gap between Finance and IT)", "risk_level": "MEDIUM"}
+    "data": {
+      "id": "d5a17e9c",
+      "category": "Governance Risk (authority gap between Finance and IT)",
+      "risk_level": "MEDIUM"
+    }
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "d5a17e9c", "category": "Security Risk (unevaluated SaaS tools in production)", "risk_level": "MEDIUM"}
+    "data": {
+      "id": "d5a17e9c",
+      "category": "Security Risk (unevaluated SaaS tools in production)",
+      "risk_level": "MEDIUM"
+    }
   },
   {
     "event": "risk_validated",
-    "data": {"id": "d5a17e9c", "risk_level": "MEDIUM", "risk_score": 60, "confidence": 77}
+    "data": {
+      "id": "d5a17e9c",
+      "risk_level": "MEDIUM",
+      "risk_score": 60,
+      "confidence": 77
+    }
   },
   {
     "event": "trace_step",
@@ -114,8 +171,20 @@
       "time": "1.1s",
       "query": null,
       "citations": [
-        {"document": "Finance_Expense_Policy.md", "section": "\u00a73.1", "passage": "Department managers are authorized to approve SaaS subscriptions and software purchases under $5,000 without additional sign-off.", "confidence": 0.83, "topic": "software procurement authorization and IT security review"},
-        {"document": "IT_Security_Policy.md", "section": "\u00a711.4", "passage": "All software, regardless of cost or subscription type, must undergo a formal IT Security risk assessment prior to procurement. No exceptions.", "confidence": 0.87, "topic": "software procurement authorization and IT security review"}
+        {
+          "document": "Finance_Expense_Policy.md",
+          "section": "\u00a73.1",
+          "passage": "Department managers are authorized to approve SaaS subscriptions and software purchases under $5,000 without additional sign-off.",
+          "confidence": 0.83,
+          "topic": "software procurement authorization and IT security review"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a711.4",
+          "passage": "All software, regardless of cost or subscription type, must undergo a formal IT Security risk assessment prior to procurement. No exceptions.",
+          "confidence": 0.87,
+          "topic": "software procurement authorization and IT security review"
+        }
       ],
       "conclusion": "Finance Policy explicitly grants autonomous sub-$5k procurement. IT Security explicitly eliminates that authority for software. Every such purchase is simultaneously Finance-compliant and IT Security non-compliant. Risk is MEDIUM \u2014 no imminent regulatory deadline, but shadow IT proliferation is an active risk.",
       "severity": "MEDIUM",
@@ -130,13 +199,32 @@
         "risk_level": "MEDIUM",
         "risk_score": 60,
         "confidence": 77,
-        "risk_categories": ["Governance Risk (authority gap between Finance and IT)", "Security Risk (unevaluated SaaS tools in production)"],
+        "risk_categories": [
+          "Governance Risk (authority gap between Finance and IT)",
+          "Security Risk (unevaluated SaaS tools in production)"
+        ],
         "reasoning": "Finance Expense Policy \u00a73.1 grants department managers unilateral authority to approve software purchases under $5,000. IT Security Policy \u00a711.4 mandates that all software \u2014 regardless of cost \u2014 must undergo IT Security risk assessment before procurement, with no exceptions. Every sub-$5k SaaS purchase made using the Finance-granted authority is simultaneously non-compliant with IT Security Policy. The policies cannot both be satisfied for the same purchase.",
         "supporting_evidence": [
-          {"document": "Finance_Expense_Policy.md", "section": "\u00a73.1", "passage": "Department managers are authorized to approve SaaS subscriptions and software purchases under $5,000 without additional sign-off.", "confidence": 0.83, "topic": "software procurement authorization and IT security review"},
-          {"document": "IT_Security_Policy.md", "section": "\u00a711.4", "passage": "All software, regardless of cost or subscription type, must undergo a formal IT Security risk assessment prior to procurement. No exceptions.", "confidence": 0.87, "topic": "software procurement authorization and IT security review"}
+          {
+            "document": "Finance_Expense_Policy.md",
+            "section": "\u00a73.1",
+            "passage": "Department managers are authorized to approve SaaS subscriptions and software purchases under $5,000 without additional sign-off.",
+            "confidence": 0.83,
+            "topic": "software procurement authorization and IT security review"
+          },
+          {
+            "document": "IT_Security_Policy.md",
+            "section": "\u00a711.4",
+            "passage": "All software, regardless of cost or subscription type, must undergo a formal IT Security risk assessment prior to procurement. No exceptions.",
+            "confidence": 0.87,
+            "topic": "software procurement authorization and IT security review"
+          }
         ],
-        "affected_entities": ["All department managers with budget authority", "IT Security team (review backlog)", "Procurement/Finance team"],
+        "affected_entities": [
+          "All department managers with budget authority",
+          "IT Security team (review backlog)",
+          "Procurement/Finance team"
+        ],
         "potential_consequences": [
           "Shadow IT tools enter production without security evaluation.",
           "Finance-approved purchases retroactively flagged as IT Security violations during audit.",
@@ -168,23 +256,49 @@
       "title": "SaaS procurement: Finance authority vs IT Security gate",
       "severity": "MEDIUM",
       "confidence": 77,
-      "sources": ["Finance_Expense_Policy.md \u00a73.1", "IT_Security_Policy.md \u00a711.4"],
+      "sources": [
+        "Finance_Expense_Policy.md \u00a73.1",
+        "IT_Security_Policy.md \u00a711.4"
+      ],
       "affected": "All department managers with budget authority. Every sub-$5k SaaS purchase is simultaneously Finance-compliant and IT Security non-compliant.",
       "deadline": "90 days \u2014 vendor registry must be established before next budget cycle",
       "resolution": "Establish pre-approved SaaS vendor registry maintained by IT Security. Registry purchases satisfy both policies. Finance Policy \u00a73.1 must reference registry as prerequisite. IT Security and Finance co-own within 90 days.",
       "citations": [
-        {"document": "Finance_Expense_Policy.md", "section": "\u00a73.1", "passage": "Department managers are authorized to approve SaaS subscriptions and software purchases under $5,000 without additional sign-off.", "confidence": 0.83, "topic": "software procurement authorization and IT security review"},
-        {"document": "IT_Security_Policy.md", "section": "\u00a711.4", "passage": "All software, regardless of cost or subscription type, must undergo a formal IT Security risk assessment prior to procurement. No exceptions.", "confidence": 0.87, "topic": "software procurement authorization and IT security review"}
+        {
+          "document": "Finance_Expense_Policy.md",
+          "section": "\u00a73.1",
+          "passage": "Department managers are authorized to approve SaaS subscriptions and software purchases under $5,000 without additional sign-off.",
+          "confidence": 0.83,
+          "topic": "software procurement authorization and IT security review"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a711.4",
+          "passage": "All software, regardless of cost or subscription type, must undergo a formal IT Security risk assessment prior to procurement. No exceptions.",
+          "confidence": 0.87,
+          "topic": "software procurement authorization and IT security review"
+        }
       ],
       "risk_assessment": {
         "risk_level": "MEDIUM",
         "risk_score": 60,
         "confidence": 77,
-        "risk_categories": ["Governance Risk (authority gap between Finance and IT)", "Security Risk (unevaluated SaaS tools in production)"],
+        "risk_categories": [
+          "Governance Risk (authority gap between Finance and IT)",
+          "Security Risk (unevaluated SaaS tools in production)"
+        ],
         "reasoning": "Finance grants sub-$5k autonomy; IT Security eliminates it. Every such purchase is simultaneously compliant and non-compliant. MEDIUM risk \u2014 shadow IT proliferation is active.",
         "supporting_evidence": [],
-        "affected_entities": ["All department managers", "IT Security", "Finance/Procurement"],
-        "potential_consequences": ["Shadow IT in production", "Retroactive audit flags", "Forced policy choice on each purchase"],
+        "affected_entities": [
+          "All department managers",
+          "IT Security",
+          "Finance/Procurement"
+        ],
+        "potential_consequences": [
+          "Shadow IT in production",
+          "Retroactive audit flags",
+          "Forced policy choice on each purchase"
+        ],
         "uncertainty": "Purchase volume not quantified without procurement system data.",
         "execution_time_s": 1.1
       }
@@ -198,23 +312,49 @@
       "title": "SaaS procurement: Finance authority vs IT Security gate",
       "severity": "MEDIUM",
       "confidence": 77,
-      "sources": ["Finance_Expense_Policy.md \u00a73.1", "IT_Security_Policy.md \u00a711.4"],
+      "sources": [
+        "Finance_Expense_Policy.md \u00a73.1",
+        "IT_Security_Policy.md \u00a711.4"
+      ],
       "affected": "All department managers with budget authority. Every sub-$5k SaaS purchase creates a forced compliance violation.",
       "deadline": "90 days",
       "resolution": "Establish pre-approved SaaS vendor registry. Finance \u00a73.1 must reference registry as prerequisite.",
       "citations": [
-        {"document": "Finance_Expense_Policy.md", "section": "\u00a73.1", "passage": "Department managers are authorized to approve SaaS subscriptions and software purchases under $5,000 without additional sign-off.", "confidence": 0.83, "topic": "software procurement authorization and IT security review"},
-        {"document": "IT_Security_Policy.md", "section": "\u00a711.4", "passage": "All software, regardless of cost or subscription type, must undergo a formal IT Security risk assessment prior to procurement. No exceptions.", "confidence": 0.87, "topic": "software procurement authorization and IT security review"}
+        {
+          "document": "Finance_Expense_Policy.md",
+          "section": "\u00a73.1",
+          "passage": "Department managers are authorized to approve SaaS subscriptions and software purchases under $5,000 without additional sign-off.",
+          "confidence": 0.83,
+          "topic": "software procurement authorization and IT security review"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a711.4",
+          "passage": "All software, regardless of cost or subscription type, must undergo a formal IT Security risk assessment prior to procurement. No exceptions.",
+          "confidence": 0.87,
+          "topic": "software procurement authorization and IT security review"
+        }
       ],
       "risk_assessment": {
         "risk_level": "MEDIUM",
         "risk_score": 60,
         "confidence": 77,
-        "risk_categories": ["Governance Risk", "Security Risk"],
+        "risk_categories": [
+          "Governance Risk",
+          "Security Risk"
+        ],
         "reasoning": "Finance grants sub-$5k SaaS authority; IT Security eliminates it with no exceptions.",
         "supporting_evidence": [],
-        "affected_entities": ["Department managers", "IT Security", "Finance"],
-        "potential_consequences": ["Shadow IT", "Retroactive audit flags", "Policy conflict on every purchase"],
+        "affected_entities": [
+          "Department managers",
+          "IT Security",
+          "Finance"
+        ],
+        "potential_consequences": [
+          "Shadow IT",
+          "Retroactive audit flags",
+          "Policy conflict on every purchase"
+        ],
         "uncertainty": "Purchase volume not quantified.",
         "execution_time_s": 1.1
       }
@@ -242,7 +382,10 @@
       "uncertain_count": 0,
       "blocked_count": 0,
       "is_mock_mode": true,
-      "topics_analyzed": ["expense reimbursement and financial approval authority", "software procurement authorization and IT security review"],
+      "topics_analyzed": [
+        "expense reimbursement and financial approval authority",
+        "software procurement authorization and IT security review"
+      ],
       "execution_time_s": 6.7
     }
   },

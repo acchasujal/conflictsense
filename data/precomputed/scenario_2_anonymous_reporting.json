@@ -1,15 +1,27 @@
 [
   {
     "event": "document_loaded",
-    "data": {"document": "Whistleblower_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "Whistleblower_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "IT_Security_Policy.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "IT_Security_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "document_loaded",
-    "data": {"document": "Employee_Handbook.md", "status": "loading", "source_dir": "knowledge_base"}
+    "data": {
+      "document": "Employee_Handbook.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
   },
   {
     "event": "evidence_retrieved",
@@ -17,7 +29,12 @@
       "topic": "employee reporting channels and anonymity guarantees",
       "citation_count": 2,
       "documents_queried": 7,
-      "silent_documents": ["HR_Remote_Work_Policy.md", "Data_Governance_Policy.md", "DPDP_Compliance_Directive.md", "Finance_Expense_Policy.md"],
+      "silent_documents": [
+        "HR_Remote_Work_Policy.md",
+        "Data_Governance_Policy.md",
+        "DPDP_Compliance_Directive.md",
+        "Finance_Expense_Policy.md"
+      ],
       "is_mock_mode": true
     }
   },
@@ -42,13 +59,29 @@
       "time": "1.6s",
       "query": "employee reporting channels and anonymity guarantees",
       "citations": [
-        {"document": "Whistleblower_Policy.md", "section": "\u00a74.2", "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.", "confidence": 0.91, "topic": "employee reporting channels and anonymity guarantees"},
-        {"document": "IT_Security_Policy.md", "section": "\u00a79.3", "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.", "confidence": 0.95, "topic": "employee reporting channels and anonymity guarantees"}
+        {
+          "document": "Whistleblower_Policy.md",
+          "section": "\u00a74.2",
+          "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.",
+          "confidence": 0.91,
+          "topic": "employee reporting channels and anonymity guarantees"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a79.3",
+          "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.",
+          "confidence": 0.95,
+          "topic": "employee reporting channels and anonymity guarantees"
+        }
       ],
       "conclusion": null,
       "severity": null,
       "confidence": null,
-      "telemetry": {"docs_analyzed": 7, "total_citations": 2, "per_document_meta": []}
+      "telemetry": {
+        "docs_analyzed": 7,
+        "total_citations": 2,
+        "per_document_meta": []
+      }
     }
   },
   {
@@ -57,12 +90,19 @@
       "topic": "employee reporting channels and anonymity guarantees",
       "raw_confidence": 91,
       "severity": "CRITICAL",
-      "sources": ["Whistleblower_Policy.md \u00a74.2", "IT_Security_Policy.md \u00a79.3"]
+      "sources": [
+        "Whistleblower_Policy.md \u00a74.2",
+        "IT_Security_Policy.md \u00a79.3"
+      ]
     }
   },
   {
     "event": "conflict_validated",
-    "data": {"id": "b7e42a1f", "passed": true, "reason": "ok"}
+    "data": {
+      "id": "b7e42a1f",
+      "passed": true,
+      "reason": "ok"
+    }
   },
   {
     "event": "trace_step",
@@ -79,7 +119,11 @@
   },
   {
     "event": "risk_assessment_started",
-    "data": {"id": "b7e42a1f", "topic": "employee reporting channels and anonymity guarantees", "conflict": "Anonymity guarantee vs mandatory identity logging"}
+    "data": {
+      "id": "b7e42a1f",
+      "topic": "employee reporting channels and anonymity guarantees",
+      "conflict": "Anonymity guarantee vs mandatory identity logging"
+    }
   },
   {
     "event": "trace_step",
@@ -96,19 +140,36 @@
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "b7e42a1f", "category": "Reputational Risk (employee trust collapse)", "risk_level": "CRITICAL"}
+    "data": {
+      "id": "b7e42a1f",
+      "category": "Reputational Risk (employee trust collapse)",
+      "risk_level": "CRITICAL"
+    }
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "b7e42a1f", "category": "Legal Risk (false anonymity promise)", "risk_level": "CRITICAL"}
+    "data": {
+      "id": "b7e42a1f",
+      "category": "Legal Risk (false anonymity promise)",
+      "risk_level": "CRITICAL"
+    }
   },
   {
     "event": "risk_category_identified",
-    "data": {"id": "b7e42a1f", "category": "Security Risk (whistleblower identity exposed via audit logs)", "risk_level": "HIGH"}
+    "data": {
+      "id": "b7e42a1f",
+      "category": "Security Risk (whistleblower identity exposed via audit logs)",
+      "risk_level": "HIGH"
+    }
   },
   {
     "event": "risk_validated",
-    "data": {"id": "b7e42a1f", "risk_level": "CRITICAL", "risk_score": 94, "confidence": 91}
+    "data": {
+      "id": "b7e42a1f",
+      "risk_level": "CRITICAL",
+      "risk_score": 94,
+      "confidence": 91
+    }
   },
   {
     "event": "trace_step",
@@ -118,8 +179,20 @@
       "time": "1.3s",
       "query": null,
       "citations": [
-        {"document": "Whistleblower_Policy.md", "section": "\u00a74.2", "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.", "confidence": 0.91, "topic": "employee reporting channels and anonymity guarantees"},
-        {"document": "IT_Security_Policy.md", "section": "\u00a79.3", "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.", "confidence": 0.95, "topic": "employee reporting channels and anonymity guarantees"}
+        {
+          "document": "Whistleblower_Policy.md",
+          "section": "\u00a74.2",
+          "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.",
+          "confidence": 0.91,
+          "topic": "employee reporting channels and anonymity guarantees"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a79.3",
+          "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.",
+          "confidence": 0.95,
+          "topic": "employee reporting channels and anonymity guarantees"
+        }
       ],
       "conclusion": "The anonymity guarantee exists on paper. It does not exist in the system. Every report is identity-logged. This is not a configuration gap \u2014 it is a structural contradiction baked into two concurrent policies.",
       "severity": "CRITICAL",
@@ -134,13 +207,33 @@
         "risk_level": "CRITICAL",
         "risk_score": 94,
         "confidence": 91,
-        "risk_categories": ["Reputational Risk (employee trust collapse)", "Legal Risk (false anonymity promise)", "Security Risk (whistleblower identity exposed via audit logs)"],
+        "risk_categories": [
+          "Reputational Risk (employee trust collapse)",
+          "Legal Risk (false anonymity promise)",
+          "Security Risk (whistleblower identity exposed via audit logs)"
+        ],
         "reasoning": "Nexora\u2019s Whistleblower Policy makes a legal commitment to every employee: your report cannot be traced. Its IT Security Policy makes a technical mandate: every system action is logged with user identity, no exceptions. These two statements cannot simultaneously be true. Every report filed through the ethics portal is identity-logged \u2014 full stop. The anonymity guarantee exists on paper. It does not exist in the system.",
         "supporting_evidence": [
-          {"document": "Whistleblower_Policy.md", "section": "\u00a74.2", "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.", "confidence": 0.91, "topic": "employee reporting channels and anonymity guarantees"},
-          {"document": "IT_Security_Policy.md", "section": "\u00a79.3", "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.", "confidence": 0.95, "topic": "employee reporting channels and anonymity guarantees"}
+          {
+            "document": "Whistleblower_Policy.md",
+            "section": "\u00a74.2",
+            "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.",
+            "confidence": 0.91,
+            "topic": "employee reporting channels and anonymity guarantees"
+          },
+          {
+            "document": "IT_Security_Policy.md",
+            "section": "\u00a79.3",
+            "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.",
+            "confidence": 0.95,
+            "topic": "employee reporting channels and anonymity guarantees"
+          }
         ],
-        "affected_entities": ["All current and former ethics portal users", "HR Compliance team (policy owner)", "CISO team (logging system owner)"],
+        "affected_entities": [
+          "All current and former ethics portal users",
+          "HR Compliance team (policy owner)",
+          "CISO team (logging system owner)"
+        ],
         "potential_consequences": [
           "Employees relying on the anonymity promise face identity exposure in any audit or legal discovery.",
           "Retroactive exposure of historic whistleblower reports through IT audit log access.",
@@ -172,23 +265,46 @@
       "title": "Anonymity guarantee vs mandatory identity logging",
       "severity": "CRITICAL",
       "confidence": 91,
-      "sources": ["Whistleblower_Policy.md \u00a74.2", "IT_Security_Policy.md \u00a79.3"],
+      "sources": [
+        "Whistleblower_Policy.md \u00a74.2",
+        "IT_Security_Policy.md \u00a79.3"
+      ],
       "affected": "All ethics portal users. Anonymity promise is technically unenforceable. Retroactive exposure risk for all historic reports.",
       "deadline": "Immediate \u2014 every new report compounds exposure",
       "resolution": "Deploy third-party anonymized reporting channel outside corporate IT perimeter. Create named exception in IT Security \u00a79.3 for ethics portal, approved by CISO. HR Compliance and CISO must co-own remediation within 30 days.",
       "isSurprise": true,
       "citations": [
-        {"document": "Whistleblower_Policy.md", "section": "\u00a74.2", "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.", "confidence": 0.91, "topic": "employee reporting channels and anonymity guarantees"},
-        {"document": "IT_Security_Policy.md", "section": "\u00a79.3", "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.", "confidence": 0.95, "topic": "employee reporting channels and anonymity guarantees"}
+        {
+          "document": "Whistleblower_Policy.md",
+          "section": "\u00a74.2",
+          "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.",
+          "confidence": 0.91,
+          "topic": "employee reporting channels and anonymity guarantees"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a79.3",
+          "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.",
+          "confidence": 0.95,
+          "topic": "employee reporting channels and anonymity guarantees"
+        }
       ],
       "risk_assessment": {
         "risk_level": "CRITICAL",
         "risk_score": 94,
         "confidence": 91,
-        "risk_categories": ["Reputational Risk (employee trust collapse)", "Legal Risk (false anonymity promise)", "Security Risk (whistleblower identity exposed via audit logs)"],
+        "risk_categories": [
+          "Reputational Risk (employee trust collapse)",
+          "Legal Risk (false anonymity promise)",
+          "Security Risk (whistleblower identity exposed via audit logs)"
+        ],
         "reasoning": "Nexora\u2019s Whistleblower Policy makes a legal commitment to every employee: your report cannot be traced. Its IT Security Policy makes a technical mandate: every system action is logged with user identity, no exceptions. The anonymity guarantee exists on paper. It does not exist in the system.",
         "supporting_evidence": [],
-        "affected_entities": ["All current and former ethics portal users", "HR Compliance team", "CISO team"],
+        "affected_entities": [
+          "All current and former ethics portal users",
+          "HR Compliance team",
+          "CISO team"
+        ],
         "potential_consequences": [
           "Identity exposure of whistleblowers in any audit or legal discovery.",
           "Retroactive exposure of historic reports via IT audit logs.",
@@ -207,24 +323,49 @@
       "title": "Anonymity guarantee vs mandatory identity logging",
       "severity": "CRITICAL",
       "confidence": 91,
-      "sources": ["Whistleblower_Policy.md \u00a74.2", "IT_Security_Policy.md \u00a79.3"],
+      "sources": [
+        "Whistleblower_Policy.md \u00a74.2",
+        "IT_Security_Policy.md \u00a79.3"
+      ],
       "affected": "All ethics portal users. Anonymity promise is technically unenforceable.",
       "deadline": "Immediate \u2014 every new report compounds exposure",
       "resolution": "Deploy third-party anonymized reporting channel. Create named exception in IT Security \u00a79.3 for ethics portal.",
       "isSurprise": true,
       "citations": [
-        {"document": "Whistleblower_Policy.md", "section": "\u00a74.2", "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.", "confidence": 0.91, "topic": "employee reporting channels and anonymity guarantees"},
-        {"document": "IT_Security_Policy.md", "section": "\u00a79.3", "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.", "confidence": 0.95, "topic": "employee reporting channels and anonymity guarantees"}
+        {
+          "document": "Whistleblower_Policy.md",
+          "section": "\u00a74.2",
+          "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.",
+          "confidence": 0.91,
+          "topic": "employee reporting channels and anonymity guarantees"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "\u00a79.3",
+          "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.",
+          "confidence": 0.95,
+          "topic": "employee reporting channels and anonymity guarantees"
+        }
       ],
       "risk_assessment": {
         "risk_level": "CRITICAL",
         "risk_score": 94,
         "confidence": 91,
-        "risk_categories": ["Reputational Risk (employee trust collapse)", "Legal Risk (false anonymity promise)", "Security Risk (whistleblower identity exposed via audit logs)"],
+        "risk_categories": [
+          "Reputational Risk (employee trust collapse)",
+          "Legal Risk (false anonymity promise)",
+          "Security Risk (whistleblower identity exposed via audit logs)"
+        ],
         "reasoning": "The anonymity guarantee exists on paper. It does not exist in the system.",
         "supporting_evidence": [],
-        "affected_entities": ["All ethics portal users"],
-        "potential_consequences": ["Identity exposure", "Retroactive log exposure", "Legal liability"],
+        "affected_entities": [
+          "All ethics portal users"
+        ],
+        "potential_consequences": [
+          "Identity exposure",
+          "Retroactive log exposure",
+          "Legal liability"
+        ],
         "uncertainty": null,
         "execution_time_s": 1.3
       }
@@ -252,7 +393,10 @@
       "uncertain_count": 0,
       "blocked_count": 0,
       "is_mock_mode": true,
-      "topics_analyzed": ["employee reporting channels and anonymity guarantees", "IT audit logging and user identity tracking requirements"],
+      "topics_analyzed": [
+        "employee reporting channels and anonymity guarantees",
+        "IT audit logging and user identity tracking requirements"
+      ],
       "execution_time_s": 7.6
     }
   },
