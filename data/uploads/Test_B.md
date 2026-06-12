@@ -1,0 +1,1 @@
+Policy B: Indian employee data must reside in India.

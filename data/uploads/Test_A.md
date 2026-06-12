@@ -1,0 +1,1 @@
+Policy A: All staff must work from US domiciled servers.
