@@ -35,9 +35,19 @@ const BASE_URL = "";   // Empty = same-origin via Vite proxy → http://localhos
  *
  * @returns {{ cancel: () => void }}   Call cancel() to close the stream early.
  */
-export function streamAnalysis({ onTraceStep, onConflictDetected, onComplete, onError, onAgentStatus }) {
-  const url = `${BASE_URL}/analyze/stream`;
+export function streamAnalysis({ scenario, onDocumentLoaded, onTraceStep, onConflictDetected, onComplete, onError, onAgentStatus }) {
+  const url = scenario ? `${BASE_URL}/analyze/stream?scenario=${encodeURIComponent(scenario)}` : `${BASE_URL}/analyze/stream`;
   const es = new EventSource(url);
+
+  es.addEventListener("document_loaded", (e) => {
+    try {
+      if (onDocumentLoaded) {
+        onDocumentLoaded(JSON.parse(e.data));
+      }
+    } catch (err) {
+      console.error("[api] Failed to parse document_loaded event:", err, e.data);
+    }
+  });
 
   es.addEventListener("trace_step", (e) => {
     try {
@@ -122,5 +132,23 @@ export async function rejectConflict(conflictId) {
     body: JSON.stringify({ conflict_id: conflictId }),
   });
   if (!res.ok) throw new Error(`/reject failed: ${res.status}`);
+  return res.json();
+}
+
+// ─── uploadFiles ──────────────────────────────────────────────────────────────
+
+/**
+ * POST /upload — Upload user policies for live analysis
+ * @param {File[]} files
+ * @returns {Promise<{ status: string, files_loaded: number }>}
+ */
+export async function uploadFiles(files) {
+  const formData = new FormData();
+  Array.from(files).forEach((file) => formData.append("files", file));
+  const res = await fetch(`${BASE_URL}/upload`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) throw new Error(`/upload failed: ${res.status}`);
   return res.json();
 }

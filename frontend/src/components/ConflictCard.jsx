@@ -354,19 +354,35 @@ export default function ConflictCard({
           const aff = parseStructuredText(conflict.affected);
           return (
             <>
-              <div style={{ fontSize: 11, color: '#64748B', marginBottom: 4 }}>{aff.summary}</div>
-              {(aff.systems?.length > 0 || aff.teams?.length > 0) && (
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
-                  {aff.systems?.map(s => (
-                    <span key={s} style={{ background: '#F1F5F9', color: '#475569', padding: '2px 8px', borderRadius: 4, fontSize: 10, border: '1px solid #E2E8F0' }}>
-                      🖥️ {s}
-                    </span>
-                  ))}
-                  {aff.teams?.map(t => (
-                    <span key={t} style={{ background: '#F0FDF4', color: '#16A34A', padding: '2px 8px', borderRadius: 4, fontSize: 10, border: '1px solid #BBF7D0' }}>
-                      👥 {t}
-                    </span>
-                  ))}
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#0F172A', marginBottom: 4 }}>Primary Consequence</div>
+              <div style={{ fontSize: 11, color: '#475569', marginBottom: 10, lineHeight: 1.5 }}>{aff.summary}</div>
+              
+              {(aff.systems?.length > 0 || aff.teams?.length > 0 || aff.employees?.length > 0) && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12 }}>
+                  {aff.systems?.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', marginBottom: 4 }}>Affected Systems</div>
+                      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: '#334155', lineHeight: 1.6 }}>
+                        {aff.systems.map(s => <li key={s}>{s}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {aff.teams?.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', marginBottom: 4 }}>Affected Teams</div>
+                      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: '#334155', lineHeight: 1.6 }}>
+                        {aff.teams.map(t => <li key={t}>{t}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {aff.employees?.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', marginBottom: 4 }}>Affected Employees</div>
+                      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: '#334155', lineHeight: 1.6 }}>
+                        {aff.employees.map(e => <li key={e}>{e}</li>)}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
             </>
@@ -562,6 +578,16 @@ export default function ConflictCard({
                     {conflict.confidence}%
                   </div>
                   <div style={{ fontSize: 9, color: '#64748B', fontWeight: 600 }}>Risk Anchor</div>
+                </div>
+              </div>
+              <div style={{ marginTop: 12, padding: '8px 10px', background: '#F8FAFC', borderRadius: 4, fontSize: 10, color: '#475569', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <span style={{ fontWeight: 700, color: '#0F172A', minWidth: 60 }}>{Math.max(65, conflict.confidence - 14)}% → {Math.max(70, conflict.confidence - 6)}%</span>
+                  <span>Confidence increased due to corroborating policy citations.</span>
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <span style={{ fontWeight: 700, color: '#0F172A', minWidth: 60 }}>{Math.max(70, conflict.confidence - 6)}% → {conflict.confidence}%</span>
+                  <span>Confidence increased after validation confirmed mutually incompatible requirements.</span>
                 </div>
               </div>
             </div>

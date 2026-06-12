@@ -145,6 +145,7 @@ function SeveritySummary({ conflicts }) {
  *   onReject: (id: string) => void,
  *   onEscalate: (id: string) => void,
  *   onRunAnalysis: () => void,
+ *   isAbstained: boolean,
  * }} props
  */
 export default function ConflictDashboard({
@@ -161,6 +162,7 @@ export default function ConflictDashboard({
   onReject,
   onEscalate,
   onRunAnalysis,
+  isAbstained,
 }) {
   return (
     <div style={styles.panel}>
@@ -187,6 +189,29 @@ export default function ConflictDashboard({
           </div>
           <div style={styles.deadlineAlert}>
             ⏰ DPDP compliance deadline: July 1, 2026 — 24 days
+          </div>
+        </div>
+      )}
+
+      {/* Evidence-Only Mode for Abstained state */}
+      {phase === 'done' && isAbstained && (
+        <div style={{
+          background: '#F8FAFC',
+          border: '1px solid #CBD5E1',
+          borderRadius: 8,
+          padding: '20px',
+          marginTop: 16,
+          animation: 'fadeInUp 0.3s ease'
+        }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#334155', marginBottom: 12 }}>
+            📄 Evidence-Only Mode
+          </div>
+          <div style={{ fontSize: 12, color: '#475569', lineHeight: 1.6, marginBottom: 12 }}>
+            <span style={{ fontWeight: 600 }}>Status:</span> Evidence gathered but conflict not validated.<br/>
+            <span style={{ fontWeight: 600 }}>Confidence:</span> Insufficient for conclusion.
+          </div>
+          <div style={{ fontSize: 12, color: '#475569', lineHeight: 1.6 }}>
+            Successfully parsed {documents.length} uploaded policies. Conflict validation could not be completed because the required reasoning providers were unavailable or the extracted text lacked determinative evidence. The system abstained rather than generating an unsupported conclusion.
           </div>
         </div>
       )}

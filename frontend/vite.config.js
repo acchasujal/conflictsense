@@ -8,6 +8,7 @@ export default defineConfig({
       '/analyze': 'http://localhost:8000',
       '/approve': 'http://localhost:8000',
       '/reject':  'http://localhost:8000',
+      '/upload':  'http://localhost:8000',
     }
   }
 })

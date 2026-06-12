@@ -68,7 +68,7 @@ export default function ExecutiveDashboard({ phase }) {
         {/* Dynamic Impact Graph */}
         <div style={{ flex: 1, minWidth: 200, height: 160, background: '#FAFAFA', border: '1px solid #E2E8F0', borderRadius: 6, padding: '12px' }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: '#475569', marginBottom: 8, textAlign: 'center' }}>Departmental Risk Index</div>
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <BarChart data={chartData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
               <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748B' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10, fill: '#64748B' }} axisLine={false} tickLine={false} domain={[0, 100]} />

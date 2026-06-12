@@ -8,7 +8,7 @@ import React, { useRef, useEffect } from 'react';
 import AgentCard from './AgentCard.jsx';
 import SkeletonLoader from './SkeletonLoader.jsx';
 
-export default function ReasoningTrace({ steps, phase, isMockMode, currentStep, agentStatus }) {
+export default function ReasoningTrace({ steps, phase, isMockMode, isAbstained, executionMode, currentStep, agentStatus }) {
   const traceBodyRef = useRef(null);
 
   // Auto-scroll to bottom as new steps appear
@@ -18,10 +18,42 @@ export default function ReasoningTrace({ steps, phase, isMockMode, currentStep, 
     }
   }, [currentStep, steps.length]);
 
+  const [startTime, setStartTime] = React.useState(null);
+  const [elapsedMs, setElapsedMs] = React.useState(0);
+
+  useEffect(() => {
+    if (phase === 'scanning') {
+      if (!startTime) setStartTime(Date.now());
+    } else if (phase === 'idle') {
+      setStartTime(null);
+      setElapsedMs(0);
+    }
+  }, [phase, startTime]);
+
+  useEffect(() => {
+    let raf;
+    const update = () => {
+      if (startTime && phase === 'scanning') {
+        setElapsedMs(Date.now() - startTime);
+        raf = requestAnimationFrame(update);
+      }
+    };
+    if (startTime && phase === 'scanning') {
+      raf = requestAnimationFrame(update);
+    }
+    return () => cancelAnimationFrame(raf);
+  }, [startTime, phase]);
+
   const isRunning = phase === 'scanning';
   const isDone    = phase === 'done';
   const totalSteps = 7;
   const displayStep = Math.min(Math.max(currentStep + 1, 1), totalSteps);
+  
+  const currentAgent = steps.length > 0 ? steps[steps.length - 1].agent : 'Initializing...';
+  const elapsedSec = (elapsedMs / 1000).toFixed(1);
+  const estimatedRemaining = currentStep > 0 && isRunning
+    ? (((elapsedMs / currentStep) * (totalSteps - currentStep)) / 1000).toFixed(1)
+    : '...';
 
   return (
     <div
@@ -54,8 +86,27 @@ export default function ReasoningTrace({ steps, phase, isMockMode, currentStep, 
       >
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 16, fontWeight: 600, color: '#0F172A' }}>Live Agent Timeline</div>
-          <div style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>
-            {isRunning ? `Step ${displayStep}/${totalSteps} • Processing` : isDone ? 'Analysis Complete' : 'Awaiting start'}
+          <div style={{ fontSize: 12, color: '#64748B', marginTop: 8 }}>
+            {isRunning ? (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', fontSize: 11 }}>
+                <div><span style={{ fontWeight: 600 }}>Current Agent:</span> {currentAgent}</div>
+                <div><span style={{ fontWeight: 600 }}>Completed:</span> {displayStep - 1} / {totalSteps}</div>
+                <div><span style={{ fontWeight: 600 }}>Elapsed:</span> {elapsedSec}s</div>
+                <div><span style={{ fontWeight: 600 }}>Est. Remaining:</span> {estimatedRemaining}s</div>
+              </div>
+            ) : isDone && isAbstained ? (
+              <div style={{ display: 'flex', gap: 16 }}>
+                <span style={{ color: '#64748B' }}>Analysis Inconclusive</span>
+                <span><span style={{ fontWeight: 600 }}>Total Time:</span> {elapsedSec}s</span>
+              </div>
+            ) : isDone ? (
+              <div style={{ display: 'flex', gap: 16 }}>
+                <span>Analysis Complete</span>
+                <span><span style={{ fontWeight: 600 }}>Total Time:</span> {elapsedSec}s</span>
+              </div>
+            ) : (
+              'Awaiting start'
+            )}
           </div>
         </div>
 
@@ -66,15 +117,38 @@ export default function ReasoningTrace({ steps, phase, isMockMode, currentStep, 
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#2563EB', animation: 'pulse 1s infinite 0.4s' }} />
           </div>
         )}
-        {isDone && (
+        {isDone && isAbstained && (
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#64748B', display: 'flex', alignItems: 'center', gap: 4 }}>
+            ⏸ Abstained
+          </span>
+        )}
+        {isDone && !isAbstained && (
           <span style={{ fontSize: 13, fontWeight: 600, color: '#16A34A', display: 'flex', alignItems: 'center', gap: 4 }}>
             ✓ Complete
           </span>
         )}
       </div>
 
-      {/* ── Mock Mode banner ────────────────────────────────────────────── */}
-      {isMockMode && (
+      {/* ── Execution Mode banner ───────────────────────────────────────── */}
+      {executionMode && (
+        <div
+          style={{
+            padding: '8px 20px',
+            background: executionMode === 'Evidence Only' ? '#F1F5F9' : executionMode === 'Live Analysis' ? '#EFF6FF' : '#F0FDF4',
+            borderBottom: `1px solid ${executionMode === 'Evidence Only' ? '#CBD5E1' : executionMode === 'Live Analysis' ? '#BFDBFE' : '#BBF7D0'}`,
+            fontSize: 11,
+            color: executionMode === 'Evidence Only' ? '#475569' : executionMode === 'Live Analysis' ? '#1D4ED8' : '#16A34A',
+            fontWeight: 500
+          }}
+        >
+          Execution Mode: {executionMode}
+          {executionMode === 'Demo Scenario Replay' && ' — precomputed reasoning trace for accelerated demo execution.'}
+          {executionMode === 'Live Analysis' && ' — uploaded documents analyzed via live retrieval and provider chain.'}
+          {executionMode === 'Evidence Only' && ' — no validated conflicts emitted; confidence 0%.'}
+        </div>
+      )}
+
+      {isMockMode && !executionMode && (
         <div
           style={{
             padding: '8px 20px',
@@ -85,7 +159,7 @@ export default function ReasoningTrace({ steps, phase, isMockMode, currentStep, 
             fontWeight: 500
           }}
         >
-          🛡️ Demo Replay Mode Activated: Using a recorded enterprise scenario to guarantee deterministic results and a consistent demonstration experience.
+          🛡️ Fast Validation Mode: Precomputed reasoning trace engaged for accelerated, deterministic execution.
         </div>
       )}
 
@@ -135,7 +209,29 @@ export default function ReasoningTrace({ steps, phase, isMockMode, currentStep, 
           </div>
         )}
 
-        {isDone && (
+        {isDone && isAbstained && (
+          <div
+            style={{
+              marginTop: 16,
+              padding: '16px',
+              background: '#F1F5F9',
+              borderRadius: '8px',
+              border: '1px solid #CBD5E1',
+              animation: 'fadeInUp 0.3s ease',
+              textAlign: 'center'
+            }}
+          >
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#475569' }}>Analysis Inconclusive</div>
+            <div style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
+              The system could not gather sufficient validated evidence to determine whether a policy conflict exists.
+            </div>
+            <div style={{ fontSize: 12, color: '#475569', marginTop: 8, fontWeight: 500 }}>
+              Reasoning Confidence: 0% — ABSTAINED
+            </div>
+          </div>
+        )}
+
+        {isDone && !isAbstained && (
           <div
             style={{
               marginTop: 16,

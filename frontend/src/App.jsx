@@ -156,7 +156,14 @@ export default function App() {
   const [rejectedIds, setRejectedIds]           = useState(new Set());
   const [escalatedIds, setEscalatedIds]         = useState(new Set());
   const [isMockMode, setIsMockMode]             = useState(false);
+  const [isAbstained, setIsAbstained]           = useState(false);
+  const [executionMode, setExecutionMode]       = useState(null);
   const [agentStatus, setAgentStatus]           = useState(null);
+  const [totalConflicts, setTotalConflicts]     = useState(0);
+
+  // New state to fix scenario routing bug
+  const [currentScenario, setCurrentScenario]   = useState(null);
+  const [liveDocuments, setLiveDocuments]       = useState(MOCK_DOCUMENTS);
 
   // Refs for cleanup
   const streamCancelRef = useRef(null);
@@ -176,9 +183,18 @@ export default function App() {
 
   // ── Tier 3 local fallback ─────────────────────────────────────────────────
   // Called when backend SSE fails. Mirrors the original timer-based simulation.
-  const runLocalFallback = useCallback(() => {
+  const runLocalFallback = useCallback((scenario) => {
     console.warn('[App] Backend unavailable — activating Tier 3 client-side mock mode');
+    if (scenario === 'custom_upload') {
+      console.error('[App] HARD GUARDRAIL: custom_upload cannot fall back to precomputed client mock mode!');
+      setPhase('done');
+      setIsAbstained(true);
+      return;
+    }
+
     setIsMockMode(true);
+    setLiveDocuments(MOCK_DOCUMENTS);
+    setTotalConflicts(MOCK_CONFLICTS.length);
 
     MOCK_TRACE_STEPS.forEach((step, stepIdx) => {
       const tid = setTimeout(() => {
@@ -207,8 +223,18 @@ export default function App() {
   }, []);
 
   // ── runAnalysis — backend SSE path ────────────────────────────────────────
-  const runAnalysis = useCallback(() => {
+  const runAnalysis = useCallback((scenario = null) => {
     cancelAll();
+
+    // Fix: Ensure we preserve scenario state across button clicks (which pass MouseEvent)
+    let scenarioParam = null;
+    if (typeof scenario === 'string') {
+      scenarioParam = scenario;
+    } else {
+      scenarioParam = currentScenario;
+    }
+    
+    setCurrentScenario(scenarioParam);
 
     // Reset state
     setPhase('scanning');
@@ -220,11 +246,34 @@ export default function App() {
     setEscalatedIds(new Set());
     setSelectedId(null);
     setIsMockMode(false);
+    setIsAbstained(false);
+    setExecutionMode(null);
     setAgentStatus(null);
+    setLiveDocuments([]); // Clear documents on new analysis run
+
+    if (scenarioParam === 'custom_upload') {
+      setExecutionMode('Live Analysis');
+    } else if (scenarioParam?.startsWith('scenario_')) {
+      setExecutionMode('Demo Scenario Replay');
+    }
 
     let stepIndex = 0;
 
     const handle = streamAnalysis({
+      scenario: scenarioParam,
+      onDocumentLoaded: (data) => {
+        setLiveDocuments((prev) => {
+          if (prev.some((d) => d.name === data.document)) return prev;
+          return [...prev, {
+            id: data.document,
+            name: data.document,
+            dept: scenarioParam === "custom_upload" ? "Uploaded Policy" : "Knowledge Base",
+            date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+            size: "Live",
+            status: data.status,
+          }];
+        });
+      },
       onTraceStep: (step) => {
         setVisibleSteps((prev) => [...prev, step]);
         setCurrentStep((prev) => prev + 1);
@@ -241,8 +290,20 @@ export default function App() {
       onComplete: (payload) => {
         setPhase('done');
         setAgentStatus(null);
-        // Set MOCK_MODE if backend signals it
-        if (payload?._meta?.fallback === 'DETERMINISTIC_FALLBACK') {
+        if (payload?.status === 'abstained') {
+          setIsAbstained(true);
+          setExecutionMode('Evidence Only');
+        }
+        if (payload?.total_conflicts !== undefined) {
+          setTotalConflicts(payload.total_conflicts);
+        }
+        const fallback = payload?._meta?.fallback;
+        if (fallback === 'DEMO_SCENARIO_REPLAY') {
+          setExecutionMode('Demo Scenario Replay');
+        } else if (payload?._meta?.execution_mode) {
+          setExecutionMode(payload._meta.execution_mode);
+        }
+        if (fallback === 'DETERMINISTIC_FALLBACK') {
           setIsMockMode(true);
         }
       },
@@ -254,12 +315,12 @@ export default function App() {
       onError: () => {
         // Backend unavailable — fall back to Tier 3 local simulation
         cancelAll();
-        runLocalFallback();
+        runLocalFallback(scenarioParam);
       },
     });
 
     streamCancelRef.current = handle;
-  }, [cancelAll, runLocalFallback]);
+  }, [cancelAll, runLocalFallback, currentScenario]);
 
   // ── Approval Gate handlers ────────────────────────────────────────────────
   const handleSelect = useCallback((id) => {
@@ -313,6 +374,15 @@ export default function App() {
           <RunButton phase={phase} onClick={runAnalysis} />
         </header>
 
+        {/* ── Debug Panel ──────────────────────────────────────────────── */}
+        <div style={{ background: '#1E293B', color: '#F8FAFC', padding: '4px 16px', fontSize: 10, display: 'flex', gap: 16, borderBottom: '1px solid #0F172A' }}>
+          <span style={{ color: '#94A3B8' }}>DEBUG MODE</span>
+          <span>Phase: <strong style={{ color: '#38BDF8' }}>{phase}</strong></span>
+          <span>Execution Mode: <strong style={{ color: executionMode ? '#38BDF8' : '#64748B' }}>{executionMode || '—'}</strong></span>
+          <span>Total Conflicts (Internal): <strong>{totalConflicts}</strong></span>
+          <span>Visible Conflicts: <strong>{visibleConflicts.length}</strong></span>
+        </div>
+
         {/* ── Responsible AI banner ────────────────────────────────────── */}
         <div role="alert" aria-live="polite" style={{ background: '#FAEEDA', borderBottom: '0.5px solid #EF9F27', padding: '5px 16px', fontSize: 10, color: '#633806', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           <span>⚠</span>
@@ -327,10 +397,10 @@ export default function App() {
 
           {/* Left: document grid + conflict list */}
           <ConflictDashboard
-            documents={MOCK_DOCUMENTS}
+            documents={liveDocuments}
             visibleConflicts={visibleConflicts}
             phase={phase}
-            totalConflicts={MOCK_CONFLICTS.length}
+            totalConflicts={phase === 'done' ? totalConflicts : (isMockMode ? MOCK_CONFLICTS.length : totalConflicts)}
             selectedId={selectedId}
             approvedIds={approvedIds}
             rejectedIds={rejectedIds}
@@ -340,6 +410,7 @@ export default function App() {
             onReject={handleReject}
             onEscalate={handleEscalate}
             onRunAnalysis={runAnalysis}
+            isAbstained={isAbstained}
           />
 
           {/* Right: reasoning trace terminal */}
@@ -347,6 +418,8 @@ export default function App() {
             steps={visibleSteps}
             phase={phase}
             isMockMode={isMockMode}
+            isAbstained={isAbstained}
+            executionMode={executionMode}
             currentStep={currentStep}
             agentStatus={agentStatus}
           />

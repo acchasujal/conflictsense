@@ -1,6 +1,32 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
+import { uploadFiles } from '../lib/api.js';
 
 export default function CopilotExperience({ onRunAnalysis }) {
+  const [activeTab, setActiveTab] = useState('demo'); // 'demo' | 'upload'
+  const [files, setFiles] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleFileChange = (e) => {
+    if (e.target.files) {
+      setFiles(Array.from(e.target.files));
+    }
+  };
+
+  const handleUploadAndAnalyze = async () => {
+    if (files.length === 0) return;
+    setIsUploading(true);
+    try {
+      await uploadFiles(files);
+      onRunAnalysis("custom_upload");
+    } catch (e) {
+      console.error("Upload failed", e);
+      alert("Upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div
       style={{
@@ -22,50 +48,121 @@ export default function CopilotExperience({ onRunAnalysis }) {
         animation: 'gradientShift 5s ease infinite'
       }} />
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 8,
-          background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#3730A3', fontSize: 20
-        }}>
-          🎯
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 20, borderBottom: '1px solid #E2E8F0', marginBottom: 20 }}>
+        <div 
+          onClick={() => setActiveTab('demo')}
+          style={{
+            paddingBottom: 8,
+            cursor: 'pointer',
+            fontWeight: activeTab === 'demo' ? 600 : 400,
+            color: activeTab === 'demo' ? '#0F172A' : '#64748B',
+            borderBottom: activeTab === 'demo' ? '2px solid #185FA5' : '2px solid transparent',
+            transition: 'all 0.2s'
+          }}
+        >
+          Demo Scenarios
         </div>
-        <div>
-          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.3px' }}>
-            Try Enterprise Scenarios
-          </h2>
-          <div style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>
-            Click a scenario below to launch the multi-agent detection pipeline
-          </div>
+        <div 
+          onClick={() => setActiveTab('upload')}
+          style={{
+            paddingBottom: 8,
+            cursor: 'pointer',
+            fontWeight: activeTab === 'upload' ? 600 : 400,
+            color: activeTab === 'upload' ? '#0F172A' : '#64748B',
+            borderBottom: activeTab === 'upload' ? '2px solid #185FA5' : '2px solid transparent',
+            transition: 'all 0.2s'
+          }}
+        >
+          Upload Policies
         </div>
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: 12
-      }}>
-        <ScenarioCard 
-          title="Data Residency Conflict" 
-          desc="Test cross-border IT policies vs HR flexibility." 
-          onClick={onRunAnalysis} 
-        />
-        <ScenarioCard 
-          title="Anonymous Reporting Conflict" 
-          desc="Test whistleblower protection vs IT identity logging." 
-          onClick={onRunAnalysis} 
-        />
-        <ScenarioCard 
-          title="Cross-Border Access Conflict" 
-          desc="Test VPN access vs export control rules." 
-          onClick={onRunAnalysis} 
-        />
-        <ScenarioCard 
-          title="Vendor Compliance Conflict" 
-          desc="Test third-party software SLAs vs internal security audits." 
-          onClick={onRunAnalysis} 
-        />
-      </div>
+      {activeTab === 'demo' ? (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+            <ScenarioCard 
+              title="Data Residency Conflict" 
+              desc="Test cross-border IT policies vs HR flexibility." 
+              onClick={() => onRunAnalysis("scenario_1_data_residency")} 
+            />
+            <ScenarioCard 
+              title="Anonymous Reporting Conflict" 
+              desc="Test whistleblower protection vs IT identity logging." 
+              onClick={() => onRunAnalysis("scenario_2_anonymous_reporting")} 
+            />
+            <ScenarioCard 
+              title="Cross-Border Access Conflict" 
+              desc="Test VPN access vs export control rules." 
+              onClick={() => onRunAnalysis("scenario_3_cross_border")} 
+            />
+            <ScenarioCard 
+              title="Vendor Compliance Conflict" 
+              desc="Test third-party software SLAs vs internal security audits." 
+              onClick={() => onRunAnalysis("scenario_4_vendor_compliance")} 
+            />
+          </div>
+        </>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div 
+            style={{
+              border: '1px dashed #CBD5E1',
+              borderRadius: 8,
+              padding: 24,
+              textAlign: 'center',
+              background: '#F8FAFC',
+              cursor: 'pointer',
+              transition: 'background 0.2s'
+            }}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <input 
+              type="file" 
+              multiple 
+              accept=".pdf,.txt,.docx,.md"
+              ref={fileInputRef} 
+              style={{ display: 'none' }} 
+              onChange={handleFileChange}
+            />
+            <div style={{ fontSize: 24, marginBottom: 8 }}>📁</div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: '#334155' }}>
+              Click to upload files
+            </div>
+            <div style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
+              Supports PDF, DOCX, TXT
+            </div>
+          </div>
+          
+          {files.length > 0 && (
+            <div style={{ fontSize: 12, color: '#475569' }}>
+              <strong>Selected ({files.length}):</strong> {files.map(f => f.name).join(', ')}
+            </div>
+          )}
+
+          <button 
+            onClick={handleUploadAndAnalyze}
+            disabled={files.length === 0 || isUploading}
+            style={{
+              background: files.length === 0 || isUploading ? '#E2E8F0' : '#185FA5',
+              color: files.length === 0 || isUploading ? '#94A3B8' : '#FFFFFF',
+              border: 'none',
+              borderRadius: 6,
+              padding: '10px 16px',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: files.length === 0 || isUploading ? 'not-allowed' : 'pointer',
+              alignSelf: 'flex-start',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8
+            }}
+          >
+            {isUploading ? 'Uploading & Analyzing...' : 'Analyze Conflict'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -118,49 +215,6 @@ function ScenarioCard({ title, desc, onClick }) {
         gap: 4
       }}>
         Run Analysis ➔
-      </div>
-    </div>
-  );
-}
-
-function TelemetryCard({ label, value, status, color }) {
-  return (
-    <div style={{
-      background: '#F8FAFC',
-      border: '1px solid #E2E8F0',
-      borderRadius: 8,
-      padding: '12px 14px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 6
-    }}>
-      <div style={{
-        fontSize: 10,
-        fontWeight: 600,
-        color: '#64748B',
-        textTransform: 'uppercase',
-        letterSpacing: 0.5
-      }}>
-        {label}
-      </div>
-      <div style={{
-        fontSize: 13,
-        color: '#0F172A',
-        fontWeight: 600,
-      }}>
-        {value}
-      </div>
-      <div style={{
-        marginTop: 'auto',
-        fontSize: 11,
-        color: color,
-        fontWeight: 600,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 4
-      }}>
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: color }} />
-        {status}
       </div>
     </div>
   );

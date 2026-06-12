@@ -11,19 +11,44 @@ const AGENT_META = {
   'Resolution Generation': { icon: Sparkles, purpose: 'Drafting remediation pathways' }
 };
 
+function tryParseJSONSummary(text) {
+  if (typeof text !== 'string') return text;
+  try {
+    const obj = JSON.parse(text);
+    return obj.summary || obj.recommendation || text;
+  } catch (e) {
+    return text;
+  }
+}
+
 export default function AgentCard({ step, isLatest }) {
   const meta = AGENT_META[step.agent] || { icon: Sparkles, purpose: 'Reasoning process' };
   const Icon = meta.icon;
   const isRunning = isLatest && !step.conclusion; // simple heuristic
   const isCritical = step.severity === 'CRITICAL';
 
-  let summary = step.conclusion;
+  let rawConclusion = step.conclusion;
+  let summary = tryParseJSONSummary(rawConclusion);
   let details = null;
-  if (step.conclusion) {
-    const match = step.conclusion.match(/^([^.!?]+[.!?])\s+(.*)$/s);
-    if (match) {
-      summary = match[1];
-      details = match[2];
+  
+  if (summary === rawConclusion && summary) {
+    if (typeof summary === 'string') {
+      // If it's a long plain text string, split it
+      const match = summary.match(/^([^.!?]+[.!?])\s+(.*)$/s);
+      if (match) {
+        summary = match[1];
+        details = match[2];
+      }
+    } else if (Array.isArray(summary)) {
+      summary = summary.join(', ');
+    } else if (typeof summary === 'object') {
+      summary = JSON.stringify(summary);
+    }
+  } else if (summary !== rawConclusion) {
+    // It was JSON, so the raw is the details
+    details = typeof rawConclusion === 'object' ? JSON.stringify(rawConclusion, null, 2) : rawConclusion;
+    if (typeof summary === 'object') {
+      summary = JSON.stringify(summary);
     }
   }
 
@@ -54,21 +79,28 @@ export default function AgentCard({ step, isLatest }) {
         </div>
         
         <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{step.agent}</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: isRunning ? '#2563EB' : '#16A34A', display: 'flex', alignItems: 'center', gap: 4 }}>
+              {isRunning ? 'Processing...' : '✓ Complete'}
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11, color: '#64748B', flexWrap: 'wrap' }}>
+            {step.time && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontWeight: 600 }}>Duration:</span> {step.time}
+              </div>
+            )}
             {step.confidence && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 11, color: '#64748B' }}>Confidence</span>
-                <span style={{
-                  fontSize: 12, fontWeight: 700,
-                  color: step.confidence >= 90 ? '#16A34A' : '#D97706'
-                }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontWeight: 600 }}>Confidence:</span> 
+                <span style={{ color: step.confidence >= 90 ? '#16A34A' : '#D97706', fontWeight: 700 }}>
                   {step.confidence}%
                 </span>
               </div>
             )}
           </div>
-          <div style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>{meta.purpose}</div>
         </div>
       </div>
 
@@ -110,11 +142,11 @@ export default function AgentCard({ step, isLatest }) {
               Conflict Detected
             </div>
           )}
-          <div style={{ fontWeight: details ? 600 : 400 }}>{summary}</div>
+          <div style={{ fontWeight: 500 }}>{summary}</div>
           {details && (
             <details style={{ marginTop: 8 }}>
-              <summary style={{ fontSize: 11, color: '#64748B', cursor: 'pointer', outline: 'none', userSelect: 'none' }}>View detailed reasoning trace</summary>
-              <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px dashed #CBD5E1', fontSize: 12, color: '#475569' }}>
+              <summary style={{ fontSize: 11, color: '#64748B', cursor: 'pointer', outline: 'none', userSelect: 'none' }}>Expand Details</summary>
+              <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px dashed #CBD5E1', fontSize: 11, color: '#475569', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
                 {details}
               </div>
             </details>
