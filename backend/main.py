@@ -56,7 +56,12 @@ app = FastAPI(
 # CORS — allow the Vite dev server and any local origin
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173", 
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "https://conflictsense.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -97,6 +102,12 @@ def _sse_event(event: str, data: dict) -> dict:
 
 
 # ─── Endpoints ────────────────────────────────────────────────────────────────
+
+@app.get("/")
+@app.get("/health")
+async def health_check():
+    """Healthcheck endpoint for Render deployment."""
+    return {"status": "ok", "service": "ConflictSense API"}
 
 @app.get("/analyze/stream")
 async def analyze_stream(scenario: str = None):
