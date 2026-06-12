@@ -11,6 +11,8 @@ import json
 import logging
 from typing import Any, Dict
 
+import asyncio
+
 from agents.llm_provider import get_provider_chain
 
 logger = logging.getLogger("conflictsense.master_agent")
@@ -55,37 +57,53 @@ EVIDENCE CONTEXT:
 
 class MasterReasoningAgent:
     def __init__(self, allow_mock: bool = False):
-        self.provider_chain = get_provider_chain(allow_mock=allow_mock)
+        self.provider_chain = get_provider_chain()
+        self.allow_mock = allow_mock
 
     async def analyze(self, all_documents_text: str) -> Dict[str, Any]:
         """
         Runs the massive single-prompt analysis against the provided text.
         """
-        prompt = MASTER_PROMPT.format(evidence=all_documents_text)
+        prompt = MASTER_PROMPT.replace("{evidence}", all_documents_text)
+        system_instruction = "You are an expert compliance auditor. You output ONLY valid JSON without markdown fences."
         
-        logger.info("MasterReasoningAgent executing single-call LLM analysis...")
-        result = await self.provider_chain.generate(
-            prompt=prompt,
-            system_instruction="You are an expert compliance auditor. You output ONLY valid JSON without markdown fences."
-        )
+        logger.info("FAST_PIPELINE_START: MasterReasoningAgent executing single-call LLM analysis...")
+        logger.info(f"CONTEXT_LENGTH: {len(all_documents_text)} characters loaded.")
         
-        if result.is_mock:
-            logger.warning("MasterReasoningAgent fell back to mock data.")
-            
+        def _mock_factory():
+            from pathlib import Path
+            kb_path = Path(__file__).parent.parent / "data" / "precomputed" / "full_kb_analysis.json"
+            if kb_path.exists():
+                with open(kb_path, "r", encoding="utf-8") as f:
+                    # Load the precomputed events and extract the first 'conflict_detected' or 'complete'
+                    events = json.load(f)
+                    conflicts = [ev["conflict_record"] for ev in events if "conflict_record" in ev]
+                    exec_summary = "Enterprise Audit detected multiple high-risk compliance gaps across Finance, IT, and Legal. Immediate attention required."
+                    return {"executive_summary": exec_summary, "conflicts": conflicts}
+            return {"executive_summary": "Mock fallback used due to provider failure.", "conflicts": []}
+
+        logger.info("LLM_CALL_START: Calling provider chain...")
         try:
-            # Strip markdown fences if present
-            raw_text = result.text.strip()
-            if raw_text.startswith("```json"):
-                raw_text = raw_text[7:]
-            if raw_text.startswith("```"):
-                raw_text = raw_text[3:]
-            if raw_text.endswith("```"):
-                raw_text = raw_text[:-3]
-            raw_text = raw_text.strip()
+            data, response = await asyncio.to_thread(
+                self.provider_chain.complete_json,
+                system_instruction,
+                prompt,
+                mock_factory=_mock_factory,
+                allow_mock=self.allow_mock
+            )
+            
+            logger.info("LLM_CALL_COMPLETE: Provider chain returned successfully.")
+            logger.info(f"PROVIDER_SELECTED: {response.provider}")
+            logger.info(f"MODEL_SELECTED: {response.model}")
+            
+            if response.is_mock_mode:
+                logger.warning("MasterReasoningAgent fell back to mock data.")
                 
-            data = json.loads(raw_text)
-            return {"data": data, "is_mock": result.is_mock}
-        except json.JSONDecodeError as e:
-            logger.error(f"MasterReasoningAgent returned invalid JSON: {e}")
-            logger.debug(f"Raw output: {result.text}")
-            return {"data": None, "is_mock": result.is_mock}
+            logger.info("JSON_PARSE_SUCCESS: Response parsed correctly.")
+            conflicts = data.get("conflicts", [])
+            logger.info(f"CONFLICTS_FOUND: {len(conflicts)}")
+            
+            return {"data": data, "is_mock": response.is_mock_mode}
+        except Exception as e:
+            logger.error(f"MasterReasoningAgent pipeline failure: {e}")
+            return {"data": None, "is_mock": False}
