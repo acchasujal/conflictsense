@@ -248,7 +248,7 @@ export default function App() {
     setIsMockMode(false);
     setIsAbstained(false);
     setExecutionMode(null);
-    setAgentStatus(null);
+    setAgentStatus("Starting analysis engine. First request may take up to 60 seconds.");
     setLiveDocuments([]); // Clear documents on new analysis run
 
     if (scenarioParam === 'custom_upload') {

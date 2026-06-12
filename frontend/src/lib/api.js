@@ -18,7 +18,7 @@
  *   mock-data simulation (Tier 3 client-side fallback).
  */
 
-const BASE_URL = "";   // Empty = same-origin via Vite proxy → http://localhost:8000
+const BASE_URL = import.meta.env.VITE_API_URL || "";
 
 // ─── streamAnalysis ───────────────────────────────────────────────────────────
 
