@@ -322,7 +322,7 @@ async def run_analysis_pipeline(
             await run_precomputed_pipeline(emit_fn, "scenario_5_nexora_demo")
         return
 
-    if scenario in ("custom_upload", "full_kb_analysis"):
+    if scenario == "custom_upload":
         logger.info("Fast Pipeline requested (scenario=%s).", scenario)
         try:
             live_succeeded = await run_fast_live_pipeline(emit_fn, scenario)
@@ -335,8 +335,8 @@ async def run_analysis_pipeline(
             _emit_abstention(emit_fn)
         return
 
-    if scenario:
-        logger.info("Demo Scenario Replay requested for scenario: %s", scenario)
+    if scenario in ("full_kb_analysis",) or scenario.startswith("scenario_"):
+        logger.info("Deterministic Mode requested for scenario: %s", scenario)
         await run_precomputed_pipeline(emit_fn, scenario)
         return
 

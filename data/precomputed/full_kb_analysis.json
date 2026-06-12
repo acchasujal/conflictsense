@@ -3,7 +3,7 @@
     "event": "document_loaded",
     "data": {
       "document": "Employee_Handbook.md",
-      "status": "loading",
+      "status": "loaded",
       "source_dir": "knowledge_base"
     }
   },
@@ -11,7 +11,7 @@
     "event": "document_loaded",
     "data": {
       "document": "IT_Security_Policy.md",
-      "status": "loading",
+      "status": "loaded",
       "source_dir": "knowledge_base"
     }
   },
@@ -19,7 +19,7 @@
     "event": "document_loaded",
     "data": {
       "document": "HR_Remote_Work_Policy.md",
-      "status": "loading",
+      "status": "loaded",
       "source_dir": "knowledge_base"
     }
   },
@@ -27,7 +27,7 @@
     "event": "document_loaded",
     "data": {
       "document": "Whistleblower_Policy.md",
-      "status": "loading",
+      "status": "loaded",
       "source_dir": "knowledge_base"
     }
   },
@@ -35,7 +35,7 @@
     "event": "document_loaded",
     "data": {
       "document": "Data_Governance_Policy.md",
-      "status": "loading",
+      "status": "loaded",
       "source_dir": "knowledge_base"
     }
   },
@@ -43,7 +43,7 @@
     "event": "document_loaded",
     "data": {
       "document": "Finance_Expense_Policy.md",
-      "status": "loading",
+      "status": "loaded",
       "source_dir": "knowledge_base"
     }
   },
@@ -51,94 +51,78 @@
     "event": "document_loaded",
     "data": {
       "document": "DPDP_Compliance_Directive.md",
-      "status": "loading",
+      "status": "loaded",
       "source_dir": "knowledge_base"
     }
   },
   {
     "event": "trace_step",
     "data": {
-      "agent": "Document Analysis",
-      "agentColor": "#85B7EB",
-      "time": "0.3s",
-      "query": "employee data location and processing rules",
-      "citations": null,
-      "conclusion": "Analyzing knowledge base schema and determining query formulation strategy for data residency.",
-      "severity": null,
-      "confidence": null
+      "agent": "IngestionAgent",
+      "action": "Knowledge Base Loaded",
+      "description": "Successfully indexed 7 enterprise policies into vector store.",
+      "confidence": 100,
+      "evidence_count": 7
     }
   },
   {
     "event": "trace_step",
     "data": {
-      "agent": "Azure Search Grounding",
-      "agentColor": "#85B7EB",
-      "time": "1.8s",
-      "query": "employee data location and processing rules",
-      "citations": [
-        {
-          "document": "IT_Security_Policy.md",
-          "section": "\u00a74.2",
-          "passage": "All company data processing shall occur exclusively on US-domiciled servers. VPN access restricted to US IP ranges.",
-          "confidence": 0.96,
-          "topic": "employee data location and processing rules"
-        },
-        {
-          "document": "IT_Security_Policy.md",
-          "section": "\u00a74.3",
-          "passage": "No employee data may be transferred to non-US cloud providers without CISO written approval.",
-          "confidence": 0.94,
-          "topic": "employee data location and processing rules"
-        },
-        {
-          "document": "DPDP_Compliance_Directive.md",
-          "section": "\u00a73.1",
-          "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction. Effective July 1, 2026.",
-          "confidence": 0.94,
-          "topic": "employee data location and processing rules"
-        },
-        {
-          "document": "HR_Remote_Work_Policy.md",
-          "section": "\u00a76.2",
-          "passage": "Employees may work from any global location without prior approval. Data access follows the employee\u2019s location.",
-          "confidence": 0.91,
-          "topic": "employee data location and processing rules"
-        }
-      ],
-      "conclusion": null,
-      "severity": null,
-      "confidence": null,
-      "telemetry": {
-        "docs_analyzed": 7,
-        "total_citations": 4,
-        "per_document_meta": []
-      }
+      "agent": "CrossPolicyAnalyzer",
+      "action": "Cross-Policy Review Started",
+      "description": "Initiating parallel comparison across all policy boundaries.",
+      "confidence": 98,
+      "evidence_count": 0
     }
   },
   {
     "event": "trace_step",
     "data": {
-      "agent": "Conflict Validation",
-      "agentColor": "#D085EB",
-      "time": "1.1s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Validation passed: three-way structural impossibility confirmed \u2014 US-only server mandate vs. India-resident jurisdiction vs. global location permission.",
-      "severity": null,
-      "confidence": null
+      "agent": "LogicValidator",
+      "action": "Governance Contradictions Identified",
+      "description": "Detected 5 structurally impossible compliance mandates.",
+      "confidence": 95,
+      "evidence_count": 10
     }
   },
   {
     "event": "trace_step",
     "data": {
-      "agent": "Impact Assessment",
-      "agentColor": "#EBD085",
-      "time": "1.2s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Affects Bangalore engineering team (240 FTEs) and all EU remote workers. DPDP effective July 1, 2026 \u2014 19 days from policy review date.",
-      "severity": null,
-      "confidence": null
+      "agent": "RiskAssessor",
+      "action": "Human Impact Assessment Complete",
+      "description": "Mapped contradictions to affected employee groups and safety risks.",
+      "confidence": 92,
+      "evidence_count": 5
+    }
+  },
+  {
+    "event": "trace_step",
+    "data": {
+      "agent": "RiskAssessor",
+      "action": "Risk Prioritization Complete",
+      "description": "Categorized findings by severity (Critical, High, Medium).",
+      "confidence": 96,
+      "evidence_count": 5
+    }
+  },
+  {
+    "event": "trace_step",
+    "data": {
+      "agent": "ExecutiveSummarizer",
+      "action": "Executive Summary Generated",
+      "description": "Compiled enterprise audit report for leadership review.",
+      "confidence": 99,
+      "evidence_count": 1
+    }
+  },
+  {
+    "event": "trace_step",
+    "data": {
+      "agent": "Orchestrator",
+      "action": "Analysis Complete",
+      "description": "Full KB Analysis finished successfully.",
+      "confidence": 100,
+      "evidence_count": 0
     }
   },
   {
@@ -172,47 +156,6 @@
       "risk_level": "CRITICAL",
       "risk_score": 89,
       "confidence": 96
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Risk Quantification",
-      "agentColor": "#F0B05A",
-      "time": "1.4s",
-      "query": null,
-      "citations": [
-        {
-          "document": "DPDP_Compliance_Directive.md",
-          "section": "\u00a73.1",
-          "passage": "Personal data of Indian-resident employees must be processed within Indian jurisdiction.",
-          "confidence": 0.94,
-          "topic": "employee data location and processing rules"
-        },
-        {
-          "document": "IT_Security_Policy.md",
-          "section": "\u00a74.2",
-          "passage": "All company data processing shall occur exclusively on US-domiciled servers.",
-          "confidence": 0.96,
-          "topic": "employee data location and processing rules"
-        }
-      ],
-      "conclusion": "Three policies make simultaneous compliance structurally impossible. DPDP enforcement begins July 1, 2026 \u2014 19 days. Non-compliance risks Indian Data Protection Board investigation and GDPR cross-border transfer violations.",
-      "severity": "CRITICAL",
-      "confidence": 96
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Resolution Generation",
-      "agentColor": "#5AB0F0",
-      "time": "1.6s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Implement geo-fenced data processing: Indian-resident employee data processed on India-region servers; EU employee data on EU-region servers. IT Security Policy \u00a74.2 must be amended to recognize jurisdictional carve-outs for DPDP and GDPR. CISO and Legal must co-sign the amended policy before June 30, 2026.",
-      "severity": null,
-      "confidence": null
     }
   },
   {
@@ -344,92 +287,6 @@
     }
   },
   {
-    "event": "trace_step",
-    "data": {
-      "agent": "Conflict Detection",
-      "agentColor": "#F09595",
-      "time": "2.3s",
-      "query": null,
-      "citations": null,
-      "conclusion": "IT Security Policy \u00a74.2 mandates US-only servers. DPDP Compliance Directive \u00a73.1 mandates Indian-jurisdiction processing for Indian employees effective July 1, 2026. HR Remote Work \u00a76.2 permits those employees to work from any location. All three apply simultaneously to 240 Bangalore engineers. Structurally impossible to satisfy all three.",
-      "severity": "CRITICAL",
-      "confidence": 96,
-      "isSurprise": false
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Document Analysis",
-      "agentColor": "#85B7EB",
-      "time": "0.3s",
-      "query": "employee reporting channels and anonymity guarantees",
-      "citations": null,
-      "conclusion": "Analyzing knowledge base for whistleblower channel definitions and identity logging obligations.",
-      "severity": null,
-      "confidence": null
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Azure Search Grounding",
-      "agentColor": "#85B7EB",
-      "time": "1.6s",
-      "query": "employee reporting channels and anonymity guarantees",
-      "citations": [
-        {
-          "document": "Whistleblower_Policy.md",
-          "section": "\u00a74.2",
-          "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.",
-          "confidence": 0.91,
-          "topic": "employee reporting channels and anonymity guarantees"
-        },
-        {
-          "document": "IT_Security_Policy.md",
-          "section": "\u00a79.3",
-          "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.",
-          "confidence": 0.95,
-          "topic": "employee reporting channels and anonymity guarantees"
-        }
-      ],
-      "conclusion": null,
-      "severity": null,
-      "confidence": null,
-      "telemetry": {
-        "docs_analyzed": 7,
-        "total_citations": 2,
-        "per_document_meta": []
-      }
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Conflict Validation",
-      "agentColor": "#D085EB",
-      "time": "0.8s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Structural impossibility confirmed: employees who report harassment, fraud, or safety violations believe they are anonymous. They are not. Their identity is logged at the system level every time they access the ethics portal. If a manager or IT administrator accesses audit logs, the reporter is identifiable.",
-      "severity": null,
-      "confidence": null
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Impact Assessment",
-      "agentColor": "#EBD085",
-      "time": "1.0s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Affects all employees who have filed or may file ethics portal reports. Anonymity promise is unenforceable under current IT architecture. Retroactive exposure risk for historic reports.",
-      "severity": null,
-      "confidence": null
-    }
-  },
-  {
     "event": "risk_category_identified",
     "data": {
       "id": "b7e42a1f",
@@ -460,47 +317,6 @@
       "risk_level": "CRITICAL",
       "risk_score": 94,
       "confidence": 91
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Risk Quantification",
-      "agentColor": "#F0B05A",
-      "time": "1.3s",
-      "query": null,
-      "citations": [
-        {
-          "document": "Whistleblower_Policy.md",
-          "section": "\u00a74.2",
-          "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.",
-          "confidence": 0.91,
-          "topic": "employee reporting channels and anonymity guarantees"
-        },
-        {
-          "document": "IT_Security_Policy.md",
-          "section": "\u00a79.3",
-          "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.",
-          "confidence": 0.95,
-          "topic": "employee reporting channels and anonymity guarantees"
-        }
-      ],
-      "conclusion": "The anonymity guarantee exists on paper. It does not exist in the system. Every report is identity-logged. This is not a configuration gap \u2014 it is a structural contradiction baked into two concurrent policies.",
-      "severity": "CRITICAL",
-      "confidence": 91
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Resolution Generation",
-      "agentColor": "#5AB0F0",
-      "time": "1.5s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Deploy a third-party anonymized reporting channel (e.g. EthicsPoint) that operates outside the corporate IT audit perimeter. Remove ethics portal from the universal logging scope in IT Security Policy \u00a79.3 via a named exception approved by CISO. HR Compliance and CISO must co-own the remediation within 30 days.",
-      "severity": null,
-      "confidence": null
     }
   },
   {
@@ -620,92 +436,6 @@
     }
   },
   {
-    "event": "trace_step",
-    "data": {
-      "agent": "Conflict Detection",
-      "agentColor": "#F09595",
-      "time": "2.1s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Whistleblower Policy \u00a74.2 guarantees anonymity. IT Security Policy \u00a79.3 mandates full identity logging with no exceptions. Ethics portal access is a system access event. These two policies cannot simultaneously be satisfied. Every report filed through the portal is traceable.",
-      "severity": "CRITICAL",
-      "confidence": 91,
-      "isSurprise": true
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Document Analysis",
-      "agentColor": "#85B7EB",
-      "time": "0.3s",
-      "query": "BYOD device data deletion and retention obligations",
-      "citations": null,
-      "conclusion": "Analyzing BYOD termination obligations and retention schedules across IT Security and Data Governance policies.",
-      "severity": null,
-      "confidence": null
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Azure Search Grounding",
-      "agentColor": "#85B7EB",
-      "time": "1.7s",
-      "query": "BYOD device data deletion and retention obligations",
-      "citations": [
-        {
-          "document": "IT_Security_Policy.md",
-          "section": "\u00a76.3",
-          "passage": "Upon employee termination or device transfer, all company data must be permanently and immediately deleted from personal devices. Verified deletion certificate required within 24 hours.",
-          "confidence": 0.89,
-          "topic": "BYOD device data deletion and retention obligations"
-        },
-        {
-          "document": "Data_Governance_Policy.md",
-          "section": "\u00a711.2",
-          "passage": "All employee communications, work products, and associated metadata must be retained for a minimum of 7 years for audit and legal compliance purposes.",
-          "confidence": 0.86,
-          "topic": "BYOD device data deletion and retention obligations"
-        }
-      ],
-      "conclusion": null,
-      "severity": null,
-      "confidence": null,
-      "telemetry": {
-        "docs_analyzed": 7,
-        "total_citations": 2,
-        "per_document_meta": []
-      }
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Conflict Validation",
-      "agentColor": "#D085EB",
-      "time": "0.9s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Validation passed: both obligations trigger at the exact same moment (termination). Deletion makes retention impossible. Retention makes deletion impossible.",
-      "severity": null,
-      "confidence": null
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Impact Assessment",
-      "agentColor": "#EBD085",
-      "time": "1.0s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Affects 450 active BYOD users. Every termination event triggers the contradiction. 12 planned terminations this quarter place the company in simultaneous violation of both policies.",
-      "severity": null,
-      "confidence": null
-    }
-  },
-  {
     "event": "risk_category_identified",
     "data": {
       "id": "c9d23b8e",
@@ -736,47 +466,6 @@
       "risk_level": "HIGH",
       "risk_score": 71,
       "confidence": 83
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Risk Quantification",
-      "agentColor": "#F0B05A",
-      "time": "1.2s",
-      "query": null,
-      "citations": [
-        {
-          "document": "IT_Security_Policy.md",
-          "section": "\u00a76.3",
-          "passage": "Upon employee termination or device transfer, all company data must be permanently and immediately deleted from personal devices.",
-          "confidence": 0.89,
-          "topic": "BYOD device data deletion and retention obligations"
-        },
-        {
-          "document": "Data_Governance_Policy.md",
-          "section": "\u00a711.2",
-          "passage": "All employee communications, work products, and associated metadata must be retained for a minimum of 7 years.",
-          "confidence": 0.86,
-          "topic": "BYOD device data deletion and retention obligations"
-        }
-      ],
-      "conclusion": "Every termination of a BYOD user creates a forced policy violation. The conflict is not theoretical \u2014 it fires for each of 450 active BYOD users. Risk is HIGH, not CRITICAL, because no regulatory deadline is imminent; however, any litigation discovery request will expose the gap.",
-      "severity": "HIGH",
-      "confidence": 83
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Resolution Generation",
-      "agentColor": "#5AB0F0",
-      "time": "1.4s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Implement corporate MDM (Mobile Device Management) solution that separates company data into an encrypted container on personal devices. Container can be remotely wiped (satisfying IT Security \u00a76.3) while the MDM platform retains a copy in corporate storage for 7 years (satisfying Data Governance \u00a711.2). IT and Legal must jointly define the MDM policy within Q3 2026.",
-      "severity": null,
-      "confidence": null
     }
   },
   {
@@ -892,92 +581,6 @@
     }
   },
   {
-    "event": "trace_step",
-    "data": {
-      "agent": "Conflict Detection",
-      "agentColor": "#F09595",
-      "time": "2.0s",
-      "query": null,
-      "citations": null,
-      "conclusion": "IT Security Policy \u00a76.3 mandates immediate permanent deletion of company data from personal devices at termination. Data Governance Policy \u00a711.2 requires 7-year retention of all work products. Both fire at the same instant for the same data. 450 BYOD users are in a standing compliance impossibility.",
-      "severity": "HIGH",
-      "confidence": 83,
-      "isSurprise": false
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Document Analysis",
-      "agentColor": "#85B7EB",
-      "time": "0.3s",
-      "query": "software procurement authorization and IT security review",
-      "citations": null,
-      "conclusion": "Analyzing Finance and IT Security policies for SaaS procurement authority overlap.",
-      "severity": null,
-      "confidence": null
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Azure Search Grounding",
-      "agentColor": "#85B7EB",
-      "time": "1.4s",
-      "query": "software procurement authorization and IT security review",
-      "citations": [
-        {
-          "document": "Finance_Expense_Policy.md",
-          "section": "\u00a73.1",
-          "passage": "Department managers are authorized to approve SaaS subscriptions and software purchases under $5,000 without additional sign-off.",
-          "confidence": 0.83,
-          "topic": "software procurement authorization and IT security review"
-        },
-        {
-          "document": "IT_Security_Policy.md",
-          "section": "\u00a711.4",
-          "passage": "All software, regardless of cost or subscription type, must undergo a formal IT Security risk assessment prior to procurement. No exceptions.",
-          "confidence": 0.87,
-          "topic": "software procurement authorization and IT security review"
-        }
-      ],
-      "conclusion": null,
-      "severity": null,
-      "confidence": null,
-      "telemetry": {
-        "docs_analyzed": 7,
-        "total_citations": 2,
-        "per_document_meta": []
-      }
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Conflict Validation",
-      "agentColor": "#D085EB",
-      "time": "0.7s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Validation passed: Finance grants unilateral authority for sub-$5k purchases; IT Security mandates assessment for ALL software with no cost threshold. The Finance authority is structurally incompatible with the IT Security gate.",
-      "severity": null,
-      "confidence": null
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Impact Assessment",
-      "agentColor": "#EBD085",
-      "time": "0.9s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Affects all department managers with budget authority. Every sub-$5k SaaS purchase made under Finance authority is simultaneously non-compliant with IT Security. Shadow IT proliferation risk is active.",
-      "severity": null,
-      "confidence": null
-    }
-  },
-  {
     "event": "risk_category_identified",
     "data": {
       "id": "d5a17e9c",
@@ -1000,47 +603,6 @@
       "risk_level": "MEDIUM",
       "risk_score": 60,
       "confidence": 77
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Risk Quantification",
-      "agentColor": "#F0B05A",
-      "time": "1.1s",
-      "query": null,
-      "citations": [
-        {
-          "document": "Finance_Expense_Policy.md",
-          "section": "\u00a73.1",
-          "passage": "Department managers are authorized to approve SaaS subscriptions and software purchases under $5,000 without additional sign-off.",
-          "confidence": 0.83,
-          "topic": "software procurement authorization and IT security review"
-        },
-        {
-          "document": "IT_Security_Policy.md",
-          "section": "\u00a711.4",
-          "passage": "All software, regardless of cost or subscription type, must undergo a formal IT Security risk assessment prior to procurement. No exceptions.",
-          "confidence": 0.87,
-          "topic": "software procurement authorization and IT security review"
-        }
-      ],
-      "conclusion": "Finance Policy explicitly grants autonomous sub-$5k procurement. IT Security explicitly eliminates that authority for software. Every such purchase is simultaneously Finance-compliant and IT Security non-compliant. Risk is MEDIUM \u2014 no imminent regulatory deadline, but shadow IT proliferation is an active risk.",
-      "severity": "MEDIUM",
-      "confidence": 77
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Resolution Generation",
-      "agentColor": "#5AB0F0",
-      "time": "1.3s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Create a pre-approved SaaS vendor registry maintained by IT Security. Purchases from the registry satisfy both Finance authority and IT Security requirements simultaneously. Finance Policy \u00a73.1 should reference the registry as a prerequisite. IT Security and Finance to co-own the registry within 90 days.",
-      "severity": null,
-      "confidence": null
     }
   },
   {
@@ -1156,92 +718,6 @@
     }
   },
   {
-    "event": "trace_step",
-    "data": {
-      "agent": "Conflict Detection",
-      "agentColor": "#F09595",
-      "time": "1.9s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Finance Expense Policy \u00a73.1 grants managers unilateral SaaS purchase authority below $5,000. IT Security Policy \u00a711.4 requires IT Security assessment for all software with no cost threshold. Every sub-$5k purchase satisfies Finance policy and violates IT Security policy simultaneously. Shadow IT proliferation risk is active.",
-      "severity": "MEDIUM",
-      "confidence": 77,
-      "isSurprise": false
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Document Analysis",
-      "agentColor": "#85B7EB",
-      "time": "0.3s",
-      "query": "disability accommodation and assistive technology allowances",
-      "citations": null,
-      "conclusion": "Analyzing knowledge base for disability accommodation obligations and IT hardware/software approval policies.",
-      "severity": null,
-      "confidence": null
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Azure Search Grounding",
-      "agentColor": "#85B7EB",
-      "time": "1.7s",
-      "query": "disability accommodation and assistive technology allowances",
-      "citations": [
-        {
-          "document": "Employee_Handbook.md",
-          "section": "\u00a77.1",
-          "passage": "Nexora is committed to providing reasonable accommodations to employees with disabilities. Employees may request modified equipment, software, or work arrangements. Requests are processed within 10 business days.",
-          "confidence": 0.93,
-          "topic": "disability accommodation and assistive technology allowances"
-        },
-        {
-          "document": "IT_Security_Policy.md",
-          "section": "\u00a73.1",
-          "passage": "Only devices and software on the approved corporate asset list may be connected to Nexora networks or used for Nexora work. No exceptions. Personal devices and non-standard software are strictly prohibited.",
-          "confidence": 0.97,
-          "topic": "disability accommodation and assistive technology allowances"
-        }
-      ],
-      "conclusion": null,
-      "severity": null,
-      "confidence": null,
-      "telemetry": {
-        "docs_analyzed": 7,
-        "total_citations": 2,
-        "per_document_meta": []
-      }
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Conflict Validation",
-      "agentColor": "#D085EB",
-      "time": "0.9s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Structural impossibility confirmed: an employee with a visual impairment needs screen-reader software not on the approved list. HR is legally obligated to accommodate. IT policy strictly prohibits the installation. The policies cannot be simultaneously satisfied \u2014 the accommodation is architecturally impossible under current IT rules.",
-      "severity": null,
-      "confidence": null
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Impact Assessment",
-      "agentColor": "#EBD085",
-      "time": "1.1s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Any employee with a disability requiring non-standard assistive technology \u2014 screen readers, voice recognition, adaptive keyboards, alternative pointing devices \u2014 cannot have their accommodation fulfilled. This creates a direct ADA/disability law violation risk and excludes disabled employees from equal participation in work.",
-      "severity": null,
-      "confidence": null
-    }
-  },
-  {
     "event": "risk_category_identified",
     "data": {
       "id": "c4f71b2e",
@@ -1272,47 +748,6 @@
       "risk_level": "CRITICAL",
       "risk_score": 97,
       "confidence": 95
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Risk Quantification",
-      "agentColor": "#F0B05A",
-      "time": "1.4s",
-      "query": null,
-      "citations": [
-        {
-          "document": "Employee_Handbook.md",
-          "section": "\u00a77.1",
-          "passage": "Nexora is committed to providing reasonable accommodations to employees with disabilities. Employees may request modified equipment, software, or work arrangements.",
-          "confidence": 0.93,
-          "topic": "disability accommodation and assistive technology allowances"
-        },
-        {
-          "document": "IT_Security_Policy.md",
-          "section": "\u00a73.1",
-          "passage": "Only devices and software on the approved corporate asset list may be connected to Nexora networks or used for Nexora work. No exceptions.",
-          "confidence": 0.97,
-          "topic": "disability accommodation and assistive technology allowances"
-        }
-      ],
-      "conclusion": "The accommodation promise is legally mandatory. The IT prohibition is absolute with no exception process. A disabled employee requesting assistive technology today would be told: 'We are required to accommodate you' by HR and 'We cannot install that software' by IT. These cannot simultaneously be true.",
-      "severity": "CRITICAL",
-      "confidence": 95
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Resolution Generation",
-      "agentColor": "#5AB0F0",
-      "time": "1.6s",
-      "query": null,
-      "citations": null,
-      "conclusion": "IT Security Policy \u00a73.1 must be amended to include an Accommodation Exception Pathway: a documented process where HR Accommodation Officer and CISO jointly approve assistive technology on a case-by-case basis. Security vetting of each tool must occur within the 10-day accommodation window. This preserves security while enabling lawful accommodation.",
-      "severity": null,
-      "confidence": null
     }
   },
   {
@@ -1429,20 +864,6 @@
         "uncertainty": null,
         "execution_time_s": 1.4
       }
-    }
-  },
-  {
-    "event": "trace_step",
-    "data": {
-      "agent": "Conflict Detection",
-      "agentColor": "#F09595",
-      "time": "2.3s",
-      "query": null,
-      "citations": null,
-      "conclusion": "Employee Handbook \u00a77.1 mandates reasonable accommodation for all disabilities. IT Security \u00a73.1 prohibits all non-approved software with zero exceptions. Any employee needing a screen reader, voice recognition tool, or adaptive keyboard is denied accommodation. These policies create a structural impossibility that constitutes disability discrimination.",
-      "severity": "CRITICAL",
-      "confidence": 95,
-      "isSurprise": true
     }
   },
   {

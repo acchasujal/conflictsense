@@ -7,8 +7,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import AgentCard from './AgentCard.jsx';
 import SkeletonLoader from './SkeletonLoader.jsx';
+import ExecutiveSummaryPanel from './ExecutiveSummaryPanel.jsx';
 
-export default function ReasoningTrace({ steps, phase, isMockMode, isAbstained, executionMode, currentStep, agentStatus, isDebugUI }) {
+export default function ReasoningTrace({ steps, phase, isMockMode, isAbstained, executionMode, currentStep, agentStatus, isDebugUI, visibleConflicts = [], documentsCount = 0 }) {
   const traceBodyRef = useRef(null);
 
   // Auto-scroll to bottom as new steps appear
@@ -255,6 +256,12 @@ export default function ReasoningTrace({ steps, phase, isMockMode, isAbstained, 
             <div style={{ fontSize: 12, color: '#991B1B', marginTop: 8, fontWeight: 500 }}>
               System safely idled.
             </div>
+          </div>
+        )}
+
+        {isDone && !isAbstained && visibleConflicts.length > 0 && (
+          <div style={{ marginTop: 16, animation: 'fadeInUp 0.4s ease' }}>
+            <ExecutiveSummaryPanel conflicts={visibleConflicts} documentsCount={documentsCount} />
           </div>
         )}
 

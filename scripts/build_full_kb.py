@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 
 scenarios = [
     "scenario_1_data_residency.json",
@@ -21,12 +22,72 @@ for doc in docs:
         "event": "document_loaded",
         "data": {
             "document": doc,
-            "status": "loading",
+            "status": "loaded",
             "source_dir": "knowledge_base"
         }
     })
 
-# 2. Collect conflicts
+# 2. Add custom timeline trace_step events
+timeline_steps = [
+    {
+        "agent": "IngestionAgent",
+        "action": "Knowledge Base Loaded",
+        "description": "Successfully indexed 7 enterprise policies into vector store.",
+        "confidence": 100,
+        "evidence_count": 7
+    },
+    {
+        "agent": "CrossPolicyAnalyzer",
+        "action": "Cross-Policy Review Started",
+        "description": "Initiating parallel comparison across all policy boundaries.",
+        "confidence": 98,
+        "evidence_count": 0
+    },
+    {
+        "agent": "LogicValidator",
+        "action": "Governance Contradictions Identified",
+        "description": "Detected 5 structurally impossible compliance mandates.",
+        "confidence": 95,
+        "evidence_count": 10
+    },
+    {
+        "agent": "RiskAssessor",
+        "action": "Human Impact Assessment Complete",
+        "description": "Mapped contradictions to affected employee groups and safety risks.",
+        "confidence": 92,
+        "evidence_count": 5
+    },
+    {
+        "agent": "RiskAssessor",
+        "action": "Risk Prioritization Complete",
+        "description": "Categorized findings by severity (Critical, High, Medium).",
+        "confidence": 96,
+        "evidence_count": 5
+    },
+    {
+        "agent": "ExecutiveSummarizer",
+        "action": "Executive Summary Generated",
+        "description": "Compiled enterprise audit report for leadership review.",
+        "confidence": 99,
+        "evidence_count": 1
+    },
+    {
+        "agent": "Orchestrator",
+        "action": "Analysis Complete",
+        "description": "Full KB Analysis finished successfully.",
+        "confidence": 100,
+        "evidence_count": 0
+    }
+]
+
+for step in timeline_steps:
+    out_events.append({
+        "event": "trace_step",
+        "data": step
+    })
+
+
+# 3. Collect conflicts (but discard trace_steps from the scenarios to keep our clean timeline)
 conflicts = []
 for fname in scenarios:
     path = os.path.join("data", "precomputed", fname)
@@ -34,13 +95,12 @@ for fname in scenarios:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
             for event in data:
-                if event.get("event") in ["conflict_detected", "conflict_emitted", "trace_step", "risk_validated", "risk_category_identified"]:
-                    # We will only pull the trace steps and conflicts
+                if event.get("event") in ["conflict_detected", "conflict_emitted", "risk_validated", "risk_category_identified"]:
                     conflicts.append(event)
 
 out_events.extend(conflicts)
 
-# 3. Add complete event
+# 4. Add complete event
 out_events.append({
     "event": "analysis_complete",
     "data": {

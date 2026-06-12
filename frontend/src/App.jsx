@@ -577,6 +577,8 @@ export default function App() {
             executionMode={executionMode}
             currentStep={currentStep}
             agentStatus={agentStatus}
+            visibleConflicts={visibleConflicts}
+            documentsCount={liveDocuments.length}
           />
         </main>
       </div>
