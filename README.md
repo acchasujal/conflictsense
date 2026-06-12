@@ -8,6 +8,21 @@ Fortune 500 companies lose millions to regulatory fines because standard keyword
 
 ConflictSense is a proactive **Reasoning Agent**. It doesn't wait for a prompt. It autonomously ingests the Knowledge Base, cross-references mandates, and identifies logical collisions before they become legal liabilities.
 
+## 🏆 Award Focus: Hack for Good & Accessibility
+
+ConflictSense transforms governance from a "compliance tool" into a **human-centered governance platform**, explicitly targeting the **Hack for Good** and **Accessibility** awards.
+
+### Accessibility (WCAG 2.1 AA)
+*   **Keyboard Navigation:** 100% operable via keyboard (Tab/Enter/Space/Esc). Includes a global keyboard shortcuts overlay (press `?`).
+*   **Screen Reader Mode:** Built-in `aria-live` announcer provides polite updates during the AI reasoning trace and when conflicts are detected.
+*   **Reduced Motion:** Explicit UI toggle that respects `prefers-reduced-motion` to instantly disable all transitions and Recharts animations.
+*   **Demo-Ready:** A dedicated "Accessibility Demo" button instantly activates SR Mode, Reduced Motion, and the shortcuts overlay.
+
+### Social Impact (Hack for Good)
+*   **Whistleblower Protection:** Identifies fatal flaws in anonymity promises before a vulnerable employee faces retaliation via IT logging.
+*   **Accommodation Conflict Detection:** Directly highlights structural impossibilities that exclude employees with disabilities from the workforce.
+*   **Human Impact Dashboard:** Executive dashboard specifically tracks "People Protected", elevating human safety and inclusion risks above pure financial exposure.
+
 ## The Nexora Scenario (90-Second Demo)
 
 In just 90 seconds, ConflictSense analyzes 7 corporate policies from the fictional "Nexora Financial Services". It discovers a critical "Anonymity Paradox":

@@ -543,11 +543,27 @@ export default function ConflictCard({
 
           {/* Trust Panel & Confidence Evolution */}
           <div style={{ marginBottom: 12, background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 6, padding: '12px' }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#991B1B', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-              <span style={{ fontSize: 16 }}>👥</span> Why This Matters (Human Impact)
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#991B1B', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <span style={{ fontSize: 16 }}>👥</span> Who Is Harmed?
             </div>
-            <div style={{ fontSize: 12, color: '#7F1D1D', lineHeight: 1.5, marginBottom: 12 }}>
-              {conflict.human_impact || conflict.risk_assessment?.potential_consequences?.[0] || 'Creates an unsafe environment for employees, risking retaliation and trust collapse.'}
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#7F1D1D', textTransform: 'uppercase', marginBottom: 4 }}>Affected Groups:</div>
+                <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: '#991B1B', lineHeight: 1.4 }}>
+                  {(conflict.risk_assessment?.affected_entities ?? ['Vulnerable employees', 'HR teams', 'Management']).map((group, i) => (
+                    <li key={i}>{group}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#7F1D1D', textTransform: 'uppercase', marginBottom: 4 }}>Potential Harm:</div>
+                <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: '#991B1B', lineHeight: 1.4 }}>
+                  {(conflict.risk_assessment?.potential_consequences ?? [conflict.human_impact || 'Creates an unsafe environment for employees']).map((harm, i) => (
+                    <li key={i}>{harm}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
             
             <div style={{ background: '#FFFFFF', borderRadius: 6, padding: '10px 12px', border: '1px solid #F87171' }}>

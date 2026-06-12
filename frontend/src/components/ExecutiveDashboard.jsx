@@ -100,11 +100,11 @@ export default function ExecutiveDashboard({ phase, visibleConflicts = [], trace
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: '#2563EB', fontSize: 18 }}>📊</span>
-            Enterprise Governance Exposure
+            <span style={{ color: '#2563EB', fontSize: 18 }}>🛡️</span>
+            Human-Centered Policy Governance
           </div>
           <div style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>
-            Real-time multi-agent policy compliance monitoring
+            Protecting employees from systemic policy contradictions
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -137,10 +137,21 @@ export default function ExecutiveDashboard({ phase, visibleConflicts = [], trace
       
       <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, flex: 2, minWidth: 300 }}>
-          <MetricCard label="Est. Exposure" value={exposureStr} color={visibleConflicts.length > 0 ? '#DC2626' : '#16A34A'} subLabel="Potential regulatory fines" />
           <MetricCard label="Compliance Health" value={healthStr} color={healthScore < 80 ? '#D97706' : '#16A34A'} subLabel="Across 7 policies" />
-          <MetricCard label="Depts Affected" value={deptsStr} color="#3B82F6" subLabel="Cross-functional risk" />
-          <MetricCard label="Pending Conflicts" value={pendingStr} color={visibleConflicts.length > 0 ? '#D97706' : '#94A3B8'} subLabel="Require human review" />
+          <div style={{ flex: 2, minWidth: 200, background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 6, padding: 12, boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <div style={{ width: 4, height: 12, background: '#3B82F6', borderRadius: 2 }} />
+              <div style={{ fontSize: 11, color: '#1E3A8A', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+                People Protected
+              </div>
+            </div>
+            <div style={{ fontSize: 11, color: '#1E40AF', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span>✅</span> Whistleblower retaliation risk</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span>✅</span> Accessibility barriers</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span>✅</span> Employee privacy risks</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span>✅</span> Safety risks</div>
+            </div>
+          </div>
         </div>
 
         {/* Dynamic Impact Graph */}

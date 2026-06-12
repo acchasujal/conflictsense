@@ -186,6 +186,7 @@ export default function App() {
   const [reducedMotion, setReducedMotion]       = useState(false);
   const [srMode, setSrMode]                     = useState(false);
   const [announcement, setAnnouncement]         = useState('');
+  const [showShortcuts, setShowShortcuts]       = useState(false);
 
   // Refs for cleanup
   const streamCancelRef = useRef(null);
@@ -219,6 +220,21 @@ export default function App() {
       announce(`Conflict detected: ${last.title}. Severity: ${last.severity}.`);
     }
   }, [visibleConflicts.length]); // eslint-disable-line
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ignore if typing in an input/textarea
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === '?') {
+        setShowShortcuts(prev => !prev);
+      }
+      if (e.key === 'Escape') {
+        setShowShortcuts(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => () => cancelAll(), [cancelAll]);
 
@@ -421,6 +437,20 @@ export default function App() {
           {/* ── Accessibility Toggles ──────────────────────────────── */}
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }} role="group" aria-label="Accessibility Settings">
             <button
+              onClick={() => { setSrMode(true); setReducedMotion(true); setShowShortcuts(true); }}
+              title="Launch Accessibility Demo"
+              style={{
+                background: '#4ADE80',
+                border: '1px solid #22C55E',
+                borderRadius: 6, padding: '4px 9px', fontSize: 11,
+                fontWeight: 700, cursor: 'pointer', color: '#064E3B',
+                display: 'flex', alignItems: 'center', gap: 4, marginRight: 8,
+                boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+              }}
+            >
+              Accessibility Demo
+            </button>
+            <button
               id="btn-reduced-motion"
               onClick={() => setReducedMotion(m => !m)}
               aria-pressed={reducedMotion}
@@ -462,6 +492,40 @@ export default function App() {
         >
           {announcement}
         </div>
+
+        {/* ── Keyboard Shortcuts Overlay ────────────────────────────────── */}
+        {showShortcuts && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.4)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowShortcuts(false)}>
+            <div style={{ background: '#FFFFFF', borderRadius: 12, padding: '24px 32px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', minWidth: 320 }} onClick={e => e.stopPropagation()}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#0F172A', marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                Keyboard Shortcuts
+                <button onClick={() => setShowShortcuts(false)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#94A3B8' }}>×</button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, color: '#475569' }}>Navigate</span>
+                  <kbd style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontFamily: 'monospace', fontWeight: 600 }}>Tab</kbd>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, color: '#475569' }}>Open / Activate</span>
+                  <kbd style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontFamily: 'monospace', fontWeight: 600 }}>Enter</kbd>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, color: '#475569' }}>Expand Card</span>
+                  <kbd style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontFamily: 'monospace', fontWeight: 600 }}>Space</kbd>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, color: '#475569' }}>Close Overlay</span>
+                  <kbd style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontFamily: 'monospace', fontWeight: 600 }}>Esc</kbd>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, color: '#475569' }}>Show Shortcuts</span>
+                  <kbd style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontFamily: 'monospace', fontWeight: 600 }}>?</kbd>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Debug Panel ──────────────────────────────────────────────── */}
         {import.meta.env.VITE_DEBUG_MODE === 'true' && (
