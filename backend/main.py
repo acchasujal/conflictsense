@@ -26,8 +26,9 @@ import logging
 from pathlib import Path
 from typing import AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+import shutil
 from fastapi.responses import JSONResponse
 from sse_starlette.sse import EventSourceResponse
 
@@ -98,7 +99,7 @@ def _sse_event(event: str, data: dict) -> dict:
 # ─── Endpoints ────────────────────────────────────────────────────────────────
 
 @app.get("/analyze/stream")
-async def analyze_stream():
+async def analyze_stream(scenario: str = None):
     """
     GET /analyze/stream
 
@@ -119,7 +120,7 @@ async def analyze_stream():
 
         async def pipeline_runner():
             try:
-                await run_analysis_pipeline(emit)
+                await run_analysis_pipeline(emit, scenario)
             except Exception as exc:
                 logger.error("Error in pipeline runner: %s", exc)
             finally:
@@ -170,6 +171,31 @@ async def analyze_stream():
             "X-Accel-Buffering": "no",
         },
     )
+
+@app.post("/upload")
+async def upload_policies(files: list[UploadFile] = File(...)):
+    """
+    POST /upload
+    Save custom policies for live analysis.
+    """
+    upload_dir = _ROOT / "data" / "uploads"
+    if upload_dir.exists():
+        shutil.rmtree(upload_dir)
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    
+    saved_files = []
+    for file in files:
+        if not file.filename:
+            continue
+        file_path = upload_dir / file.filename
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        saved_files.append(file.filename)
+        
+    if not saved_files:
+        raise HTTPException(status_code=400, detail="No valid files uploaded.")
+        
+    return {"status": "ok", "files_loaded": len(saved_files)}
 
 
 @app.post("/approve", response_model=ActionResponse)

@@ -37,7 +37,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
-from agents.document_analyzer import DocumentAnalyzer, DocumentAnalyzerResult, SUPPORTED_TOPICS
+from agents.document_analyzer import DocumentAnalyzer, DocumentAnalyzerResult, SUPPORTED_TOPICS, get_topics_for_scenario
 from agents.conflict_detector import ConflictDetector
 from agents.conflict_validator import ConflictValidatorAgent
 from agents.impact_assessor import ImpactAssessor
@@ -91,13 +91,16 @@ class ConflictSenseOrchestrator:
         impact_assessor: Optional[ImpactAssessor] = None,
         risk_quantifier: Optional[RiskQuantifier] = None,
         resolution_recommender: Optional[ResolutionRecommender] = None,
+        scenario: Optional[str] = None,
     ) -> None:
+        self._scenario = scenario
         self._analyzer = analyzer or DocumentAnalyzer()
-        self._detector = detector or ConflictDetector()
-        self._validator_agent = validator_agent or ConflictValidatorAgent()
-        self._impact_assessor = impact_assessor or ImpactAssessor()
-        self._risk_quantifier = risk_quantifier or RiskQuantifier()
-        self._resolution_recommender = resolution_recommender or ResolutionRecommender()
+        allow_mock = not getattr(self._analyzer, "strict_live", False)
+        self._detector = detector or ConflictDetector(allow_mock=allow_mock)
+        self._validator_agent = validator_agent or ConflictValidatorAgent(allow_mock=allow_mock)
+        self._impact_assessor = impact_assessor or ImpactAssessor(allow_mock=allow_mock)
+        self._risk_quantifier = risk_quantifier or RiskQuantifier(allow_mock=allow_mock)
+        self._resolution_recommender = resolution_recommender or ResolutionRecommender(allow_mock=allow_mock)
 
     async def run_analysis(self, emit_fn: EmitFn) -> OrchestratorResult:
         """
@@ -122,13 +125,16 @@ class ConflictSenseOrchestrator:
         is_mock_mode    = False
 
         try:
-            for topic in SUPPORTED_TOPICS:
+            topics = get_topics_for_scenario(self._scenario)
+            for topic in topics:
                 logger.info("Orchestrator: analyzing topic %r", topic)
 
                 # ── DocumentAnalyzer ──────────────────────────────────────────
+                ta = time.monotonic()
                 analyzer_result = self._run_analyzer(topic)
                 if analyzer_result.is_mock_mode:
                     is_mock_mode = True
+                duration_da = time.monotonic() - ta
 
                 emit_fn("evidence_retrieved", self._build_evidence_event(analyzer_result))
                 logger.info(
@@ -140,7 +146,7 @@ class ConflictSenseOrchestrator:
                 emit_fn("trace_step", {
                     "agent": "Document Analysis",
                     "agentColor": "#85B7EB",
-                    "time": f"0.5s",
+                    "time": f"{duration_da:.1f}s",
                     "query": topic,
                     "citations": None,
                     "conclusion": "Analyzed knowledge base schema and determined query formulation strategy.",
@@ -150,7 +156,9 @@ class ConflictSenseOrchestrator:
                 emit_fn("trace_step", self._build_da_trace_step(analyzer_result))
 
                 # ── ConflictDetector ──────────────────────────────────────────
+                td = time.monotonic()
                 detector_result = self._detector.detect(analyzer_result)
+                duration_cd = time.monotonic() - td
                 if detector_result.is_mock_mode:
                     is_mock_mode = True
 
@@ -162,7 +170,7 @@ class ConflictSenseOrchestrator:
                     emit_fn("trace_step", {
                         "agent": "Conflict Detection",
                         "agentColor": "#F09595",
-                        "time": f"{detector_result.execution_time_s:.1f}s",
+                        "time": f"{duration_cd:.1f}s",
                         "query": None,
                         "citations": None,
                         "conclusion": f"No structural conflict found for topic: {topic}.",
@@ -200,7 +208,11 @@ class ConflictSenseOrchestrator:
                         continue
 
                     # Run ConflictValidatorAgent
+                    tv = time.monotonic()
                     record = self._validator_agent.validate(record)
+                    duration_val = time.monotonic() - tv
+                    if getattr(record, "is_mock_mode", False):
+                        is_mock_mode = True
                     if record.status == ConflictStatus.REJECTED:
                         emit_fn("conflict_rejected", {
                             "id": record.id,
@@ -211,7 +223,7 @@ class ConflictSenseOrchestrator:
                         emit_fn("trace_step", {
                             "agent": "Conflict Validation",
                             "agentColor": "#D085EB",
-                            "time": "live",
+                            "time": f"{duration_val:.1f}s",
                             "query": None,
                             "citations": None,
                             "conclusion": record.reasoning,
@@ -224,7 +236,7 @@ class ConflictSenseOrchestrator:
                     emit_fn("trace_step", {
                         "agent": "Conflict Validation",
                         "agentColor": "#D085EB",
-                        "time": "live",
+                        "time": f"{duration_val:.1f}s",
                         "query": None,
                         "citations": None,
                         "conclusion": "Validation passed: structural impossibility confirmed.",
@@ -246,16 +258,25 @@ class ConflictSenseOrchestrator:
                         future_risk = executor.submit(self._risk_quantifier.quantify, record, topic)
                         future_resolution = executor.submit(self._resolution_recommender.recommend, record)
                         
+                        ti = time.monotonic()
                         record = future_impact.result()
+                        duration_imp = time.monotonic() - ti
+
+                        tr = time.monotonic()
                         risk_assessment = future_risk.result()
+                        duration_risk = time.monotonic() - tr
+
+                        ts = time.monotonic()
                         record.resolution = future_resolution.result()
+                        duration_res = time.monotonic() - ts
+                        
                         record.risk_assessment = risk_assessment
 
                     # Emit ImpactAssessor trace step
                     emit_fn("trace_step", {
                         "agent": "Impact Assessment",
                         "agentColor": "#EBD085",
-                        "time": "live",
+                        "time": f"{duration_imp:.1f}s",
                         "query": None,
                         "citations": None,
                         "conclusion": record.affected,
@@ -276,7 +297,12 @@ class ConflictSenseOrchestrator:
                         "risk_score": risk_assessment.risk_score,
                         "confidence": risk_assessment.confidence,
                     })
-                    emit_fn("trace_step", self._build_risk_trace_step(risk_assessment))
+                    
+                    # Merge duration into risk trace
+                    risk_trace = self._build_risk_trace_step(risk_assessment)
+                    risk_trace["time"] = f"{duration_risk:.1f}s"
+                    emit_fn("trace_step", risk_trace)
+                    
                     emit_fn("risk_assessment_complete", {
                         "id": record.id,
                         "assessment": risk_assessment.to_dict(),
@@ -285,7 +311,7 @@ class ConflictSenseOrchestrator:
                     emit_fn("trace_step", {
                         "agent": "Resolution Generation",
                         "agentColor": "#5AB0F0",
-                        "time": "live",
+                        "time": f"{duration_res:.1f}s",
                         "query": None,
                         "citations": None,
                         "conclusion": record.resolution,
@@ -324,7 +350,7 @@ class ConflictSenseOrchestrator:
             blocked_count=blocked_count,
             is_mock_mode=is_mock_mode,
             execution_time_s=elapsed,
-            topics_analyzed=list(SUPPORTED_TOPICS),
+            topics_analyzed=get_topics_for_scenario(self._scenario),
         )
 
     # ── Private Helpers ────────────────────────────────────────────────────────

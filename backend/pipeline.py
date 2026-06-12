@@ -23,13 +23,16 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 from pathlib import Path
-from typing import AsyncGenerator, Callable
+from typing import Callable
 
 logger = logging.getLogger("conflictsense.pipeline")
 
 _ROOT     = Path(__file__).parent.parent
 _MOCK_DIR = _ROOT / "mock_data"
+KB_DIR    = _ROOT / "knowledge_base"
+UPLOADS_DIR = _ROOT / "data" / "uploads"
 
 # Timing between mock events (preserves animation feel in Tier 3 demo)
 MOCK_STEP_INTERVAL_S: float = 0.95
@@ -49,9 +52,40 @@ def _load_mock_json(filename: str) -> list:
         return json.load(f)
 
 
+def _document_dir(scenario: str | None) -> Path:
+    if scenario == "custom_upload":
+        return UPLOADS_DIR
+    return KB_DIR
+
+
+def _emit_abstention(emit_fn: Callable[[str, dict], None], reason: str = "Insufficient validated evidence") -> None:
+    """Backend-enforced abstention — no conflicts, recommendations, or risk scores."""
+    emit_fn("analysis_complete", {
+        "status": "abstained",
+        "total_conflicts": 0,
+        "uncertain_count": 0,
+        "blocked_count": 0,
+        "is_mock_mode": False,
+        "topics_analyzed": [],
+        "execution_time_s": 0,
+        "confidence": 0,
+        "reason": reason,
+    })
+    emit_fn("complete", {
+        "status": "abstained",
+        "total_conflicts": 0,
+        "confidence": 0,
+        "_meta": {
+            "fallback": "ABSTAINED",
+            "reason": reason,
+            "execution_mode": "Evidence Only",
+        },
+    })
+
+
 # ─── Live Pipeline ─────────────────────────────────────────────────────────────
 
-async def run_live_pipeline(emit_fn: Callable[[str, dict], None]) -> bool:
+async def run_live_pipeline(emit_fn: Callable[[str, dict], None], scenario: str = None) -> bool:
     """
     Execute the real DocumentAnalyzer → ConflictDetector pipeline.
 
@@ -61,29 +95,35 @@ async def run_live_pipeline(emit_fn: Callable[[str, dict], None]) -> bool:
     Returns True if pipeline completed successfully; False if it should fall
     back to mock mode (caller should then invoke run_mock_pipeline).
     """
-    try:
-        # Import here to isolate import errors (agent modules unavailable = fallback)
-        from agents.orchestrator import ConflictSenseOrchestrator
-        from agents.document_analyzer import SUPPORTED_TOPICS
-        from pathlib import Path as _Path
+    doc_dir = _document_dir(scenario)
+    strict_live = scenario == "custom_upload"
 
-        # ── Emit document_loaded events ───────────────────────────────────────
-        kb_dir = _Path(__file__).parent.parent / "knowledge_base"
-        docs = sorted(kb_dir.glob("*.md")) if kb_dir.exists() else []
+    try:
+        from agents.orchestrator import ConflictSenseOrchestrator
+        from agents.document_analyzer import DocumentAnalyzer
+
+        docs = sorted([f for f in doc_dir.glob("*") if f.is_file()]) if doc_dir.exists() else []
         for doc in docs:
-            emit_fn("document_loaded", {"document": doc.name, "status": "loading"})
-            logger.info("document_loaded: %s", doc.name)
+            emit_fn("document_loaded", {"document": doc.name, "status": "loading", "source_dir": str(doc_dir)})
+            logger.info("document_loaded: %s from %s", doc.name, doc_dir)
 
         if not docs:
-            logger.warning("No documents found in knowledge_base/ — falling back to mock")
+            logger.warning("No documents found in %s", doc_dir)
             return False
 
-        # ── Run orchestrator ──────────────────────────────────────────────────
-        orchestrator = ConflictSenseOrchestrator()
+        analyzer = DocumentAnalyzer(scenario=scenario)
+        orchestrator = ConflictSenseOrchestrator(analyzer=analyzer, scenario=scenario)
         result = await orchestrator.run_analysis(emit_fn)
 
-        # ── Final events ──────────────────────────────────────────────────────
+        if strict_live and result.is_mock_mode:
+            logger.error(
+                "HARD GUARDRAIL: custom_upload produced mock/tier3 data — abstaining (mock=%s).",
+                result.is_mock_mode,
+            )
+            return False
+
         fallback_flag = "DETERMINISTIC_FALLBACK" if result.is_mock_mode else "LIVE"
+        execution_mode = "Live Analysis" if strict_live else ("Demo Scenario Replay" if result.is_mock_mode else "Live Analysis")
 
         emit_fn("analysis_complete", {
             "status": "complete",
@@ -94,153 +134,109 @@ async def run_live_pipeline(emit_fn: Callable[[str, dict], None]) -> bool:
             "topics_analyzed": result.topics_analyzed,
             "execution_time_s": round(result.execution_time_s, 2),
         })
-        # Backwards-compat alias for frontend
         emit_fn("complete", {
             "status": "complete",
             "total_conflicts": len(result.conflicts),
-            "_meta": {"fallback": fallback_flag},
+            "_meta": {
+                "fallback": fallback_flag,
+                "execution_mode": execution_mode,
+            },
         })
         return True
 
     except Exception as exc:
-        logger.error("Live pipeline failed: %s — falling back to mock", exc)
+        logger.error("Live pipeline failed: %s", exc)
         return False
 
 
-# ─── Mock Pipeline (Tier 3) ───────────────────────────────────────────────────
+# ─── Precomputed Pipeline (Tier 3 Fast Demo Mode) ───────────────────────────────
 
-async def run_mock_pipeline(emit_fn: Callable[[str, dict], None]) -> None:
+async def run_precomputed_pipeline(emit_fn: Callable[[str, dict], None], scenario: str = None) -> None:
     """
-    Stream dynamically generated mock data using real document chunks.
-
-    This is Tier 3 — guaranteed to succeed. Called when the live pipeline
-    fails or when Azure credentials are unavailable.
+    Tier 3 execution. Replays a pre-computed SSE event stream.
+    No LLM calls are made. Emits events rapidly for demo purposes.
     """
-    from agents.retrieval import LocalRetriever
-    import hashlib
+    if scenario == "custom_upload":
+        raise RuntimeError("HARD GUARDRAIL: custom_upload must never load precomputed data.")
 
-    # Emit document_loaded events (Tier 3 still announces doc loading)
-    kb_dir = _ROOT / "knowledge_base"
-    docs = sorted(kb_dir.glob("*.md")) if kb_dir.exists() else []
-    for doc in docs:
-        emit_fn("document_loaded", {"document": doc.name, "status": "loaded", "is_mock": True})
+    if not scenario:
+        raise ValueError("scenario parameter is required for precomputed pipeline")
+        
+    path = _ROOT / "data" / "precomputed" / f"{scenario}.json"
+    if not path.exists():
+        logger.warning(f"Precomputed scenario {scenario} not found.")
+        raise FileNotFoundError(f"Scenario file not found: {path}")
+        
+    with open(path, encoding="utf-8") as f:
+        events = json.load(f)
+        
+    for ev in events:
+        event_name = ev["event"]
+        data = dict(ev["data"])
+        if event_name == "complete":
+            meta = dict(data.get("_meta") or {})
+            meta["fallback"] = "DEMO_SCENARIO_REPLAY"
+            meta["execution_mode"] = "Demo Scenario Replay"
+            data["_meta"] = meta
+        emit_fn(event_name, data)
+        await asyncio.sleep(0.1)
 
-    retriever = LocalRetriever()
-    topics = ["data location", "anonymity", "byod", "vacation policy", "incident reporting"]
-    conflicts_emitted = 0
-
-    for topic in topics:
-        emit_fn("trace_step", {
-            "agent": "Document Analysis",
-            "action": f"Analyzing corpus for: {topic}",
-            "is_mock": True,
-            "topic": topic
-        })
-        await asyncio.sleep(MOCK_STEP_INTERVAL_S)
-
-        emit_fn("trace_step", {
-            "agent": "Azure Search Grounding",
-            "action": f"Retrieving relevant vectors",
-            "is_mock": True,
-            "topic": topic
-        })
-        await asyncio.sleep(MOCK_STEP_INTERVAL_S)
-
-        chunks_by_doc = {}
-        for doc in docs:
-            top_chunks = retriever.retrieve_for_document(topic, doc.name, top_k=1)
-            if top_chunks:
-                chunks_by_doc[doc.name] = top_chunks[0]
-
-        if len(chunks_by_doc) >= 2:
-            doc_names = list(chunks_by_doc.keys())
-            doc_a = doc_names[0]
-            doc_b = doc_names[1]
-            chunk_a = chunks_by_doc[doc_a]
-            chunk_b = chunks_by_doc[doc_b]
-
-            conflict_id = hashlib.md5(f"{doc_a}{doc_b}{topic}".encode()).hexdigest()[:8]
-
-            emit_fn("trace_step", {
-                "agent": "Conflict Detection",
-                "action": f"Cross-referencing {doc_a} and {doc_b}",
-                "is_mock": True,
-                "topic": topic
-            })
-            await asyncio.sleep(MOCK_STEP_INTERVAL_S)
-
-            conflict_data = {
-                "id": conflict_id,
-                "title": f"MOCK: Structural impossibility in {topic}",
-                "severity": "CRITICAL",
-                "confidence": 95,
-                "sources": [f"{doc_a} {chunk_a.section_id}", f"{doc_b} {chunk_b.section_id}"],
-                "reasoning": f"Mock Conflict: {doc_a} {chunk_a.section_id} states '{chunk_a.text[:60]}...' while {doc_b} {chunk_b.section_id} states '{chunk_b.text[:60]}...'. These represent a deterministic structural impossibility based on actual document chunks.",
-                "status": "UNRESOLVED",
-                "conflict_type": "Direct Contradiction",
-                "is_mock_mode": True,
-                "citations": [
-                    {
-                        "document": doc_a,
-                        "section": chunk_a.section_id,
-                        "passage": chunk_a.text,
-                        "confidence": 0.95,
-                        "topic": topic
-                    },
-                    {
-                        "document": doc_b,
-                        "section": chunk_b.section_id,
-                        "passage": chunk_b.text,
-                        "confidence": 0.95,
-                        "topic": topic
-                    }
-                ],
-                "conflict_pairs": [
-                    {
-                        "statement_a": {"document": doc_a, "section": chunk_a.section_id},
-                        "statement_b": {"document": doc_b, "section": chunk_b.section_id},
-                        "conflict_type": "Direct Contradiction",
-                        "why_impossible": "Deterministic mock pairing based on retrieved chunks."
-                    }
-                ]
-            }
-
-            emit_fn("conflict_detected", conflict_data)
-            emit_fn("conflict_emitted", conflict_data)
-            logger.info("Mock pipeline: conflict_detected id=%s", conflict_id)
-            conflicts_emitted += 1
-            await asyncio.sleep(MOCK_STEP_INTERVAL_S)
-
-    emit_fn("analysis_complete", {
-        "status": "complete",
-        "total_conflicts": conflicts_emitted,
-        "is_mock_mode": True,
-    })
-    emit_fn("complete", {
-        "status": "complete",
-        "total_conflicts": conflicts_emitted,
-        "_meta": {"fallback": "DETERMINISTIC_FALLBACK"},
-    })
-    logger.info("Mock pipeline complete. %d conflicts emitted.", conflicts_emitted)
+    logger.info("Precomputed pipeline complete for scenario=%s.", scenario)
 
 
 # ─── Router ───────────────────────────────────────────────────────────────────
 
 async def run_analysis_pipeline(
     emit_fn: Callable[[str, dict], None],
+    scenario: str = None,
 ) -> None:
     """
     Entry point for main.py.
 
-    Attempts live pipeline first; falls back to mock on any failure.
-    Guaranteed to complete — the demo never fails.
+    DEMO_MODE=true  → forces precomputed replay for all scenarios (zero API calls).
+    custom_upload   → live-only; abstains on any mock/precomputed path.
+    scenario=<id>   → replays precomputed trace for that scenario.
+    scenario=None   → runs live pipeline against knowledge_base.
     """
+    # DEMO_MODE: zero API calls, zero embeddings, zero Azure Search
+    if os.getenv("DEMO_MODE", "").lower() in {"1", "true", "yes"}:
+        if scenario == "custom_upload":
+            logger.warning("DEMO_MODE active but custom_upload requested — abstaining.")
+            _emit_abstention(emit_fn, "DEMO_MODE does not support custom uploads")
+            return
+        demo_scenario = scenario or "scenario_5_nexora_demo"
+        logger.info("DEMO_MODE: replaying precomputed scenario=%s (zero API calls)", demo_scenario)
+        try:
+            await run_precomputed_pipeline(emit_fn, demo_scenario)
+        except FileNotFoundError:
+            logger.warning("DEMO_MODE: scenario file not found, falling back to scenario_5_nexora_demo")
+            await run_precomputed_pipeline(emit_fn, "scenario_5_nexora_demo")
+        return
+
+    if scenario == "custom_upload":
+        logger.info("Custom Upload requested — live pipeline only (uploads=%s).", UPLOADS_DIR)
+        try:
+            live_succeeded = await run_live_pipeline(emit_fn, scenario)
+        except Exception as exc:
+            logger.error("Live pipeline error during custom upload: %s", exc)
+            live_succeeded = False
+
+        if not live_succeeded:
+            logger.warning("Custom upload reasoning failed or used forbidden fallback — abstaining.")
+            _emit_abstention(emit_fn)
+        return
+
+    if scenario:
+        logger.info("Demo Scenario Replay requested for scenario: %s", scenario)
+        await run_precomputed_pipeline(emit_fn, scenario)
+        return
+
     try:
-        live_succeeded = await run_live_pipeline(emit_fn)
+        live_succeeded = await run_live_pipeline(emit_fn, scenario)
     except Exception as exc:
-        logger.error("Live pipeline error: %s — falling back to mock", exc)
+        logger.error("Live pipeline error: %s — falling back to precomputed", exc)
         live_succeeded = False
 
     if not live_succeeded:
-        logger.info("Activating Tier 3 mock pipeline.")
-        await run_mock_pipeline(emit_fn)
+        logger.info("Activating Tier 3 precomputed pipeline fallback.")
+        await run_precomputed_pipeline(emit_fn, scenario or "scenario_5_nexora_demo")

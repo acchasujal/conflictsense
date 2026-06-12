@@ -45,15 +45,49 @@ logger = logging.getLogger("conflictsense.document_analyzer")
 
 # ─── Knowledge base path ──────────────────────────────────────────────────────
 KB_DIR = Path(__file__).parent.parent / "knowledge_base"
+UPLOADS_DIR = Path(__file__).parent.parent / "data" / "uploads"
 
 # ─── Confidence threshold (docs/reliability_spec.md §2) ──────────────────────
 MIN_CONFIDENCE: float = 0.65
 
-# ─── Supported topics (docs/agent_contracts.md §1, foundry_iq_spec.md §2.1) ──
-SUPPORTED_TOPICS: list[str] = [
-    "employee data location and processing rules",
-    "employee reporting channels and anonymity guarantees",
-]
+# ─── Scenario-specific topic sets ────────────────────────────────────────────
+# Each scenario gets a UNIQUE pair of topics — this prevents identical outputs
+# across scenarios when they share the same knowledge base.
+
+SCENARIO_TOPICS: dict[str | None, list[str]] = {
+    "scenario_1_data_residency": [
+        "employee data location and processing rules",
+        "remote work geographic restrictions and VPN policy",
+    ],
+    "scenario_2_anonymous_reporting": [
+        "employee reporting channels and anonymity guarantees",
+        "IT audit logging and user identity tracking requirements",
+    ],
+    "scenario_3_cross_border": [
+        "BYOD device data deletion and retention obligations",
+        "remote work security and device compliance requirements",
+    ],
+    "scenario_4_vendor_compliance": [
+        "expense reimbursement and financial approval authority",
+        "software procurement authorization and IT security review",
+    ],
+    "scenario_5_nexora_demo": [
+        "employee data location and processing rules",
+        "employee reporting channels and anonymity guarantees",
+    ],
+    None: [
+        "employee data location and processing rules",
+        "employee reporting channels and anonymity guarantees",
+    ],
+}
+
+# Backward-compatible alias for tests and orchestrator imports
+SUPPORTED_TOPICS: list[str] = SCENARIO_TOPICS[None]
+
+
+def get_topics_for_scenario(scenario: str | None) -> list[str]:
+    """Return the topic list for the given scenario_id, or the default."""
+    return SCENARIO_TOPICS.get(scenario, SCENARIO_TOPICS[None])
 
 # ─── Output data classes ─────────────────────────────────────────────────────
 
@@ -111,15 +145,16 @@ class DocumentAnalyzer:
         self,
         foundry_client: Optional[object] = None,
         extractor: Optional[ChunkExtractor] = None,
+        scenario: Optional[str] = None,
     ):
         """
         Args:
-            foundry_client: Kept for test backward-compatibility. When provided,
-                            DocumentAnalyzer wraps it in a thin adapter so existing
-                            tests that inject MockFoundryIQClient continue to work.
-            extractor:      Optional pre-built ChunkExtractor (for unit tests).
-                            If neither is provided, a live ChunkExtractor is created.
+            foundry_client: Kept for test backward-compatibility.
+            extractor:      Optional pre-built ChunkExtractor.
+            scenario:       Optional scenario flag to determine directory.
         """
+        self.scenario = scenario
+        self.strict_live = scenario == "custom_upload"
         # Determine extraction backend:
         # 1. Explicit ChunkExtractor injection (preferred)
         # 2. Wrapped FoundryIQClient (test backward-compat)
@@ -137,18 +172,20 @@ class DocumentAnalyzer:
             self._extractor = _FoundryIQClientAdapter(foundry_client)
             self._client = foundry_client
         else:
-            self._extractor = ChunkExtractor()
+            self._extractor = ChunkExtractor(allow_mock=not self.strict_live)
             self._client = None
 
         from agents.retrieval import LocalRetriever
         from agents.azure_search_retriever import AzureSearchRetriever
-        self._retriever = LocalRetriever()
+        doc_dir = UPLOADS_DIR if self.strict_live else KB_DIR
+        self._doc_dir = doc_dir
+        self._retriever = LocalRetriever(kb_dir=doc_dir)
         self._azure_retriever = AzureSearchRetriever()
 
-        self._documents = self._load_documents()
+        self._documents = self._load_documents(self.scenario)
         logger.info(
-            "DocumentAnalyzer initialised. %d documents loaded from %s.",
-            len(self._documents), KB_DIR,
+            "DocumentAnalyzer initialised. %d documents loaded from %s (scenario=%r, strict_live=%s).",
+            len(self._documents), doc_dir, scenario, self.strict_live,
         )
 
     # ── Public interface ──────────────────────────────────────────────────────
@@ -191,10 +228,12 @@ class DocumentAnalyzer:
             )
             if "PYTEST_CURRENT_TEST" in os.environ and not is_mocked:
                 raise RuntimeError("Bypassing Azure Search in test environment")
+            if self.strict_live:
+                raise RuntimeError("Custom upload must use upload-scoped LocalRetriever only")
             chunks = self._azure_retriever.search(query, top_k=10)
             retrieval_source = "azure_search"
         except Exception as e:
-            logger.warning("Azure Search failed, falling back to LocalRetriever: %s", e)
+            logger.warning("Azure Search failed, falling back to LocalRetriever (%s): %s", self._doc_dir, e)
             chunks = self._retriever.search(query, top_k=10)
             retrieval_source = "local_retriever"
 
@@ -223,6 +262,9 @@ class DocumentAnalyzer:
                         score = getattr(c, "retrieval_score", 1.0)
                         packets.append(f"[Source: {c.document_name}]\n[Section: {c.section_id}]\n[Relevance: {score:.3f}]\nContent: {c.text}")
                     retrieved_text = "\n\n".join(packets)
+                elif self.strict_live and doc_text.strip():
+                    retrieved_text = doc_text[:12000]
+                    retrieval_source = "upload_direct"
                 else:
                     retrieved_text = ""
                 
@@ -331,6 +373,8 @@ class DocumentAnalyzer:
             )
             if "PYTEST_CURRENT_TEST" in os.environ and not is_mocked:
                 raise RuntimeError("Bypassing Azure Search in test environment")
+            if self.strict_live:
+                raise RuntimeError("Custom upload must use upload-scoped LocalRetriever only")
             all_chunks = self._azure_retriever.search(query, top_k=10)
             top_chunks = [c for c in all_chunks if c.document_name == document_name][:3]
         except Exception:
@@ -385,22 +429,44 @@ class DocumentAnalyzer:
         )
 
     @staticmethod
-    def _load_documents() -> dict[str, str]:
+    def _load_documents(scenario: str = None) -> dict[str, str]:
         """
-        Load all 7 policy documents from knowledge_base/.
-        Returns a dict of { filename: full_text }.
+        Load policy documents from knowledge_base/ or data/uploads/.
+        Supports .md, .txt, .pdf, .docx.
         """
         docs: dict[str, str] = {}
-        if not KB_DIR.exists():
-            logger.error("knowledge_base/ directory not found at %s", KB_DIR)
+        if scenario == "custom_upload":
+            target_dir = UPLOADS_DIR
+        else:
+            target_dir = KB_DIR
+
+        if not target_dir.exists():
+            logger.error("Directory not found at %s", target_dir)
             return docs
 
-        for path in sorted(KB_DIR.glob("*.md")):
+        for path in sorted(target_dir.glob("*")):
+            if not path.is_file():
+                continue
+            
+            ext = path.suffix.lower()
             try:
-                text = path.read_text(encoding="utf-8")
+                if ext in {".md", ".txt"}:
+                    text = path.read_text(encoding="utf-8")
+                elif ext == ".pdf":
+                    import pypdf
+                    reader = pypdf.PdfReader(path)
+                    text = "\n".join(page.extract_text() for page in reader.pages if page.extract_text())
+                elif ext == ".docx":
+                    import docx
+                    doc = docx.Document(path)
+                    text = "\n".join(paragraph.text for paragraph in doc.paragraphs)
+                else:
+                    logger.debug("Skipping unsupported file: %s", path.name)
+                    continue
+
                 docs[path.name] = text
                 logger.debug("Loaded document: %s (%d chars)", path.name, len(text))
-            except OSError as e:
+            except Exception as e:
                 logger.error("Failed to load %s: %s", path.name, e)
 
         return docs
@@ -431,25 +497,8 @@ class _FoundryIQClientAdapter:
 
 
     @staticmethod
-    def _load_documents() -> dict[str, str]:
-        """
-        Load all 7 policy documents from knowledge_base/.
-        Returns a dict of { filename: full_text }.
-        """
-        docs: dict[str, str] = {}
-        if not KB_DIR.exists():
-            logger.error("knowledge_base/ directory not found at %s", KB_DIR)
-            return docs
-
-        for path in sorted(KB_DIR.glob("*.md")):
-            try:
-                text = path.read_text(encoding="utf-8")
-                docs[path.name] = text
-                logger.debug("Loaded document: %s (%d chars)", path.name, len(text))
-            except OSError as e:
-                logger.error("Failed to load %s: %s", path.name, e)
-
-        return docs
+    def _load_documents(scenario: str = None) -> dict[str, str]:
+        return DocumentAnalyzer._load_documents(scenario)
 
 
 # ─── Convenience function for the backend / tests ────────────────────────────

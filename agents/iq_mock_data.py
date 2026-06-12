@@ -342,24 +342,39 @@ IMPACT_MOCKS: dict[str, str] = {
 def topic_key_for(topic: str) -> str:
     """Map a free-form topic string to a canonical mock key."""
     t = topic.lower()
+    # Scenario 2: Whistleblower anonymity
     if any(w in t for w in ["anonymity", "anonymous", "reporting channel", "whistleblower"]):
         return "anonymity"
+    # Scenario 2: IT audit logging (second topic)
+    if any(w in t for w in ["audit logging", "identity tracking", "user identity", "access log"]):
+        return "mfa"  # re-uses the access control mock (distinct from anonymity)
+    # Scenario 1: Data location / residency
     if any(w in t for w in ["data location", "processing", "residency", "server"]):
         return "data location"
-    if any(w in t for w in ["incident", "breach", "fca", "72"]):
-        return "incident reporting"
+    # Scenario 1: Remote work geo restrictions (second topic)
+    if any(w in t for w in ["geographic restriction", "vpn policy", "geo restriction"]):
+        return "incident reporting"  # distinct conflict: CISO 72h vs whistleblower routing
+    # Scenario 3: BYOD deletion
     if any(w in t for w in ["byod", "deletion", "device"]):
         return "byod"
+    # Scenario 3: Remote work security / device compliance
+    if any(w in t for w in ["device compliance", "remote work security", "remote security"]):
+        return "data minimization"  # distinct: retention conflict
+    # Scenario 4: Expense approval
+    if any(w in t for w in ["expense", "receipt", "reimbursement", "financial approval"]):
+        return "relocation"  # approval chain conflict
+    # Scenario 4: Software procurement
+    if any(w in t for w in ["software", "saas", "procurement", "authorization"]):
+        return "software procurement"
+    # General fallbacks
+    if any(w in t for w in ["incident", "breach", "fca", "72"]):
+        return "incident reporting"
     if any(w in t for w in ["relocation", "allowance"]):
         return "relocation"
-    if any(w in t for w in ["software", "saas", "procurement"]):
-        return "software procurement"
     if any(w in t for w in ["minimization", "minimisation", "retention"]):
         return "data minimization"
     if any(w in t for w in ["mfa", "multi-factor", "authentication"]):
         return "mfa"
-    if any(w in t for w in ["expense", "receipt", "reimbursement"]):
-        return "expense reimbursement"
     if any(w in t for w in ["vacation", "leave", "pto"]):
         return "vacation policy"
     return t
