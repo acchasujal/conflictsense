@@ -140,8 +140,8 @@ class TestLowConfidenceRouting:
 class TestTraceStepSchema:
     REQUIRED_FIELDS = ["agent", "agentColor", "time"]
     VALID_AGENTS = {
-        "DocumentAnalyzer", "ConflictDetector",
-        "ImpactAssessor", "RiskQuantifier", "ResolutionRecommender"
+        "Azure Search Grounding", "Conflict Detection",
+        "Impact Assessment", "Risk Quantification", "Resolution Generation"
     }
 
     def test_total_step_count(self, trace_steps):
@@ -158,16 +158,16 @@ class TestTraceStepSchema:
                 f"Unknown agent: {step['agent']!r}"
 
     def test_conflict_steps_have_severity(self, trace_steps):
-        """ConflictDetector steps that detect conflicts must have severity set."""
-        detector_steps = [s for s in trace_steps if s["agent"] == "ConflictDetector"]
+        """Conflict Detection steps that detect conflicts must have severity set."""
+        detector_steps = [s for s in trace_steps if s["agent"] == "Conflict Detection"]
         for step in detector_steps:
             if step.get("conclusion"):
                 assert step.get("severity") in {"CRITICAL", "HIGH", "MEDIUM"}, \
                     f"ConflictDetector step with conclusion must have valid severity"
 
     def test_document_analyzer_steps_have_citations(self, trace_steps):
-        """DocumentAnalyzer steps that run queries must have citations."""
-        da_steps = [s for s in trace_steps if s["agent"] == "DocumentAnalyzer"]
+        """Azure Search Grounding steps that run queries must have citations."""
+        da_steps = [s for s in trace_steps if s["agent"] == "Azure Search Grounding"]
         for step in da_steps:
             if step.get("query"):
                 assert step.get("citations") and len(step["citations"]) >= 1, \
@@ -177,12 +177,12 @@ class TestTraceStepSchema:
         """The anonymity conflict must appear as an isSurprise=True trace step."""
         surprise_steps = [s for s in trace_steps if s.get("isSurprise")]
         assert len(surprise_steps) == 1, "Must have exactly 1 isSurprise trace step"
-        assert surprise_steps[0]["agent"] == "ConflictDetector"
+        assert surprise_steps[0]["agent"] == "Conflict Detection"
         assert surprise_steps[0]["severity"] == "CRITICAL"
 
     def test_resolution_recommender_is_last(self, trace_steps):
-        """ResolutionRecommender must always be the final step."""
-        assert trace_steps[-1]["agent"] == "ResolutionRecommender"
+        """Resolution Generation must always be the final step."""
+        assert trace_steps[-1]["agent"] == "Resolution Generation"
 
     def test_conclusion_prose_not_json(self, trace_steps):
         """

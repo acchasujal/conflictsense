@@ -5,7 +5,7 @@ Targeted regression tests for the ConflictSense pipeline stabilization fixes.
 
 Covers the issues identified in the Phase 1 root-cause analysis:
 
-  Fix A: ProviderChain default order includes Gemini and OpenRouter.
+  Fix A: ProviderChain default order is Groq → Nvidia (OpenRouter removed — 402).
   Fix B: _parse_json is idempotent and handles edge cases correctly.
   Fix C: ConflictValidatorAgent survives unexpected transport exceptions.
   Fix D: vacation_policy mock correctly returns has_conflict=False.
@@ -22,7 +22,6 @@ import pytest
 from agents.llm_provider import (
     ProviderChain,
     GeminiProvider,
-    OpenRouterProvider,
     GroqProvider,
     NvidiaProvider,
     LLMResponse,
@@ -40,17 +39,17 @@ from agents.iq_mock_data import get_conflict_mock_response
 # ─── Fix A: ProviderChain default order ───────────────────────────────────────
 
 class TestProviderChainDefaultOrder:
-    """Verify that the default ProviderChain includes all four providers in order."""
+    """Verify Groq-first chain with OpenRouter removed (returns 402)."""
 
-    def test_default_chain_includes_gemini(self):
+    def test_default_chain_excludes_gemini(self):
         chain = ProviderChain()
         names = [p.name for p in chain.providers]
-        assert "gemini" in names, "Default chain must include GeminiProvider"
+        assert "gemini" not in names, "Gemini must remain disabled until rate limits are resolved"
 
-    def test_default_chain_includes_openrouter(self):
+    def test_default_chain_excludes_openrouter(self):
         chain = ProviderChain()
         names = [p.name for p in chain.providers]
-        assert "openrouter" in names, "Default chain must include OpenRouterProvider"
+        assert "openrouter" not in names, "OpenRouter must be removed — returns 402 Payment Required"
 
     def test_default_chain_includes_groq(self):
         chain = ProviderChain()
@@ -62,20 +61,6 @@ class TestProviderChainDefaultOrder:
         names = [p.name for p in chain.providers]
         assert "nvidia" in names, "Default chain must include NvidiaProvider"
 
-    def test_gemini_before_groq(self):
-        chain = ProviderChain()
-        names = [p.name for p in chain.providers]
-        assert names.index("gemini") < names.index("groq"), (
-            "Gemini must appear before Groq in the default chain"
-        )
-
-    def test_openrouter_before_groq(self):
-        chain = ProviderChain()
-        names = [p.name for p in chain.providers]
-        assert names.index("openrouter") < names.index("groq"), (
-            "OpenRouter must appear before Groq in the default chain"
-        )
-
     def test_groq_before_nvidia(self):
         chain = ProviderChain()
         names = [p.name for p in chain.providers]
@@ -83,11 +68,11 @@ class TestProviderChainDefaultOrder:
             "Groq must appear before NVIDIA in the default chain"
         )
 
-    def test_exact_order_is_gemini_openrouter_groq_nvidia(self):
+    def test_exact_order_is_groq_nvidia(self):
         chain = ProviderChain()
         names = [p.name for p in chain.providers]
-        assert names == ["gemini", "openrouter", "groq", "nvidia"], (
-            f"Expected [gemini, openrouter, groq, nvidia], got {names}"
+        assert names == ["groq", "nvidia"], (
+            f"Expected [groq, nvidia], got {names}"
         )
 
     def test_reset_provider_chain_clears_singleton(self):

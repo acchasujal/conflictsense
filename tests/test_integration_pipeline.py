@@ -14,7 +14,7 @@ import asyncio
 import pytest
 from unittest.mock import patch
 
-from backend.pipeline import run_live_pipeline, run_mock_pipeline, run_analysis_pipeline
+from backend.pipeline import run_live_pipeline, run_precomputed_pipeline, run_analysis_pipeline
 from backend.main import app
 
 
@@ -35,7 +35,9 @@ async def test_run_live_pipeline_tier3():
     # Run the live pipeline with MockFoundryIQClient to simulate Tier 1 success using Tier 3 data
     from tests.test_document_analyzer import MockFoundryIQClient
     from agents.document_analyzer import DocumentAnalyzer
-    with patch("agents.orchestrator.DocumentAnalyzer", return_value=DocumentAnalyzer(foundry_client=MockFoundryIQClient())):
+    
+    real_da = DocumentAnalyzer(foundry_client=MockFoundryIQClient())
+    with patch("agents.document_analyzer.DocumentAnalyzer.analyze", side_effect=real_da.analyze):
         success = await run_live_pipeline(emit_fn)
         assert success is True
 
@@ -93,7 +95,7 @@ async def test_run_live_pipeline_tier3():
     assert len(analysis_complete) == 1
 
     assert complete[0][1]["status"] == "complete"
-    assert complete[0][1]["_meta"]["fallback"] == "MOCK_MODE"
+    assert complete[0][1]["_meta"]["fallback"] == "DETERMINISTIC_FALLBACK"
 
 
 # ─── Integration tests for run_mock_pipeline ──────────────────────────────────
@@ -101,8 +103,8 @@ async def test_run_live_pipeline_tier3():
 @pytest.mark.anyio
 async def test_run_mock_pipeline():
     """
-    run_mock_pipeline should stream precomputed mock data directly, yielding all
-    9 conflicts and 7 trace steps with custom timing intervals.
+    run_precomputed_pipeline should stream precomputed mock data directly, yielding all
+    conflicts and trace steps.
     """
     events = []
 
@@ -111,7 +113,7 @@ async def test_run_mock_pipeline():
 
     # To speed up test run, patch asyncio.sleep to be fast
     with patch("asyncio.sleep", return_value=None) as mock_sleep:
-        await run_mock_pipeline(emit_fn)
+        await run_precomputed_pipeline(emit_fn, "scenario_5_nexora_demo")
         assert mock_sleep.called
 
     # Check step and conflict count
@@ -122,7 +124,7 @@ async def test_run_mock_pipeline():
     assert len(trace_steps) > 0
     assert len(conflicts) >= 0
     assert len(complete) == 1
-    assert complete[0][1]["_meta"]["fallback"] == "MOCK_MODE"
+    assert complete[0][1]["_meta"]["fallback"] == "DEMO_SCENARIO_REPLAY"
 
 
 # ─── Integration tests for run_analysis_pipeline (routing) ────────────────────
@@ -131,7 +133,7 @@ async def test_run_mock_pipeline():
 async def test_run_analysis_pipeline_fallback():
     """
     If run_live_pipeline raises an exception or returns False, the pipeline
-    should fall back to run_mock_pipeline automatically and complete successfully.
+    should fall back to run_precomputed_pipeline automatically and complete successfully.
     """
     events = []
 
@@ -152,7 +154,7 @@ async def test_run_analysis_pipeline_fallback():
     assert len(trace_steps) > 0
     assert len(conflicts) >= 0
     assert len(complete) == 1
-    assert complete[0][1]["_meta"]["fallback"] == "MOCK_MODE"
+    assert complete[0][1]["_meta"]["fallback"] == "DEMO_SCENARIO_REPLAY"
 
 
 # ─── Integration tests for FastAPI analyze_stream endpoint ───────────────────
@@ -165,31 +167,37 @@ async def test_main_analyze_stream():
     """
     # Call the endpoint handler directly
     from backend.main import analyze_stream
-    response = await analyze_stream()
-    assert response.status_code == 200
+    
+    # We MUST patch run_analysis_pipeline to avoid making real API calls during tests
+    with patch("backend.main.run_analysis_pipeline") as mock_run:
+        # Mock it to just emit a dummy complete event and return
+        async def fake_run(emit_fn, scenario=None):
+            emit_fn("complete", {"status": "complete", "_meta": {"fallback": "MOCK"}})
+        mock_run.side_effect = fake_run
+        
+        response = await analyze_stream()
+        assert response.status_code == 200
 
     events = []
     # Collect events by running the response generator
-    # We patch sleep to execute the test fast
-    with patch("asyncio.sleep", return_value=None):
-        async for item in response.body_iterator:
-            # item is a dict with {"event": ..., "data": ...} or starlette event bytes
-            # Depending on starlette version, BodyIterator yield might be bytes or dicts.
-            # Starlette EventSourceResponse typically yields bytes or string chunk.
-            # In our case it is EventSourceResponse wrapping generator that yields dicts.
-            if isinstance(item, dict):
-                events.append(item)
-            elif isinstance(item, bytes):
-                # parse bytes back to dict
-                text = item.decode("utf-8")
-                # Starlette format is "event: <name>\ndata: <json>\n\n"
-                event_name = None
-                data_json = None
-                for line in text.splitlines():
-                    if line.startswith("event: "):
-                        event_name = line[7:]
-                    elif line.startswith("data: "):
-                        data_json = json.loads(line[6:])
+    async for item in response.body_iterator:
+        # item is a dict with {"event": ..., "data": ...} or starlette event bytes
+        # Depending on starlette version, BodyIterator yield might be bytes or dicts.
+        # Starlette EventSourceResponse typically yields bytes or string chunk.
+        # In our case it is EventSourceResponse wrapping generator that yields dicts.
+        if isinstance(item, dict):
+            events.append(item)
+        elif isinstance(item, bytes):
+            # parse bytes back to dict
+            text = item.decode("utf-8")
+            # Starlette format is "event: <name>\ndata: <json>\n\n"
+            event_name = None
+            data_json = None
+            for line in text.splitlines():
+                if line.startswith("event: "):
+                    event_name = line[7:]
+                elif line.startswith("data: "):
+                    data_json = json.loads(line[6:])
                 if event_name and data_json:
                     events.append({"event": event_name, "data": data_json})
 

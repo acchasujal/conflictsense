@@ -204,7 +204,7 @@ class TestAnalyzeStream:
                      for i, e in enumerate(stream_events)}
         step1_pos = next(i for i, e in enumerate(stream_events)
                          if e["event"] == "trace_step" and
-                         e["data"].get("agent") == "ConflictDetector" and
+                         e["data"].get("agent") == "Conflict Detection" and
                          e["data"].get("severity") == "CRITICAL" and
                          not e["data"].get("isSurprise"))
         conflict1_pos = next(i for i, e in enumerate(stream_events)

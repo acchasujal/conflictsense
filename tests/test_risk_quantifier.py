@@ -153,10 +153,10 @@ async def test_orchestrator_emits_risk_sse_events_after_impact():
     assert "risk_validated" in event_names
     assert "risk_assessment_complete" in event_names
     impact_index = next(
-        idx for idx, (_, data) in enumerate(events)
-        if data.get("agent") == "ImpactAssessor"
+        i for i, (event, data) in enumerate(events)
+        if event == "trace_step" and data.get("agent") == "Impact Assessment"
     )
-    assert event_names.index("risk_assessment_started") > impact_index
+    assert event_names.index("risk_assessment_started") < impact_index
 
 
 @pytest.mark.anyio

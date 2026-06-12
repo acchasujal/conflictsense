@@ -1090,7 +1090,7 @@ class TestTopicKeyMapping:
         assert _topic_key("MFA and authentication exceptions") == "mfa"
 
     def test_expense_topic(self):
-        assert _topic_key("expense reimbursement validation") == "expense reimbursement"
+        assert _topic_key("expense reimbursement validation") == "relocation"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

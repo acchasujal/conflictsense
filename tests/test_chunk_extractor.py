@@ -7,8 +7,8 @@ replaces FoundryIQClient as DocumentAnalyzer's reasoning backend.
 Coverage:
   1. ChunkExtractor instantiates without errors.
   2. Extract with a live provider mock → Tier 1 result.
-  3. Gemini failure → OpenRouter fallback → Tier 1 result.
-  4. Groq fallback when Gemini+OpenRouter fail.
+  3. First provider failure → second provider fallback → Tier 1 result.
+  4. Second provider failure → Nvidia fallback.
   5. All providers fail → Tier 3 mock result (never raises).
   6. Empty document_text → silent result (no providers called).
   7. Malformed LLM JSON → mock fallback (no crash).
@@ -160,13 +160,13 @@ class TestLiveProviderSuccess:
         assert result.tier_used == 1
 
 
-# ─── 3. OpenRouter fallback when Gemini fails ─────────────────────────────────
+# ─── 3. Second provider fallback ────────────────────────────────────────
 
-class TestOpenRouterFallback:
-    def test_openrouter_used_when_gemini_fails(self):
+class TestSecondProviderFallback:
+    def test_second_provider_used_when_first_fails(self):
         chain = _make_provider_chain([
-            LLMProviderError("Gemini timeout"),
-            _live_response(),       # OpenRouter succeeds
+            LLMProviderError("first provider timeout"),
+            _live_response(),       # second provider succeeds
         ])
         extractor = ChunkExtractor(provider_chain=chain)
         result = extractor.extract(
@@ -179,14 +179,14 @@ class TestOpenRouterFallback:
         assert len(result.citations) > 0
 
 
-# ─── 4. Groq fallback ────────────────────────────────────────────────────────
+# ─── 4. Nvidia fallback ────────────────────────────────────────────────
 
-class TestGroqFallback:
-    def test_groq_used_when_gemini_and_openrouter_fail(self):
+class TestNvidiaFallback:
+    def test_nvidia_used_when_groq_fails(self):
         chain = _make_provider_chain([
-            LLMProviderError("Gemini fail"),
-            LLMProviderError("OpenRouter fail"),
-            _live_response(),       # Groq succeeds
+            LLMProviderError("Groq fail"),
+            LLMProviderError("Nvidia next"),
+            _live_response(),       # Nvidia succeeds
         ])
         extractor = ChunkExtractor(provider_chain=chain)
         result = extractor.extract(
