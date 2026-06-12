@@ -263,7 +263,7 @@ async def run_fast_live_pipeline(emit_fn: Callable[[str, dict], None], scenario:
         return True
 
     except Exception as exc:
-        logger.error("Fast Live pipeline failed: %s", exc)
+        logger.error("Fast Live pipeline failed: %s", exc, exc_info=True)
         return False
 
 
