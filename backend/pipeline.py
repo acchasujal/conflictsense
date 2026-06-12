@@ -205,18 +205,44 @@ async def run_fast_live_pipeline(emit_fn: Callable[[str, dict], None], scenario:
             logger.warning("No documents found in %s", doc_dir)
             return False
 
-        # Build full evidence context from all documents
+        logger.info(f"DOCUMENT_COUNT: {len(docs)}")
+
+        # Build full evidence context
         evidence_text = ""
-        for doc in docs:
-            with open(doc, 'r', encoding='utf-8') as f:
-                evidence_text += f"\n--- DOCUMENT: {doc.name} ---\n{f.read()}\n"
+        
+        if scenario == "full_kb_analysis":
+            from agents.azure_search_retriever import AzureSearchRetriever
+            retriever = AzureSearchRetriever()
+            query = "Enterprise-wide contradictions, compliance gaps, and policy conflicts across HR, IT, Finance, and Legal."
+            try:
+                chunks = retriever.search(query, top_k=10)
+                for i, chunk in enumerate(chunks, 1):
+                    evidence_text += f"\n--- CHUNK {i} FROM {chunk.document_name} (Section: {chunk.section_id}) ---\n{chunk.text}\n"
+                logger.info(f"AzureSearchRetriever: Retrieved {len(chunks)} chunks for full_kb_analysis.")
+                
+                emit_fn("trace_step", {
+                    "agent": "Retrieval System",
+                    "action": "Semantic Chunk Retrieval",
+                    "details": f"Queried Azure Search for top {len(chunks)} relevant policy chunks.",
+                    "duration_ms": retriever.last_latency,
+                    "conclusion": "Constructed optimized evidence context to prevent LLM context overflow."
+                })
+            except Exception as e:
+                logger.warning("AzureSearchRetriever failed: %s. Falling back to full document load.", e)
+                for doc in docs:
+                    with open(doc, 'r', encoding='utf-8') as f:
+                        evidence_text += f"\n--- DOCUMENT: {doc.name} ---\n{f.read()}\n"
+        else:
+            for doc in docs:
+                with open(doc, 'r', encoding='utf-8') as f:
+                    evidence_text += f"\n--- DOCUMENT: {doc.name} ---\n{f.read()}\n"
 
         emit_fn("trace_step", {
             "agent": "MasterReasoningAgent",
-            "action": "Analyzing Full Knowledge Base",
-            "details": f"Processed {len(docs)} documents.",
+            "action": "Analyzing Evidence Context",
+            "details": "Compiled context payload for provider chain.",
             "duration_ms": 100,
-            "conclusion": "Constructed single unified evidence context."
+            "conclusion": "Ready for single-call execution."
         })
 
         agent = MasterReasoningAgent(allow_mock=not strict_live)

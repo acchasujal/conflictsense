@@ -375,13 +375,15 @@ export default function App() {
         </header>
 
         {/* ── Debug Panel ──────────────────────────────────────────────── */}
-        <div style={{ background: '#1E293B', color: '#F8FAFC', padding: '4px 16px', fontSize: 10, display: 'flex', gap: 16, borderBottom: '1px solid #0F172A' }}>
-          <span style={{ color: '#94A3B8' }}>DEBUG MODE</span>
-          <span>Phase: <strong style={{ color: '#38BDF8' }}>{phase}</strong></span>
-          <span>Execution Mode: <strong style={{ color: executionMode ? '#38BDF8' : '#64748B' }}>{executionMode || '—'}</strong></span>
-          <span>Total Conflicts (Internal): <strong>{totalConflicts}</strong></span>
-          <span>Visible Conflicts: <strong>{visibleConflicts.length}</strong></span>
-        </div>
+        {import.meta.env.VITE_DEBUG_MODE === 'true' && (
+          <div style={{ background: '#1E293B', color: '#F8FAFC', padding: '4px 16px', fontSize: 10, display: 'flex', gap: 16, borderBottom: '1px solid #0F172A' }}>
+            <span style={{ color: '#94A3B8' }}>DEBUG MODE</span>
+            <span>Phase: <strong style={{ color: '#38BDF8' }}>{phase}</strong></span>
+            <span>Execution Mode: <strong style={{ color: executionMode ? '#38BDF8' : '#64748B' }}>{executionMode || '—'}</strong></span>
+            <span>Total Conflicts (Internal): <strong>{totalConflicts}</strong></span>
+            <span>Visible Conflicts: <strong>{visibleConflicts.length}</strong></span>
+          </div>
+        )}
 
         {/* ── Responsible AI banner ────────────────────────────────────── */}
         <div role="alert" aria-live="polite" style={{ background: '#FAEEDA', borderBottom: '0.5px solid #EF9F27', padding: '5px 16px', fontSize: 10, color: '#633806', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
@@ -410,7 +412,7 @@ export default function App() {
             onReject={handleReject}
             onEscalate={handleEscalate}
             onRunAnalysis={runAnalysis}
-            isAbstained={isAbstained}
+            isAbstained={isAbstained && currentScenario === 'custom_upload'}
           />
 
           {/* Right: reasoning trace terminal */}
@@ -418,7 +420,7 @@ export default function App() {
             steps={visibleSteps}
             phase={phase}
             isMockMode={isMockMode}
-            isAbstained={isAbstained}
+            isAbstained={isAbstained && currentScenario === 'custom_upload'}
             executionMode={executionMode}
             currentStep={currentStep}
             agentStatus={agentStatus}

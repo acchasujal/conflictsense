@@ -104,10 +104,14 @@ def _sse_event(event: str, data: dict) -> dict:
 # ─── Endpoints ────────────────────────────────────────────────────────────────
 
 @app.get("/")
+async def root_check():
+    """Root healthcheck endpoint."""
+    return {"status": "ok"}
+
 @app.get("/health")
 async def health_check():
     """Healthcheck endpoint for Render deployment."""
-    return {"status": "ok", "service": "ConflictSense API"}
+    return {"status": "healthy"}
 
 @app.get("/analyze/stream")
 async def analyze_stream(scenario: str = None):
@@ -235,16 +239,6 @@ async def reject_conflict(body: RejectRequest):
     return ActionResponse(status="rejected", conflict_id=body.conflict_id)
 
 
-@app.get("/health")
-async def health():
-    """Health check — returns 200 if backend is running."""
-    forced_mock = os.getenv("CONFLICTSENSE_FORCE_MOCK", "").lower() in {"1", "true", "yes"}
-    mode = "DETERMINISTIC_FALLBACK" if forced_mock else "LIVE_CONFIGURED"
-    return {
-        "status": "ok",
-        "mode": mode,
-        "conflicts_loaded": len(MOCK_CONFLICTS),
-    }
 
 
 # ─── Dev entry point ──────────────────────────────────────────────────────────
