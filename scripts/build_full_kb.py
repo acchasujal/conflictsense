@@ -30,53 +30,60 @@ for doc in docs:
 # 2. Add custom timeline trace_step events
 timeline_steps = [
     {
-        "agent": "IngestionAgent",
-        "action": "Knowledge Base Loaded",
-        "description": "Successfully indexed 7 enterprise policies into vector store.",
+        "agent": "Document Analysis",
+        "agentColor": "#85B7EB",
+        "time": "0.4s",
+        "conclusion": "Knowledge Base Loaded: Successfully indexed 7 enterprise policies into vector store.",
         "confidence": 100,
-        "evidence_count": 7
+        "citations": []
     },
     {
-        "agent": "CrossPolicyAnalyzer",
-        "action": "Cross-Policy Review Started",
-        "description": "Initiating parallel comparison across all policy boundaries.",
+        "agent": "Azure Search Grounding",
+        "agentColor": "#85B7EB",
+        "time": "1.2s",
+        "conclusion": "Cross-Policy Review Started: Initiating parallel comparison across all policy boundaries.",
         "confidence": 98,
-        "evidence_count": 0
+        "citations": []
     },
     {
-        "agent": "LogicValidator",
-        "action": "Governance Contradictions Identified",
-        "description": "Detected 5 structurally impossible compliance mandates.",
+        "agent": "Conflict Detection",
+        "agentColor": "#F09595",
+        "time": "2.1s",
+        "conclusion": "Governance Contradictions Identified: Detected 5 structurally impossible compliance mandates across HR, IT, Legal, and Finance.",
         "confidence": 95,
-        "evidence_count": 10
+        "citations": []
     },
     {
-        "agent": "RiskAssessor",
-        "action": "Human Impact Assessment Complete",
-        "description": "Mapped contradictions to affected employee groups and safety risks.",
-        "confidence": 92,
-        "evidence_count": 5
-    },
-    {
-        "agent": "RiskAssessor",
-        "action": "Risk Prioritization Complete",
-        "description": "Categorized findings by severity (Critical, High, Medium).",
+        "agent": "Conflict Validation",
+        "agentColor": "#D085EB",
+        "time": "1.8s",
+        "conclusion": "Logic Validation: Verified that the 5 identified contradictions are structural impossibilities, not just missing guidance.",
         "confidence": 96,
-        "evidence_count": 5
+        "citations": []
     },
     {
-        "agent": "ExecutiveSummarizer",
-        "action": "Executive Summary Generated",
-        "description": "Compiled enterprise audit report for leadership review.",
+        "agent": "Impact Assessment",
+        "agentColor": "#EBD085",
+        "time": "1.4s",
+        "conclusion": "Human Impact Assessment Complete: Mapped contradictions to affected employee groups, identifying significant inclusion and safety risks.",
+        "confidence": 92,
+        "citations": []
+    },
+    {
+        "agent": "Risk Quantification",
+        "agentColor": "#F0B05A",
+        "time": "0.9s",
+        "conclusion": "Risk Prioritization Complete: Categorized findings by severity (Critical, High, Medium) based on legal exposure and blast radius.",
+        "confidence": 96,
+        "citations": []
+    },
+    {
+        "agent": "Resolution Generation",
+        "agentColor": "#5AB0F0",
+        "time": "1.1s",
+        "conclusion": "Executive Summary Generated: Compiled enterprise audit report and remediation roadmap for leadership review.",
         "confidence": 99,
-        "evidence_count": 1
-    },
-    {
-        "agent": "Orchestrator",
-        "action": "Analysis Complete",
-        "description": "Full KB Analysis finished successfully.",
-        "confidence": 100,
-        "evidence_count": 0
+        "citations": []
     }
 ]
 
@@ -85,7 +92,6 @@ for step in timeline_steps:
         "event": "trace_step",
         "data": step
     })
-
 
 # 3. Collect conflicts (but discard trace_steps from the scenarios to keep our clean timeline)
 conflicts = []
@@ -109,7 +115,7 @@ out_events.append({
         "uncertain_count": 0,
         "blocked_count": 0,
         "is_mock_mode": True,
-        "execution_time_s": 4.1
+        "execution_time_s": 8.9
     }
 })
 

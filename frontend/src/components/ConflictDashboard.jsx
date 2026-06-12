@@ -13,8 +13,10 @@
  */
 
 import React from 'react';
+import { FileText, ShieldAlert, Sparkles, Building2, HardDrive, Share2, Globe, Laptop, Users, FileWarning } from 'lucide-react';
 import DocumentGrid from './DocumentGrid.jsx';
 import ConflictCard from './ConflictCard.jsx';
+import ExecutiveSummaryPanel from './ExecutiveSummaryPanel.jsx';
 import ExecutiveDashboard from './ExecutiveDashboard.jsx';
 import CopilotExperience from './CopilotExperience.jsx';
 
@@ -238,6 +240,13 @@ export default function ConflictDashboard({
 
           {/* Severity summary pills */}
           <SeveritySummary conflicts={visibleConflicts} />
+
+          {/* Executive Summary Panel at Top of Dashboard when Done */}
+          {phase === 'done' && (
+            <div style={{ marginTop: 12 }}>
+              <ExecutiveSummaryPanel conflicts={visibleConflicts} documentsCount={documents.length} />
+            </div>
+          )}
 
           <div style={{ ...styles.conflictsList, marginTop: 8 }}>
             {visibleConflicts.map((conflict) => (
