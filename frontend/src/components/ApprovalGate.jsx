@@ -79,7 +79,25 @@ const styles = {
   },
 };
 
-export default function ApprovalGate({ onApprove, onReject, onEscalate }) {
+export default function ApprovalGate({ onApprove, onReject, onEscalate, conflictId, traceId }) {
+  const exportPackage = (e) => {
+    e.stopPropagation();
+    let pkg = `# Conflict Review Package\n\n`;
+    pkg += `**Conflict ID:** ${conflictId}\n`;
+    pkg += `**Trace ID:** ${traceId || 'N/A'}\n`;
+    pkg += `**Generated:** ${new Date().toISOString()}\n\n`;
+    pkg += `Please review the findings and coordinate with the governance board.\n`;
+    const blob = new Blob([pkg], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ReviewPackage_${conflictId}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div style={styles.card}>
       <div style={styles.header}>
@@ -98,7 +116,7 @@ export default function ApprovalGate({ onApprove, onReject, onEscalate }) {
           onMouseOver={(e) => e.target.style.background = '#4F52B2'}
           onMouseOut={(e) => e.target.style.background = '#5B5FC7'}
         >
-          Approve
+          Approve Remediation Plan
         </button>
 
         <button
@@ -107,7 +125,7 @@ export default function ApprovalGate({ onApprove, onReject, onEscalate }) {
           onMouseOver={(e) => e.target.style.background = '#F5F5F5'}
           onMouseOut={(e) => e.target.style.background = '#FFFFFF'}
         >
-          Reject (False Positive)
+          Request Legal Review
         </button>
 
         <button
@@ -116,7 +134,16 @@ export default function ApprovalGate({ onApprove, onReject, onEscalate }) {
           onMouseOver={(e) => e.target.style.background = '#F5F5F5'}
           onMouseOut={(e) => e.target.style.background = '#FFFFFF'}
         >
-          Assign for Review
+          Escalate to Governance Board
+        </button>
+
+        <button
+          style={{ ...styles.btnSecondary, background: '#F8FAFC' }}
+          onClick={exportPackage}
+          onMouseOver={(e) => e.target.style.background = '#F1F5F9'}
+          onMouseOut={(e) => e.target.style.background = '#F8FAFC'}
+        >
+          📥 Export Review Package
         </button>
       </div>
     </div>

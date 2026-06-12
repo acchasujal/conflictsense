@@ -101,6 +101,11 @@ export default function CopilotExperience({ onRunAnalysis }) {
               desc="Test third-party software SLAs vs internal security audits." 
               onClick={() => onRunAnalysis("scenario_4_vendor_compliance")} 
             />
+            <ScenarioCard 
+              title="Analyze Entire Knowledge Base" 
+              desc="Full cross-reference of all 7 policies. Fast pipeline." 
+              onClick={() => onRunAnalysis("full_kb_analysis")} 
+            />
           </div>
         </>
       ) : (

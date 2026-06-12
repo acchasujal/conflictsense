@@ -163,6 +163,7 @@ export default function ConflictDashboard({
   onEscalate,
   onRunAnalysis,
   isAbstained,
+  traceId,
 }) {
   return (
     <div style={styles.panel}>
@@ -170,7 +171,7 @@ export default function ConflictDashboard({
       <CopilotExperience onRunAnalysis={onRunAnalysis} />
 
       {/* Executive Dashboard */}
-      <ExecutiveDashboard phase={phase} />
+      <ExecutiveDashboard phase={phase} visibleConflicts={visibleConflicts} traceId={traceId} />
 
       {/* Document grid — always visible */}
       <DocumentGrid documents={documents} />
@@ -188,7 +189,7 @@ export default function ConflictDashboard({
             how they disagree.
           </div>
           <div style={styles.deadlineAlert}>
-            ⏰ DPDP compliance deadline: July 1, 2026 — 24 days
+            Ready for parallel agent execution.
           </div>
         </div>
       )}

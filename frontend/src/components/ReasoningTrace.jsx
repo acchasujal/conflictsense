@@ -4,11 +4,11 @@
  * Live Agent Timeline showing reasoning trace steps with Microsoft-style Agent Cards.
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import AgentCard from './AgentCard.jsx';
 import SkeletonLoader from './SkeletonLoader.jsx';
 
-export default function ReasoningTrace({ steps, phase, isMockMode, isAbstained, executionMode, currentStep, agentStatus }) {
+export default function ReasoningTrace({ steps, phase, isMockMode, isAbstained, executionMode, currentStep, agentStatus, isDebugUI }) {
   const traceBodyRef = useRef(null);
 
   // Auto-scroll to bottom as new steps appear
@@ -18,17 +18,22 @@ export default function ReasoningTrace({ steps, phase, isMockMode, isAbstained, 
     }
   }, [currentStep, steps.length]);
 
-  const [startTime, setStartTime] = React.useState(null);
-  const [elapsedMs, setElapsedMs] = React.useState(0);
+  const [startTime, setStartTime] = useState(null);
+  const [elapsedMs, setElapsedMs] = useState(0);
 
   useEffect(() => {
     if (phase === 'scanning') {
-      if (!startTime) setStartTime(Date.now());
+      if (steps.length === 0) {
+        setStartTime(Date.now());
+        setElapsedMs(0);
+      } else if (!startTime) {
+        setStartTime(Date.now());
+      }
     } else if (phase === 'idle') {
       setStartTime(null);
       setElapsedMs(0);
     }
-  }, [phase, startTime]);
+  }, [phase, steps.length, startTime]);
 
   useEffect(() => {
     let raf;
@@ -130,7 +135,7 @@ export default function ReasoningTrace({ steps, phase, isMockMode, isAbstained, 
       </div>
 
       {/* ── Execution Mode banner ───────────────────────────────────────── */}
-      {executionMode && (
+      {isDebugUI && executionMode && (
         <div
           style={{
             padding: '8px 20px',
@@ -142,13 +147,13 @@ export default function ReasoningTrace({ steps, phase, isMockMode, isAbstained, 
           }}
         >
           Execution Mode: {executionMode}
-          {executionMode === 'Demo Scenario Replay' && ' — precomputed reasoning trace for accelerated demo execution.'}
+          {executionMode === 'Curated Scenario Mode' && ' — deterministic enterprise policy analysis.'}
           {executionMode === 'Live Analysis' && ' — uploaded documents analyzed via live retrieval and provider chain.'}
           {executionMode === 'Evidence Only' && ' — no validated conflicts emitted; confidence 0%.'}
         </div>
       )}
 
-      {isMockMode && !executionMode && (
+      {isDebugUI && isMockMode && !executionMode && (
         <div
           style={{
             padding: '8px 20px',
@@ -231,6 +236,28 @@ export default function ReasoningTrace({ steps, phase, isMockMode, isAbstained, 
           </div>
         )}
 
+        {phase === 'cancelled' && (
+          <div
+            style={{
+              marginTop: 16,
+              padding: '16px',
+              background: '#FEF2F2',
+              borderRadius: '8px',
+              border: '1px solid #FECACA',
+              animation: 'fadeInUp 0.3s ease',
+              textAlign: 'center'
+            }}
+          >
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#991B1B' }}>Analysis Cancelled</div>
+            <div style={{ fontSize: 12, color: '#DC2626', marginTop: 4 }}>
+              Execution aborted by user.
+            </div>
+            <div style={{ fontSize: 12, color: '#991B1B', marginTop: 8, fontWeight: 500 }}>
+              System safely idled.
+            </div>
+          </div>
+        )}
+
         {isDone && !isAbstained && (
           <div
             style={{
@@ -263,9 +290,9 @@ export default function ReasoningTrace({ steps, phase, isMockMode, isAbstained, 
           flexShrink: 0,
         }}
       >
-        <span style={{ fontSize: 11, color: '#64748B' }}>Powered by</span>
-        <span style={{ fontSize: 11, fontWeight: 700, color: '#2563EB' }}>Azure AI Foundry</span>
-        <span style={{ fontSize: 11, color: '#94A3B8' }}>• Fully Auditable</span>
+        <span style={{ fontSize: 11, color: '#64748B' }}>Grounded by</span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#2563EB' }}>Azure AI Search</span>
+        <span style={{ fontSize: 11, color: '#94A3B8' }}>• Orchestrated by ConflictSense Multi-Agent Pipeline</span>
       </div>
     </div>
   );

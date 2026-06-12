@@ -15,10 +15,25 @@ function tryParseJSONSummary(text) {
   if (typeof text !== 'string') return text;
   try {
     const obj = JSON.parse(text);
-    return obj.summary || obj.recommendation || text;
+    return obj;
   } catch (e) {
     return text;
   }
+}
+
+function RenderValue({ val }) {
+  if (typeof val === 'string') return <span>{val}</span>;
+  if (Array.isArray(val)) return <span>{val.join(', ')}</span>;
+  if (typeof val === 'object' && val !== null) {
+    return (
+      <ul style={{ margin: '4px 0', paddingLeft: 16 }}>
+        {Object.entries(val).map(([k, v]) => (
+          <li key={k}><strong>{k}:</strong> <RenderValue val={v} /></li>
+        ))}
+      </ul>
+    );
+  }
+  return <span>{String(val)}</span>;
 }
 
 export default function AgentCard({ step, isLatest }) {
@@ -28,27 +43,20 @@ export default function AgentCard({ step, isLatest }) {
   const isCritical = step.severity === 'CRITICAL';
 
   let rawConclusion = step.conclusion;
-  let summary = tryParseJSONSummary(rawConclusion);
+  let parsed = tryParseJSONSummary(rawConclusion);
+  let summary = null;
   let details = null;
   
-  if (summary === rawConclusion && summary) {
-    if (typeof summary === 'string') {
-      // If it's a long plain text string, split it
-      const match = summary.match(/^([^.!?]+[.!?])\s+(.*)$/s);
-      if (match) {
-        summary = match[1];
-        details = match[2];
-      }
-    } else if (Array.isArray(summary)) {
-      summary = summary.join(', ');
-    } else if (typeof summary === 'object') {
-      summary = JSON.stringify(summary);
-    }
-  } else if (summary !== rawConclusion) {
-    // It was JSON, so the raw is the details
-    details = typeof rawConclusion === 'object' ? JSON.stringify(rawConclusion, null, 2) : rawConclusion;
-    if (typeof summary === 'object') {
-      summary = JSON.stringify(summary);
+  if (typeof parsed === 'object' && parsed !== null) {
+    summary = parsed.summary || parsed.recommendation || "Detailed finding extracted.";
+    details = <RenderValue val={parsed} />;
+  } else if (typeof parsed === 'string') {
+    const match = parsed.match(/^([^.!?]+[.!?])\s+(.*)$/s);
+    if (match) {
+      summary = match[1];
+      details = match[2];
+    } else {
+      summary = parsed;
     }
   }
 

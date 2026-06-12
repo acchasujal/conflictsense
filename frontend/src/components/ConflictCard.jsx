@@ -31,7 +31,8 @@ import RemediationWorkflow from './RemediationWorkflow.jsx';
 function parseStructuredText(text) {
   if (typeof text === 'object') return text;
   try {
-    return JSON.parse(text);
+    const cleaned = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+    return JSON.parse(cleaned);
   } catch (e) {
     return { summary: text };
   }
@@ -142,8 +143,18 @@ const CONTRADICTION_PHRASES = {
 };
 
 function highlightPassage(passage, document) {
-  const rules = CONTRADICTION_PHRASES[document];
-  if (!rules) return <span>{passage}</span>;
+  let rules = CONTRADICTION_PHRASES[document];
+  if (!rules) {
+    rules = [
+      { phrase: 'must', color: '#EA580C', bg: 'rgba(234,88,12,0.10)', label: 'modal' },
+      { phrase: 'shall', color: '#EA580C', bg: 'rgba(234,88,12,0.10)', label: 'modal' },
+      { phrase: 'prohibited', color: '#DC2626', bg: 'rgba(220,38,38,0.10)', label: 'violates' },
+      { phrase: 'always', color: '#9333EA', bg: 'rgba(147,51,234,0.10)', label: 'mandates' },
+      { phrase: 'never', color: '#DC2626', bg: 'rgba(220,38,38,0.10)', label: 'blocks' },
+      { phrase: 'required', color: '#16A34A', bg: 'rgba(22,163,74,0.10)', label: 'mandates' },
+      { phrase: 'no exceptions', color: '#DC2626', bg: 'rgba(220,38,38,0.10)', label: 'blocks' },
+    ];
+  }
 
   let remaining = passage;
   const parts = [];
@@ -208,6 +219,7 @@ export default function ConflictCard({
   isApproved,
   isRejected,
   isEscalated,
+  traceId,
 }) {
   const sev = SEV[conflict.severity] || SEV.MEDIUM;
 
@@ -264,13 +276,13 @@ export default function ConflictCard({
         {conflict.isSurprise && (
           <span
             style={{
-              background: '#EEEDFE',
-              color: '#3C3489',
+              background: '#E0E7FF',
+              color: '#312E81',
               fontSize: 10,
-              fontWeight: 500,
+              fontWeight: 600,
               padding: '1px 6px',
               borderRadius: 3,
-              border: '0.5px solid #AFA9EC',
+              border: '0.5px solid #818CF8',
             }}
           >
             ⚡ unexpected finding
@@ -465,20 +477,6 @@ export default function ConflictCard({
                 <span style={{ marginLeft: 'auto', fontSize: 9, color: '#64748B', fontWeight: 400, fontFamily: 'monospace' }}>Hybrid Retrieval + Semantic Ranking</span>
               </summary>
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: '0.5px solid #E2E8F0' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
-                   <div style={{ background: '#FFFFFF', padding: '6px', borderRadius: 4, border: '0.5px solid #E2E8F0' }}>
-                     <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase' }}>Chunks Retrieved</div>
-                     <div style={{ fontSize: 12, fontWeight: 600, color: '#0F172A' }}>{conflict.citations.length * 3 + 1}</div>
-                   </div>
-                   <div style={{ background: '#FFFFFF', padding: '6px', borderRadius: 4, border: '0.5px solid #E2E8F0' }}>
-                     <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase' }}>Avg Search Score</div>
-                     <div style={{ fontSize: 12, fontWeight: 600, color: '#0F172A' }}>0.9{conflict.id}3</div>
-                   </div>
-                   <div style={{ background: '#FFFFFF', padding: '6px', borderRadius: 4, border: '0.5px solid #E2E8F0' }}>
-                     <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase' }}>Retrieval Source</div>
-                     <div style={{ fontSize: 11, fontWeight: 600, color: '#185FA5' }}>Hybrid Search</div>
-                   </div>
-                </div>
               {conflict.citations.map((cit, i) => {
                 const isFirst = i === 0;
                 const borderColor = isFirst ? 'rgba(22,163,74,0.3)' : 'rgba(220,38,38,0.3)';
@@ -580,16 +578,6 @@ export default function ConflictCard({
                   <div style={{ fontSize: 9, color: '#64748B', fontWeight: 600 }}>Risk Anchor</div>
                 </div>
               </div>
-              <div style={{ marginTop: 12, padding: '8px 10px', background: '#F8FAFC', borderRadius: 4, fontSize: 10, color: '#475569', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <span style={{ fontWeight: 700, color: '#0F172A', minWidth: 60 }}>{Math.max(65, conflict.confidence - 14)}% → {Math.max(70, conflict.confidence - 6)}%</span>
-                  <span>Confidence increased due to corroborating policy citations.</span>
-                </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <span style={{ fontWeight: 700, color: '#0F172A', minWidth: 60 }}>{Math.max(70, conflict.confidence - 6)}% → {conflict.confidence}%</span>
-                  <span>Confidence increased after validation confirmed mutually incompatible requirements.</span>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -611,7 +599,17 @@ export default function ConflictCard({
               return (
                 <>
                   <div style={{ fontWeight: 600, color: '#0F172A', marginBottom: 4 }}>Resolution Recommendation</div>
-                  <div>{res.recommendation || res.summary}</div>
+                  <div>
+                    {res.recommendation || res.summary || (
+                      typeof res === 'string' ? res : (
+                        <ul style={{ margin: 0, paddingLeft: 16 }}>
+                          {Object.entries(res).map(([k, v]) => (
+                            <li key={k}><strong>{k}:</strong> {typeof v === 'string' ? v : JSON.stringify(v)}</li>
+                          ))}
+                        </ul>
+                      )
+                    )}
+                  </div>
                   {(res.owners?.length > 0 || res.deadline) && (
                     <div style={{ display: 'flex', gap: 8, marginTop: 8, paddingTop: 8, borderTop: '1px dashed #CBD5E1' }}>
                       {res.owners?.map(o => (
@@ -637,6 +635,8 @@ export default function ConflictCard({
               onApprove={onApprove}
               onReject={onReject}
               onEscalate={onEscalate}
+              conflictId={conflict.id}
+              traceId={traceId}
             />
           ) : isApproved ? (
             <RemediationWorkflow conflict={conflict} />

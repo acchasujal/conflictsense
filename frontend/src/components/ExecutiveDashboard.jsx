@@ -20,15 +20,70 @@ function MetricCard({ label, value, color, subLabel }) {
   );
 }
 
-export default function ExecutiveDashboard({ phase }) {
+export default function ExecutiveDashboard({ phase, visibleConflicts = [], traceId }) {
   const isDone = phase === 'done';
   const isScanning = phase === 'scanning';
 
+  const exportReport = () => {
+    let report = `# ConflictSense Enterprise Policy Audit\n\n`;
+    report += `**Trace ID:** ${traceId || 'N/A'}\n`;
+    report += `**Timestamp:** ${new Date().toISOString()}\n\n`;
+    report += `## Executive Summary\n`;
+    report += `System processed documents and identified ${visibleConflicts.length} active conflicts.\n\n`;
+    
+    visibleConflicts.forEach((c, idx) => {
+      report += `### ${idx + 1}. ${c.title}\n`;
+      report += `- **Severity:** ${c.severity}\n`;
+      report += `- **Affected:** ${typeof c.affected === 'object' ? JSON.stringify(c.affected) : c.affected}\n`;
+      report += `- **Deadline:** ${c.deadline || 'None'}\n\n`;
+      if (c.resolution) {
+        report += `**Recommended Resolution:**\n${typeof c.resolution === 'object' ? JSON.stringify(c.resolution) : c.resolution}\n\n`;
+      }
+    });
+
+    const blob = new Blob([report], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ConflictSense_Report_${traceId || 'audit'}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const crit = visibleConflicts.filter((c) => c.severity === 'CRITICAL').length;
+  const high = visibleConflicts.filter((c) => c.severity === 'HIGH').length;
+  const med  = visibleConflicts.filter((c) => c.severity === 'MEDIUM').length;
+
+  const exposureAmount = (crit * 1.2 + high * 0.5 + med * 0.1).toFixed(1);
+  const exposureStr = (isScanning && visibleConflicts.length === 0) || (!isDone && visibleConflicts.length === 0) ? '$0' : `$${exposureAmount}M`;
+
+  const healthScore = Math.max(0, 100 - (crit * 20 + high * 10 + med * 5));
+  const healthStr = (isScanning && visibleConflicts.length === 0) || (!isDone && visibleConflicts.length === 0) ? '98%' : `${healthScore}%`;
+
+  const depts = new Set();
+  visibleConflicts.forEach(c => {
+    try {
+      const aff = typeof c.affected === 'object' ? c.affected : JSON.parse(c.affected.replace(/```json/gi, '').replace(/```/g, '').trim());
+      if (aff.teams) aff.teams.forEach(t => depts.add(t));
+    } catch(e) {}
+  });
+  let deptsStr = 'None';
+  if (depts.size > 0) {
+    deptsStr = Array.from(depts).slice(0, 2).join(', ');
+    if (depts.size > 2) deptsStr += '...';
+  } else if (visibleConflicts.length > 0) {
+    deptsStr = 'Multiple';
+  }
+
+  const pendingStr = (isDone || visibleConflicts.length > 0) ? visibleConflicts.length.toString() : (isScanning ? '...' : '0');
+
   const chartData = [
-    { name: 'Legal', risk: isDone ? 85 : 10 },
-    { name: 'IT', risk: isDone ? 95 : 15 },
-    { name: 'HR', risk: isDone ? 45 : 10 },
-    { name: 'Finance', risk: isDone ? 30 : 5 },
+    { name: 'Legal', risk: isDone ? Math.min(100, crit * 30 + 10) : 10 },
+    { name: 'IT', risk: isDone ? Math.min(100, high * 25 + 15) : 15 },
+    { name: 'HR', risk: isDone ? Math.min(100, med * 20 + 10) : 10 },
+    { name: 'Finance', risk: isDone ? Math.min(100, crit * 10 + 5) : 5 },
   ];
 
   return (
@@ -52,17 +107,40 @@ export default function ExecutiveDashboard({ phase }) {
             Real-time multi-agent policy compliance monitoring
           </div>
         </div>
-        <div style={{ fontSize: 11, color: '#475569', fontWeight: 600, background: '#F8FAFC', padding: '4px 10px', borderRadius: 12, border: '1px solid #E2E8F0' }}>
-          Confidential • VP Level View
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {isDone && visibleConflicts.length > 0 && (
+            <button 
+              onClick={exportReport}
+              style={{
+                background: '#FFFFFF',
+                color: '#0F172A',
+                border: '1px solid #CBD5E1',
+                padding: '6px 12px',
+                borderRadius: 6,
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+              }}
+            >
+              <span>📥</span> Export Report
+            </button>
+          )}
+          <div style={{ fontSize: 11, color: '#475569', fontWeight: 600, background: '#F8FAFC', padding: '4px 10px', borderRadius: 12, border: '1px solid #E2E8F0' }}>
+            Confidential • VP Level View
+          </div>
         </div>
       </div>
       
       <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, flex: 2, minWidth: 300 }}>
-          <MetricCard label="Est. Exposure" value={isDone ? '$2.4M' : '$0'} color={isDone ? '#DC2626' : '#16A34A'} subLabel="Potential regulatory fines" />
-          <MetricCard label="Compliance Health" value={isDone ? '58%' : '98%'} color={isDone ? '#D97706' : '#16A34A'} subLabel="Across 7 policies" />
-          <MetricCard label="Depts Affected" value={isDone ? 'IT, Legal' : 'None'} color="#3B82F6" subLabel="Cross-functional risk" />
-          <MetricCard label="Pending Conflicts" value={isDone ? '9' : (isScanning ? '...' : '0')} color={isDone ? '#D97706' : '#94A3B8'} subLabel="Require human review" />
+          <MetricCard label="Est. Exposure" value={exposureStr} color={visibleConflicts.length > 0 ? '#DC2626' : '#16A34A'} subLabel="Potential regulatory fines" />
+          <MetricCard label="Compliance Health" value={healthStr} color={healthScore < 80 ? '#D97706' : '#16A34A'} subLabel="Across 7 policies" />
+          <MetricCard label="Depts Affected" value={deptsStr} color="#3B82F6" subLabel="Cross-functional risk" />
+          <MetricCard label="Pending Conflicts" value={pendingStr} color={visibleConflicts.length > 0 ? '#D97706' : '#94A3B8'} subLabel="Require human review" />
         </div>
 
         {/* Dynamic Impact Graph */}
