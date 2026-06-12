@@ -1,0 +1,369 @@
+[
+  {
+    "event": "document_loaded",
+    "data": {
+      "document": "Employee_Handbook.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
+  },
+  {
+    "event": "document_loaded",
+    "data": {
+      "document": "IT_Security_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
+  },
+  {
+    "event": "document_loaded",
+    "data": {
+      "document": "HR_Remote_Work_Policy.md",
+      "status": "loading",
+      "source_dir": "knowledge_base"
+    }
+  },
+  {
+    "event": "evidence_retrieved",
+    "data": {
+      "topic": "disability accommodation and assistive technology allowances",
+      "citation_count": 2,
+      "documents_queried": 7,
+      "silent_documents": [
+        "Whistleblower_Policy.md",
+        "Data_Governance_Policy.md",
+        "DPDP_Compliance_Directive.md",
+        "Finance_Expense_Policy.md"
+      ],
+      "is_mock_mode": true
+    }
+  },
+  {
+    "event": "trace_step",
+    "data": {
+      "agent": "Document Analysis",
+      "agentColor": "#85B7EB",
+      "time": "0.3s",
+      "query": "disability accommodation and assistive technology allowances",
+      "citations": null,
+      "conclusion": "Analyzing knowledge base for disability accommodation obligations and IT hardware/software approval policies.",
+      "severity": null,
+      "confidence": null
+    }
+  },
+  {
+    "event": "trace_step",
+    "data": {
+      "agent": "Azure Search Grounding",
+      "agentColor": "#85B7EB",
+      "time": "1.7s",
+      "query": "disability accommodation and assistive technology allowances",
+      "citations": [
+        {
+          "document": "Employee_Handbook.md",
+          "section": "§7.1",
+          "passage": "Nexora is committed to providing reasonable accommodations to employees with disabilities. Employees may request modified equipment, software, or work arrangements. Requests are processed within 10 business days.",
+          "confidence": 0.93,
+          "topic": "disability accommodation and assistive technology allowances"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "§3.1",
+          "passage": "Only devices and software on the approved corporate asset list may be connected to Nexora networks or used for Nexora work. No exceptions. Personal devices and non-standard software are strictly prohibited.",
+          "confidence": 0.97,
+          "topic": "disability accommodation and assistive technology allowances"
+        }
+      ],
+      "conclusion": null,
+      "severity": null,
+      "confidence": null,
+      "telemetry": {
+        "docs_analyzed": 7,
+        "total_citations": 2,
+        "per_document_meta": []
+      }
+    }
+  },
+  {
+    "event": "conflict_candidate_detected",
+    "data": {
+      "topic": "disability accommodation and assistive technology allowances",
+      "raw_confidence": 95,
+      "severity": "CRITICAL",
+      "sources": [
+        "Employee_Handbook.md §7.1",
+        "IT_Security_Policy.md §3.1"
+      ]
+    }
+  },
+  {
+    "event": "conflict_validated",
+    "data": {
+      "id": "c4f71b2e",
+      "passed": true,
+      "reason": "ok"
+    }
+  },
+  {
+    "event": "trace_step",
+    "data": {
+      "agent": "Conflict Validation",
+      "agentColor": "#D085EB",
+      "time": "0.9s",
+      "query": null,
+      "citations": null,
+      "conclusion": "Structural impossibility confirmed: an employee with a visual impairment needs screen-reader software not on the approved list. HR is legally obligated to accommodate. IT policy strictly prohibits the installation. The policies cannot be simultaneously satisfied — the accommodation is architecturally impossible under current IT rules.",
+      "severity": null,
+      "confidence": null
+    }
+  },
+  {
+    "event": "risk_assessment_started",
+    "data": {
+      "id": "c4f71b2e",
+      "topic": "disability accommodation and assistive technology allowances",
+      "conflict": "Reasonable accommodation mandate vs locked device policy"
+    }
+  },
+  {
+    "event": "trace_step",
+    "data": {
+      "agent": "Impact Assessment",
+      "agentColor": "#EBD085",
+      "time": "1.1s",
+      "query": null,
+      "citations": null,
+      "conclusion": "Any employee with a disability requiring non-standard assistive technology — screen readers, voice recognition, adaptive keyboards, alternative pointing devices — cannot have their accommodation fulfilled. This creates a direct ADA/disability law violation risk and excludes disabled employees from equal participation in work.",
+      "severity": null,
+      "confidence": null
+    }
+  },
+  {
+    "event": "risk_category_identified",
+    "data": {
+      "id": "c4f71b2e",
+      "category": "Disability Rights Violation (ADA / Equality Act)",
+      "risk_level": "CRITICAL"
+    }
+  },
+  {
+    "event": "risk_category_identified",
+    "data": {
+      "id": "c4f71b2e",
+      "category": "Legal Risk (failure to accommodate = discrimination)",
+      "risk_level": "CRITICAL"
+    }
+  },
+  {
+    "event": "risk_category_identified",
+    "data": {
+      "id": "c4f71b2e",
+      "category": "Inclusion Risk (disabled employees excluded from workforce)",
+      "risk_level": "HIGH"
+    }
+  },
+  {
+    "event": "risk_validated",
+    "data": {
+      "id": "c4f71b2e",
+      "risk_level": "CRITICAL",
+      "risk_score": 97,
+      "confidence": 95
+    }
+  },
+  {
+    "event": "trace_step",
+    "data": {
+      "agent": "Risk Quantification",
+      "agentColor": "#F0B05A",
+      "time": "1.4s",
+      "query": null,
+      "citations": [
+        {
+          "document": "Employee_Handbook.md",
+          "section": "§7.1",
+          "passage": "Nexora is committed to providing reasonable accommodations to employees with disabilities. Employees may request modified equipment, software, or work arrangements.",
+          "confidence": 0.93,
+          "topic": "disability accommodation and assistive technology allowances"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "§3.1",
+          "passage": "Only devices and software on the approved corporate asset list may be connected to Nexora networks or used for Nexora work. No exceptions.",
+          "confidence": 0.97,
+          "topic": "disability accommodation and assistive technology allowances"
+        }
+      ],
+      "conclusion": "The accommodation promise is legally mandatory. The IT prohibition is absolute with no exception process. A disabled employee requesting assistive technology today would be told: 'We are required to accommodate you' by HR and 'We cannot install that software' by IT. These cannot simultaneously be true.",
+      "severity": "CRITICAL",
+      "confidence": 95
+    }
+  },
+  {
+    "event": "trace_step",
+    "data": {
+      "agent": "Resolution Generation",
+      "agentColor": "#5AB0F0",
+      "time": "1.6s",
+      "query": null,
+      "citations": null,
+      "conclusion": "IT Security Policy §3.1 must be amended to include an Accommodation Exception Pathway: a documented process where HR Accommodation Officer and CISO jointly approve assistive technology on a case-by-case basis. Security vetting of each tool must occur within the 10-day accommodation window. This preserves security while enabling lawful accommodation.",
+      "severity": null,
+      "confidence": null
+    }
+  },
+  {
+    "event": "conflict_emitted",
+    "data": {
+      "id": "c4f71b2e",
+      "has_conflict": true,
+      "title": "Disability accommodation obligation vs locked device policy",
+      "severity": "CRITICAL",
+      "confidence": 95,
+      "sources": [
+        "Employee_Handbook.md §7.1",
+        "IT_Security_Policy.md §3.1"
+      ],
+      "affected": "All employees with disabilities requiring assistive technology. HR is legally obligated to accommodate; IT policy makes accommodation architecturally impossible.",
+      "deadline": "Immediate — any active accommodation request is currently blocked",
+      "resolution": "Amend IT Security §3.1 to include an Accommodation Exception Pathway, jointly approved by HR and CISO within the 10-day window.",
+      "human_impact": "Employees with visual impairments, motor disabilities, cognitive differences, or hearing loss who rely on assistive technology — screen readers, voice recognition, adaptive keyboards — are unable to receive the accommodations they are legally owed. This makes their equal participation in the workforce impossible under current policy, constituting direct disability discrimination.",
+      "isSurprise": true,
+      "citations": [
+        {
+          "document": "Employee_Handbook.md",
+          "section": "§7.1",
+          "passage": "Nexora is committed to providing reasonable accommodations to employees with disabilities. Employees may request modified equipment, software, or work arrangements. Requests are processed within 10 business days.",
+          "confidence": 0.93,
+          "topic": "disability accommodation and assistive technology allowances"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "§3.1",
+          "passage": "Only devices and software on the approved corporate asset list may be connected to Nexora networks or used for Nexora work. No exceptions. Personal devices and non-standard software are strictly prohibited.",
+          "confidence": 0.97,
+          "topic": "disability accommodation and assistive technology allowances"
+        }
+      ],
+      "risk_assessment": {
+        "risk_level": "CRITICAL",
+        "risk_score": 97,
+        "confidence": 95,
+        "risk_categories": [
+          "Disability Rights Violation (ADA / Equality Act)",
+          "Legal Risk (failure to accommodate = discrimination)",
+          "Inclusion Risk (disabled employees excluded from workforce)"
+        ],
+        "reasoning": "HR policy is a legally binding accommodation mandate. IT policy is an absolute prohibition with no exception process. A disabled employee requesting assistive technology today cannot be accommodated. This is not a gap — it is a structural impossibility that constitutes active disability discrimination.",
+        "supporting_evidence": [],
+        "affected_entities": [
+          "Employees with disabilities requiring assistive technology",
+          "HR Accommodations team (policy owner)",
+          "CISO / IT Security team (device policy owner)"
+        ],
+        "potential_consequences": [
+          "Disabled employees denied equal access to work tools",
+          "ADA/Equality Act violation complaints and litigation",
+          "Reputational damage as an inaccessible employer"
+        ],
+        "uncertainty": null,
+        "execution_time_s": 1.4
+      }
+    }
+  },
+  {
+    "event": "conflict_detected",
+    "data": {
+      "id": "c4f71b2e",
+      "has_conflict": true,
+      "title": "Disability accommodation obligation vs locked device policy",
+      "severity": "CRITICAL",
+      "confidence": 95,
+      "sources": [
+        "Employee_Handbook.md §7.1",
+        "IT_Security_Policy.md §3.1"
+      ],
+      "affected": "All employees with disabilities requiring assistive technology.",
+      "deadline": "Immediate — any active accommodation request is currently blocked",
+      "resolution": "Amend IT Security §3.1 with an Accommodation Exception Pathway jointly approved by HR and CISO.",
+      "human_impact": "Employees with visual impairments, motor disabilities, cognitive differences, or hearing loss who rely on assistive technology are unable to receive the accommodations they are legally owed, making their equal participation in work impossible.",
+      "isSurprise": true,
+      "citations": [
+        {
+          "document": "Employee_Handbook.md",
+          "section": "§7.1",
+          "passage": "Nexora is committed to providing reasonable accommodations to employees with disabilities.",
+          "confidence": 0.93,
+          "topic": "disability accommodation and assistive technology allowances"
+        },
+        {
+          "document": "IT_Security_Policy.md",
+          "section": "§3.1",
+          "passage": "Only devices and software on the approved corporate asset list may be connected to Nexora networks or used for Nexora work. No exceptions.",
+          "confidence": 0.97,
+          "topic": "disability accommodation and assistive technology allowances"
+        }
+      ],
+      "risk_assessment": {
+        "risk_level": "CRITICAL",
+        "risk_score": 97,
+        "confidence": 95,
+        "risk_categories": [
+          "Disability Rights Violation",
+          "Legal Risk (discrimination)",
+          "Inclusion Risk"
+        ],
+        "reasoning": "Accommodation mandate vs absolute IT prohibition creates structural impossibility. Active disability discrimination.",
+        "supporting_evidence": [],
+        "affected_entities": ["Employees with disabilities"],
+        "potential_consequences": [
+          "Disabled employees denied equal access to work tools",
+          "ADA/Equality Act litigation",
+          "Reputational damage as inaccessible employer"
+        ],
+        "uncertainty": null,
+        "execution_time_s": 1.4
+      }
+    }
+  },
+  {
+    "event": "trace_step",
+    "data": {
+      "agent": "Conflict Detection",
+      "agentColor": "#F09595",
+      "time": "2.3s",
+      "query": null,
+      "citations": null,
+      "conclusion": "Employee Handbook §7.1 mandates reasonable accommodation for all disabilities. IT Security §3.1 prohibits all non-approved software with zero exceptions. Any employee needing a screen reader, voice recognition tool, or adaptive keyboard is denied accommodation. These policies create a structural impossibility that constitutes disability discrimination.",
+      "severity": "CRITICAL",
+      "confidence": 95,
+      "isSurprise": true
+    }
+  },
+  {
+    "event": "analysis_complete",
+    "data": {
+      "status": "complete",
+      "total_conflicts": 1,
+      "uncertain_count": 0,
+      "blocked_count": 0,
+      "is_mock_mode": true,
+      "topics_analyzed": [
+        "disability accommodation and assistive technology allowances",
+        "IT device and software approval restrictions"
+      ],
+      "execution_time_s": 8.1
+    }
+  },
+  {
+    "event": "complete",
+    "data": {
+      "status": "complete",
+      "total_conflicts": 1,
+      "_meta": {
+        "fallback": "DEMO_SCENARIO_REPLAY",
+        "execution_mode": "Demo Scenario Replay"
+      }
+    }
+  }
+]

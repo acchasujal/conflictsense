@@ -112,7 +112,7 @@
       "time": "0.8s",
       "query": null,
       "citations": null,
-      "conclusion": "Validation passed: the ethics portal IS a system access event. Identity logging and anonymity cannot simultaneously apply to the same event.",
+      "conclusion": "Structural impossibility confirmed: employees who report harassment, fraud, or safety violations believe they are anonymous. They are not. Their identity is logged at the system level every time they access the ethics portal. If a manager or IT administrator accesses audit logs, the reporter is identifiable.",
       "severity": null,
       "confidence": null
     }
@@ -269,9 +269,10 @@
         "Whistleblower_Policy.md \u00a74.2",
         "IT_Security_Policy.md \u00a79.3"
       ],
-      "affected": "All ethics portal users. Anonymity promise is technically unenforceable. Retroactive exposure risk for all historic reports.",
-      "deadline": "Immediate \u2014 every new report compounds exposure",
+      "affected": "All ethics portal users. Every employee who has ever filed a harassment, fraud, or safety report believes they were anonymous. They were not \u2014 identity is logged at the system level.",
+      "deadline": "Immediate \u2014 every new report compounds exposure and retaliation risk",
       "resolution": "Deploy third-party anonymized reporting channel outside corporate IT perimeter. Create named exception in IT Security \u00a79.3 for ethics portal, approved by CISO. HR Compliance and CISO must co-own remediation within 30 days.",
+      "human_impact": "Employees who reported harassment or workplace misconduct believing they were protected may face retaliation when their identities are discovered through IT audit logs. This chilling effect discourages future reporting, enabling ongoing misconduct to go unchallenged. Vulnerable employees \u2014 particularly those reporting abuse, discrimination, or safety violations \u2014 are most at risk.",
       "isSurprise": true,
       "citations": [
         {
@@ -298,7 +299,7 @@
           "Legal Risk (false anonymity promise)",
           "Security Risk (whistleblower identity exposed via audit logs)"
         ],
-        "reasoning": "Nexora\u2019s Whistleblower Policy makes a legal commitment to every employee: your report cannot be traced. Its IT Security Policy makes a technical mandate: every system action is logged with user identity, no exceptions. The anonymity guarantee exists on paper. It does not exist in the system.",
+        "reasoning": "Nexora\u2019s Whistleblower Policy makes a legal commitment to every employee: your report cannot be traced. Its IT Security Policy makes a technical mandate: every system action is logged with user identity, no exceptions. The anonymity guarantee exists on paper. It does not exist in the system, creating a grave risk of identification and retaliation for whistleblowers.",
         "supporting_evidence": [],
         "affected_entities": [
           "All current and former ethics portal users",
@@ -307,7 +308,7 @@
         ],
         "potential_consequences": [
           "Identity exposure of whistleblowers in any audit or legal discovery.",
-          "Retroactive exposure of historic reports via IT audit logs.",
+          "Retroactive exposure of historic reports via IT audit logs leading to retaliation.",
           "Legal liability for false anonymity promise."
         ],
         "uncertainty": null,
@@ -324,24 +325,25 @@
       "severity": "CRITICAL",
       "confidence": 91,
       "sources": [
-        "Whistleblower_Policy.md \u00a74.2",
-        "IT_Security_Policy.md \u00a79.3"
+        "Whistleblower_Policy.md §4.2",
+        "IT_Security_Policy.md §9.3"
       ],
-      "affected": "All ethics portal users. Anonymity promise is technically unenforceable.",
-      "deadline": "Immediate \u2014 every new report compounds exposure",
-      "resolution": "Deploy third-party anonymized reporting channel. Create named exception in IT Security \u00a79.3 for ethics portal.",
+      "affected": "All ethics portal users. Every employee who reported harassment, fraud, or safety violations believing they were protected may face retaliation.",
+      "deadline": "Immediate — every new report compounds exposure and retaliation risk",
+      "resolution": "Deploy third-party anonymized reporting channel. Create named exception in IT Security §9.3 for ethics portal.",
+      "human_impact": "Employees who reported harassment or workplace misconduct believing they were protected may face retaliation when their identities are discovered through IT audit logs. Vulnerable employees are most at risk.",
       "isSurprise": true,
       "citations": [
         {
           "document": "Whistleblower_Policy.md",
-          "section": "\u00a74.2",
+          "section": "§4.2",
           "passage": "Reports filed through the ethics portal are anonymous. Employee identity is never logged or traceable by any internal party.",
           "confidence": 0.91,
           "topic": "employee reporting channels and anonymity guarantees"
         },
         {
           "document": "IT_Security_Policy.md",
-          "section": "\u00a79.3",
+          "section": "§9.3",
           "passage": "All system access is logged with full user identity for security audit purposes. No exceptions permitted.",
           "confidence": 0.95,
           "topic": "employee reporting channels and anonymity guarantees"
@@ -352,19 +354,19 @@
         "risk_score": 94,
         "confidence": 91,
         "risk_categories": [
+          "Retaliation Risk (whistleblower identity exposed)",
           "Reputational Risk (employee trust collapse)",
-          "Legal Risk (false anonymity promise)",
-          "Security Risk (whistleblower identity exposed via audit logs)"
+          "Legal Risk (false anonymity promise)"
         ],
-        "reasoning": "The anonymity guarantee exists on paper. It does not exist in the system.",
+        "reasoning": "The anonymity guarantee exists on paper. It does not exist in the system. Every report is identity-logged, making retaliation possible.",
         "supporting_evidence": [],
         "affected_entities": [
           "All ethics portal users"
         ],
         "potential_consequences": [
-          "Identity exposure",
-          "Retroactive log exposure",
-          "Legal liability"
+          "Whistleblower identity exposed leading to workplace retaliation",
+          "Chilling effect discourages future harassment and misconduct reporting",
+          "Legal liability for false promise of protection"
         ],
         "uncertainty": null,
         "execution_time_s": 1.3

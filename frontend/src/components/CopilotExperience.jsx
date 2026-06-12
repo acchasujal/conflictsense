@@ -83,27 +83,32 @@ export default function CopilotExperience({ onRunAnalysis }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
             <ScenarioCard 
               title="Data Residency Conflict" 
-              desc="Test cross-border IT policies vs HR flexibility." 
+              desc="HR allows global remote work. IT restricts data to local servers. Employees abroad cannot do their jobs legally." 
               onClick={() => onRunAnalysis("scenario_1_data_residency")} 
             />
             <ScenarioCard 
-              title="Anonymous Reporting Conflict" 
-              desc="Test whistleblower protection vs IT identity logging." 
+              title="Whistleblower Anonymity Conflict" 
+              desc="Employees who report harassment believe they're anonymous. IT logging makes every report traceable — enabling retaliation." 
               onClick={() => onRunAnalysis("scenario_2_anonymous_reporting")} 
             />
             <ScenarioCard 
               title="Cross-Border Access Conflict" 
-              desc="Test VPN access vs export control rules." 
+              desc="Remote employees need system access across borders. Export control rules make it illegal. Work becomes impossible." 
               onClick={() => onRunAnalysis("scenario_3_cross_border")} 
             />
             <ScenarioCard 
               title="Vendor Compliance Conflict" 
-              desc="Test third-party software SLAs vs internal security audits." 
+              desc="Third-party SLAs conflict with internal security audit requirements, creating unresolvable vendor risk." 
               onClick={() => onRunAnalysis("scenario_4_vendor_compliance")} 
             />
             <ScenarioCard 
+              title="♿ Disability Accommodation Conflict" 
+              desc="HR must provide assistive tech to employees with disabilities. IT policy bans all non-standard software. Accommodation is impossible." 
+              onClick={() => onRunAnalysis("scenario_5_disability_accommodation")} 
+            />
+            <ScenarioCard 
               title="Analyze Entire Knowledge Base" 
-              desc="Full cross-reference of all 7 policies. Fast pipeline." 
+              desc="Full cross-reference of all 7 policies. Azure Search + live AI reasoning." 
               onClick={() => onRunAnalysis("full_kb_analysis")} 
             />
           </div>

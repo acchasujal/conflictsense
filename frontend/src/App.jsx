@@ -76,6 +76,23 @@ const GLOBAL_CSS = `
   ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
   ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
 
+  /* ─── Accessibility: Focus Indicators ───────────────────────────────── */
+  *:focus-visible {
+    outline: 3px solid #2563EB;
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  /* ─── Accessibility: Reduced Motion CSS class ────────────────────────── */
+  .reduced-motion *,
+  .reduced-motion *::before,
+  .reduced-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     * {
       animation-duration: 0.01ms !important;
@@ -165,6 +182,11 @@ export default function App() {
   const [currentScenario, setCurrentScenario]   = useState(null);
   const [liveDocuments, setLiveDocuments]       = useState(MOCK_DOCUMENTS);
 
+  // ── Accessibility state ───────────────────────────────────────────────
+  const [reducedMotion, setReducedMotion]       = useState(false);
+  const [srMode, setSrMode]                     = useState(false);
+  const [announcement, setAnnouncement]         = useState('');
+
   // Refs for cleanup
   const streamCancelRef = useRef(null);
   const timersRef       = useRef([]);
@@ -178,6 +200,25 @@ export default function App() {
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
   }, []);
+
+  // ── Screen reader announcements ───────────────────────────────────────
+  const announce = useCallback((msg) => {
+    if (!srMode) return;
+    setAnnouncement('');
+    setTimeout(() => setAnnouncement(msg), 50);
+  }, [srMode]);
+
+  useEffect(() => {
+    if (phase === 'scanning') announce('Analysis started. AI agents are reviewing policy documents.');
+    if (phase === 'done')     announce(`Analysis complete. ${visibleConflicts.length} conflict${visibleConflicts.length !== 1 ? 's' : ''} detected.`);
+  }, [phase]); // eslint-disable-line
+
+  useEffect(() => {
+    if (visibleConflicts.length > 0) {
+      const last = visibleConflicts[visibleConflicts.length - 1];
+      announce(`Conflict detected: ${last.title}. Severity: ${last.severity}.`);
+    }
+  }, [visibleConflicts.length]); // eslint-disable-line
 
   useEffect(() => () => cancelAll(), [cancelAll]);
 
@@ -356,7 +397,11 @@ export default function App() {
     <>
       <style>{GLOBAL_CSS}</style>
 
-      <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: '#F1F5F9', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div
+        id="conflictsense-root"
+        className={reducedMotion ? 'reduced-motion' : ''}
+        style={{ fontFamily: "'Inter', system-ui, sans-serif", background: '#F1F5F9', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
+      >
 
         {/* ── Header ──────────────────────────────────────────────────── */}
         <header aria-label="Application Header" style={{ background: '#FFFFFF', borderBottom: '0.5px solid #E2E8F0', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
@@ -372,7 +417,51 @@ export default function App() {
 
           <SummaryPills visibleConflicts={visibleConflicts} />
           <RunButton phase={phase} onClick={runAnalysis} />
+
+          {/* ── Accessibility Toggles ──────────────────────────────── */}
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }} role="group" aria-label="Accessibility Settings">
+            <button
+              id="btn-reduced-motion"
+              onClick={() => setReducedMotion(m => !m)}
+              aria-pressed={reducedMotion}
+              title="Toggle Reduced Motion"
+              style={{
+                background: reducedMotion ? '#EFF6FF' : '#F8FAFC',
+                border: `1px solid ${reducedMotion ? '#3B82F6' : '#CBD5E1'}`,
+                borderRadius: 6, padding: '4px 9px', fontSize: 11,
+                fontWeight: 600, cursor: 'pointer', color: reducedMotion ? '#1D4ED8' : '#475569',
+                display: 'flex', alignItems: 'center', gap: 4,
+              }}
+            >
+              {reducedMotion ? '🎞 Motion On' : '🎞 Reduce Motion'}
+            </button>
+            <button
+              id="btn-sr-mode"
+              onClick={() => setSrMode(m => !m)}
+              aria-pressed={srMode}
+              title="Toggle Screen Reader Announcements"
+              style={{
+                background: srMode ? '#EFF6FF' : '#F8FAFC',
+                border: `1px solid ${srMode ? '#3B82F6' : '#CBD5E1'}`,
+                borderRadius: 6, padding: '4px 9px', fontSize: 11,
+                fontWeight: 600, cursor: 'pointer', color: srMode ? '#1D4ED8' : '#475569',
+                display: 'flex', alignItems: 'center', gap: 4,
+              }}
+            >
+              {srMode ? '🔊 SR On' : '🔊 Screen Reader Mode'}
+            </button>
+          </div>
         </header>
+
+        {/* ── Screen Reader Live Region ─────────────────────────────────── */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' }}
+        >
+          {announcement}
+        </div>
 
         {/* ── Debug Panel ──────────────────────────────────────────────── */}
         {import.meta.env.VITE_DEBUG_MODE === 'true' && (

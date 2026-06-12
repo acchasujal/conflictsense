@@ -243,8 +243,8 @@ export default function ConflictCard({
 
   return (
     <div style={cardStyle} onClick={onSelect} role="button" tabIndex={0}
-         aria-expanded={isSelected} aria-label={`Conflict finding: ${conflict.title}`}
-         onKeyDown={(e) => e.key === 'Enter' && onSelect()}>
+         aria-expanded={isSelected} aria-label={`Conflict finding: ${conflict.title}. Severity: ${conflict.severity}. Press Enter or Space to expand.`}
+         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}>
 
       {/* ── Header row: badges + confidence ────────────────────────────── */}
       <div
@@ -544,10 +544,10 @@ export default function ConflictCard({
           {/* Trust Panel & Confidence Evolution */}
           <div style={{ marginBottom: 12, background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 6, padding: '12px' }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#991B1B', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-              <span style={{ fontSize: 16 }}>⚠️</span> Why This Matters (Business Impact)
+              <span style={{ fontSize: 16 }}>👥</span> Why This Matters (Human Impact)
             </div>
             <div style={{ fontSize: 12, color: '#7F1D1D', lineHeight: 1.5, marginBottom: 12 }}>
-              {conflict.risk_assessment?.potential_consequences?.[0] || 'Violates core compliance directive, risking regulatory fines.'}
+              {conflict.human_impact || conflict.risk_assessment?.potential_consequences?.[0] || 'Creates an unsafe environment for employees, risking retaliation and trust collapse.'}
             </div>
             
             <div style={{ background: '#FFFFFF', borderRadius: 6, padding: '10px 12px', border: '1px solid #F87171' }}>
