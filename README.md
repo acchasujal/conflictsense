@@ -2,7 +2,7 @@
 **Protecting people by exposing hidden contradictions.**
 
 *Microsoft Agents League 2026 — Reasoning Agents Track*  
-*Built solo over 10 days by a final-year engineering student from Mumbai, India.*
+*Built solo over 4 days by a second-year engineering student from Mumbai, India.*
 
 ---
 
@@ -151,7 +151,7 @@ Every company name, employee, policy, and scenario is 100% fabricated for this s
 
 ## Student Context
 
-Built solo over 10 days by Sujal — final-year engineering student, Mumbai, India.  
+Built solo over 4 days by Sujal — second-year engineering student, Mumbai, India.  
 No team. No prior enterprise compliance background. Free-tier Azure and Vercel throughout.
 
 ---
