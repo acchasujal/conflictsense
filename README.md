@@ -21,17 +21,74 @@
 
 Nexora Financial promised every employee that anonymous reports would protect them. ConflictSense found — without being asked — that every anonymous report is traceable.
 
-> **Whistleblower Policy §4.2:**  
-> *"Employee identity is never logged or traceable by any internal party. The ethics portal does not capture IP addresses, session tokens, device identifiers, or any metadata that could be used to identify the reporter."*
-
-> **IT Security Policy §12.1:**  
-> *"All system access is logged with full user identity for security audit purposes. **No exceptions permitted.** Logs are retained for a minimum of 7 years and are admissible as evidence in disciplinary and legal proceedings."*
+```text
+┌──────────────────────────┐             ┌──────────────────────────┐
+│   Whistleblower Policy   │      ⚡      │    IT Security Policy    │
+│    Anonymous Reports     │             │     Identity Logging     │
+└──────────────────────────┘             └──────────────────────────┘
+                            ↓
+                     ConflictSense
+                            ↓
+            "Anonymous reporting is impossible"
+                            ↓
+                       Human Impact:
+             • Retaliation Risk • Privacy Risk
+```
 
 These two sections cannot simultaneously be true. For the same employee. On the same network. At the same company.
 
 **ConflictSense didn't retrieve this. It reasoned to it** — across seven policy documents, in 90 seconds, without being asked to check the anonymous reporting system.
 
-![The Anonymity Conflict](docs/images/Anonymity%20Conflict.png)
+---
+
+## ⚙️ Multi-Agent Reasoning Architecture
+
+ConflictSense relies on a disciplined, multi-stage reasoning pipeline designed to prioritize logical entailment and human safety over simple text retrieval. It operates through specialized agents managed by a central Orchestrator.
+
+```mermaid
+flowchart LR
+    %% Styling
+    classDef input fill:#2C3E50,stroke:#none,color:#fff,padding:10px
+    classDef search fill:#2980B9,stroke:#none,color:#fff,padding:10px
+    classDef reason fill:#8E44AD,stroke:#none,color:#fff,padding:10px
+    classDef output fill:#E67E22,stroke:#none,color:#fff,padding:10px
+    classDef reliable fill:#27AE60,stroke:#none,color:#fff,padding:10px
+
+    %% Nodes
+    subgraph KNOWLEDGE["Knowledge Sources"]
+        direction TB
+        docs["📄 Enterprise Policies"]:::input
+        uploads["☁️ Upload Documents"]:::input
+    end
+
+    subgraph RETRIEVAL["Azure AI Search"]
+        direction TB
+        hybrid["Hybrid Retrieval"]:::search
+        semantic["Semantic Ranking"]:::search
+    end
+
+    subgraph ENGINE["Reasoning Engine"]
+        direction LR
+        DA["DocumentAnalyzer"]:::reason --> CD["ConflictDetector"]:::reason
+        CD --> VAL["ConflictValidatorAgent"]:::reason
+    end
+
+    subgraph OUTPUTS["Governance & Impact"]
+        direction TB
+        detect["⚡ Contradiction Detection"]:::output
+        impact["👥 Human Impact Analysis"]:::output
+        action["🛡️ Human Approval Gate"]:::output
+    end
+
+    %% Routing
+    KNOWLEDGE --> RETRIEVAL
+    RETRIEVAL -->|Grounded Citations| ENGINE
+    ENGINE -->|Validated Proof| OUTPUTS
+
+    %% Reliability Layer at bottom
+    RELIABLE["Reliability Layer: Provider Routing & Abstention Logic (4-Tier Fallback)"]:::reliable
+    ENGINE -.-> RELIABLE
+```
 
 ---
 
@@ -48,56 +105,29 @@ A chatbot answers the questions you ask. ConflictSense finds the structural impo
 
 ---
 
-## ⚙️ Multi-Agent Reasoning Architecture
+## 📸 Proof & Action Gallery
 
-ConflictSense relies on a disciplined, multi-stage reasoning pipeline designed to prioritize logical entailment and human safety over simple text retrieval. It operates through specialized agents managed by a central Orchestrator.
+The ConflictSense workflow is designed for maximum transparency and safety.
 
-```mermaid
-graph TD
-    %% Styling
-    classDef user fill:#2C3E50,stroke:#none,color:#fff,font-weight:bold,padding:10px
-    classDef retrieve fill:#2980B9,stroke:#none,color:#fff,font-weight:bold,padding:10px
-    classDef reason fill:#8E44AD,stroke:#none,color:#fff,font-weight:bold,padding:10px
-    classDef validate fill:#E67E22,stroke:#none,color:#fff,font-weight:bold,padding:10px
-    classDef govern fill:#C0392B,stroke:#none,color:#fff,font-weight:bold,padding:10px
-
-    %% Layers
-    INPUT["User Input / Policy Upload"]:::user
-    
-    subgraph Retrieval Layer
-        DA["DocumentAnalyzer<br/>(Azure AI Search: Hybrid + Semantic)"]:::retrieve
-    end
-    
-    subgraph Reasoning Layer
-        CD["ConflictDetector<br/>(Logical Entailment Testing)"]:::reason
-    end
-    
-    subgraph Validation Layer
-        VAL["ConflictValidatorAgent<br/>(Abstention / Grounding Check)"]:::validate
-    end
-    
-    subgraph Risk Layer
-        IA["ImpactAssessor & RiskQuantifier<br/>(Harm Classification)"]:::validate
-    end
-
-    subgraph Governance Layer
-        RR["ResolutionRecommender"]:::govern
-        GATE["Human Approval Gate<br/>(Action Center UI)"]:::govern
-    end
-
-    %% Flow
-    INPUT --> DA
-    DA --> CD
-    CD --> VAL
-    
-    VAL -- "Insufficient Evidence" --> ABSTAIN["System Abstains (No Hallucination)"]
-    VAL -- "Validated Proof" --> IA
-    
-    IA --> RR
-    RR --> GATE
-```
-
+### 1. Multi-Agent Reasoning Trace
+The system performs multi-stage logic and streams its thoughts natively in the UI.
 ![Reasoning Trace Mid-Execution](docs/images/Reasoning%20Trace%20Mid-Execution.png)
+
+### 2. Grounded Logical Proof
+The system cites the exact conflicting paragraphs and proves the contradiction.
+![The Anonymity Conflict](docs/images/Anonymity%20Conflict.png)
+
+### 3. Human Approval Gate
+It's safe for the enterprise. It doesn't break things autonomously; it requires human sign-off.
+![Action Center (Human Approval Gate)](docs/images/Human%20Approval%20Gate.png)
+
+### 4. Accessibility First
+Marginalized users are prioritized natively with full screen reader integration.
+![Accessibility Demo Active](docs/images/Accessibility%20Demo.png)
+
+---
+
+## 🏗️ Architecture Details
 
 **1. Retrieval & Grounding Layer (`DocumentAnalyzer`)**
 When a policy enters the system, it is indexed into **Azure AI Search**. The analyzer uses Hybrid Retrieval (Keyword + Vector) and Semantic Ranking to surface highly relevant chunks.
@@ -121,28 +151,11 @@ To guarantee zero cold-start failures during judging:
 - **Tier 3:** Precomputed Trace Replay (Offline, verified demo scenarios).
 - **Tier 4:** Hard Abstention.
 
-![Action Center (Human Approval Gate)](docs/images/Human%20Approval%20Gate.png)
-
 ---
 
-## ❤️ Hack for Good: The Human Impact
-
-ConflictSense identifies who is harmed before it identifies what is violated.
-
-![Who Is Harmed (Human Impact)](docs/images/Human%20Impact%20section.png)
-
-- **Whistleblower Retaliation Risk:** Employees who trust anonymous reporting channels are silently exposed when IT audit logging makes anonymity technically impossible. Trust in a protection that doesn't exist is not neutral — it causes people to take risks they would not otherwise accept.
-- **Disability Accommodation Barriers:** Employees requiring assistive software or non-standard devices are blocked when HR accommodation policy conflicts with IT's mandatory standard-device policy. 
-
-These are not compliance line-items. These are people.
-
----
-
-## ♿ Accessibility First
+## ♿ Accessibility
 
 ConflictSense protects marginalized employees. It must be accessible to them.
-
-![Accessibility Demo Active](docs/images/Accessibility%20Demo.png)
 
 - **`aria-live="polite"`** on all agent timeline updates — screen readers announce reasoning as it streams.
 - **`prefers-reduced-motion` respected** — one toggle disables every animation system-wide.
@@ -171,18 +184,6 @@ npm install
 npm run dev
 # → http://localhost:5173
 ```
-
----
-
-## 📖 The 90-Second Demo Path
-
-1. Open the [Live App](https://conflictsense.vercel.app).
-2. Select **"Whistleblower Anonymity Conflict"** from the scenario dropdown.
-3. Click **Run Analysis** — watch the agent timeline fill with real reasoning steps.
-4. When the ⚡ unexpected conflict card appears — click it.
-5. See **Whistleblower §4.2** highlighted in green. See **IT Security §12.1** highlighted in red.
-6. Click **Request Legal Review** — complete the modal, observe the governance ticket injected.
-7. Toggle **Accessibility Demo** — navigate the entire experience by keyboard alone.
 
 ---
 
