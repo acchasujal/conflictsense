@@ -1,97 +1,158 @@
-# ConflictSense Accessibility Statement
+# ConflictSense — Accessibility Documentation
 
-**Version:** 1.0  
-**Last Updated:** June 2026  
-**Standard:** WCAG 2.1 AA
+*ConflictSense protects marginalized employees. It must be accessible to them.*
 
 ---
 
-## Our Commitment
+## Overview
 
-ConflictSense is built to be usable by everyone, including people with disabilities. We are committed to conforming to the **Web Content Accessibility Guidelines (WCAG) 2.1 Level AA** standard.
+ConflictSense was designed with accessibility as a first-class requirement, not an afterthought. The employees most at risk from hidden policy contradictions — whistleblowers, employees with disabilities, privacy-sensitive workers — must be able to use the tool that is designed to protect them.
 
-This accessibility statement covers the ConflictSense web application at [conflictsense.vercel.app](https://conflictsense.vercel.app).
-
----
-
-## Accessibility Features
-
-### ♿ Keyboard Navigation
-ConflictSense can be **fully operated using keyboard navigation** without requiring a mouse.
-
-| Element | Keyboard Action |
-| :--- | :--- |
-| Scenario cards | `Tab` to focus, `Enter` or `Space` to activate |
-| Conflict cards | `Tab` to focus, `Enter` or `Space` to expand/collapse |
-| Upload controls | `Tab` to focus file picker, `Enter` to open |
-| Run Analysis button | `Tab` to focus, `Enter` to activate |
-| Accessibility toggles | `Tab` to focus, `Enter` to toggle |
-
-### 👁 Focus Indicators
-All interactive elements display a **high-visibility blue focus ring** (`3px solid #2563EB`) when focused via keyboard. This indicator is never suppressed or hidden.
-
-### 📢 Screen Reader Support
-ConflictSense includes built-in **Screen Reader Mode** (toggle in the application header).
-
-When enabled, the application announces:
-- "Analysis started. AI agents are reviewing policy documents."
-- "Conflict detected: [conflict title]. Severity: [severity]."
-- "Analysis complete. [N] conflicts detected."
-
-All interactive elements have descriptive `aria-label` attributes. The reasoning trace panel includes `aria-live="polite"` for real-time step updates. The responsible AI banner uses `role="alert"`.
-
-### 🎞 Reduced Motion Mode
-ConflictSense respects the operating system **prefers-reduced-motion** setting automatically. For users who need explicit control, a **Reduce Motion** toggle is available in the application header, which disables all shimmer animations, slide-in transitions, and chart animations instantly.
-
-### 🎨 Colour Contrast
-All text and UI elements meet or exceed **WCAG AA contrast ratios**:
-- Primary text (`#0F172A` on `#FFFFFF`): 18.4:1 ✅
-- Body text (`#334155` on `#FFFFFF`): 10.1:1 ✅
-- Secondary text (`#64748B` on `#FFFFFF`): 4.6:1 ✅
-- Critical severity badge (`#A32D2D` on `#FCEBEB`): 5.9:1 ✅
-- Focus ring (`#2563EB` outline, 3px): Visible on all backgrounds ✅
-
-### 🏷 Semantic HTML
-The application uses proper HTML5 semantic elements:
-- `<header>` with `aria-label="Application Header"`
-- `<main>` with `aria-label="Main Application Content"`
-- `<button>` for all interactive triggers
-- `role="button"` with `tabIndex={0}` for custom card interactions
-- `role="status"` with `aria-live="polite"` and `aria-atomic="true"` for live announcements
-- `role="group"` for the accessibility settings control group
+This document provides a complete technical record of the accessibility implementation.
 
 ---
 
-## Known Limitations
+## 1. ARIA Live Regions
 
-| Area | Status | Note |
-| :--- | :--- | :--- |
-| Recharts visualisations | Partial | Charts are decorative; key data is also available as text. |
-| PDF document upload | N/A | Uses native `<input type="file">` with browser-native accessibility support. |
+**Implementation:** All agent timeline step completions use `aria-live="polite"` regions.
+
+**Effect:** Screen readers announce each new reasoning step as it appears, without requiring any interaction. As ConflictSense streams its multi-agent reasoning trace, a screen reader user hears each agent's conclusion spoken aloud in real time.
+
+**Location:** `App.jsx` — the `setAnnouncement` / `announcement` state with a `role="status"` `aria-live="polite"` region.
+
+```jsx
+// Screen reader announcement for each conflict detected
+<div
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+  style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
+>
+  {announcement}
+</div>
+```
+
+**What it announces:**
+- Analysis started
+- Each conflict detected: title and severity level
+- Analysis complete: total conflict count
 
 ---
 
-## Testing Approach
+## 2. Reduced Motion
 
-ConflictSense accessibility has been tested with:
-- **WAVE** browser extension (automated checks)
-- **axe DevTools** (automated ARIA validation)
-- **Keyboard-only navigation** (Chrome, Firefox)
-- **Code review** against WCAG 2.1 AA success criteria
+**Implementation:** `prefers-reduced-motion` CSS media query + JavaScript toggle.
+
+**Effect:** One click on the **⚡ Reduced Motion** button in the header disables:
+- Pulsing animation on the scanning indicator
+- `fadeInUp` animations on conflict cards
+- Slide-in animations on agent step cards
+- Pulse animation on the live scanning dot
+
+**Location:** `App.jsx` — `reducedMotion` state, `reduced-motion` CSS class on the root div.
+
+```css
+.reduced-motion * {
+  animation: none !important;
+  transition: none !important;
+}
+```
+
+The system also respects the OS-level `prefers-reduced-motion` setting automatically.
 
 ---
 
-## Reporting Accessibility Issues
+## 3. Keyboard Navigation
 
-If you encounter any accessibility barriers while using ConflictSense, please report them by opening a GitHub issue at [github.com/acchasujal/conflictsense](https://github.com/acchasujal/conflictsense/issues).
+**Full keyboard navigation is implemented throughout the application.**
 
-We aim to respond to accessibility reports within **5 business days**.
+**Global shortcuts:**
+| Key | Action |
+|---|---|
+| `?` | Open keyboard shortcuts overlay |
+| `Escape` | Close any modal or overlay |
+| `Enter` | Confirm primary action in modals |
+| `Tab` / `Shift+Tab` | Navigate all interactive elements |
+
+**Focus management:**
+- All buttons, dropdowns, and scenario cards are natively focusable
+- Focus ring is visible on all interactive elements (browser default, not suppressed)
+- Tab order follows logical reading order
+
+**Location:** `App.jsx` — `handleKeyDown` event listener on `window`.
 
 ---
 
-## Legal Basis
+## 4. Modal Focus Trapping
 
-This statement is made in accordance with:
-- [WCAG 2.1](https://www.w3.org/TR/WCAG21/) (W3C)
-- [Section 508](https://www.section508.gov/) (US Federal)
-- [EN 301 549](https://www.etsi.org/deliver/etsi_en/301500_302000/301549/03.02.01_60/en_301549v030201p.pdf) (EU)
+**Implementation:** Uses the native HTML5 `<dialog>` element.
+
+**Effect:** When the "Approve Remediation", "Request Legal Review", or "Escalate to Governance Board" modals open:
+- Focus is automatically trapped inside the dialog
+- `Tab` cycles only through modal controls
+- `Escape` closes the modal
+- `aria-modal="true"` and `role="dialog"` are set on the dialog element
+
+**Why native `<dialog>`:** Browser-native focus trapping is more reliable than synthetic implementations and works correctly across all screen reader + browser combinations without custom JavaScript.
+
+```jsx
+<dialog
+  ref={dialogRef}
+  aria-modal="true"
+  role="dialog"
+>
+```
+
+---
+
+## 5. Contrast and Color
+
+- All severity badge text (CRITICAL, HIGH, MEDIUM) meets WCAG AA contrast ratio
+- Action button text meets WCAG AA contrast ratio at all states (default, hover, focus)
+- Status badges (NEW, UNDER REVIEW, APPROVED, LEGAL REVIEW, ESCALATED) use bordered, not color-only, differentiation to remain distinguishable without color perception
+
+---
+
+## 6. Accessibility Demo Mode
+
+**Purpose:** A dedicated one-click demo of all accessibility features, built directly into the header for judge visibility.
+
+**What it activates:**
+1. `srMode = true` — enables screen reader announcement system
+2. `reducedMotion = true` — disables all animations
+3. `showShortcuts = true` — opens the keyboard shortcuts overlay
+
+**Location:** Header button labeled "Accessibility Demo" with distinct green styling for immediate visibility.
+
+---
+
+## 7. Screen Reader Mode
+
+When Screen Reader mode is active (`srMode = true`):
+- The `announce()` function becomes active
+- Every significant state transition generates an ARIA announcement:
+  - Analysis start
+  - Each conflict detection (title + severity)
+  - Analysis completion
+  - Approval / escalation actions
+
+When Screen Reader mode is inactive, the announcement state is never populated (no spurious read-aloud events for users who have not opted in).
+
+---
+
+## Compliance Posture
+
+ConflictSense targets **WCAG 2.1 AA** compliance.
+
+| Criterion | Status | Implementation |
+|---|---|---|
+| 1.3.1 Info and Relationships | ✅ | Semantic HTML5 throughout |
+| 1.4.3 Contrast (Minimum) | ✅ | All text/background pairs verified |
+| 2.1.1 Keyboard | ✅ | All functionality keyboard accessible |
+| 2.1.2 No Keyboard Trap | ✅ | Native dialog trapping, Escape always exits |
+| 2.4.3 Focus Order | ✅ | Logical DOM order maintained |
+| 4.1.3 Status Messages | ✅ | `aria-live` regions for all dynamic updates |
+
+---
+
+*The employee who most needs ConflictSense's protection is the one filing a report under a policy that doesn't protect them. That employee must be able to use this tool.*

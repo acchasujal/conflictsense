@@ -1,65 +1,160 @@
-# ConflictSense
+# ConflictSense ◈
+**Protecting people by exposing hidden contradictions.**
 
-## Problem
-In large enterprises, regulatory compliance, IT security, and HR policies are managed by siloed departments. Over time, these independently drafted policies accumulate **structural contradictions** — situations where complying with one mandatory policy forces an employee to violate another. 
+*Microsoft Agents League 2026 — Reasoning Agents Track*  
+*Built solo over 10 days by a final-year engineering student from Mumbai, India.*
 
-## Why It Matters
-These are not just "missing guidance" issues. They are structural impossibilities that create severe legal, financial, and human consequences:
-* Disabled employees are denied equal access to work due to absolute IT security prohibitions.
-* Whistleblowers face retaliation because their guaranteed anonymity is fundamentally compromised by mandatory IT logging.
-* Organizations are exposed to massive fines because policies unknowingly enforce contradictory regulations.
+---
 
-## How ConflictSense Works
-ConflictSense is an **Enterprise Reasoning Agent** that acts as an autonomous auditor. It ingests thousands of pages of corporate policies, cross-references every single mandate, and mathematically proves where policies collide.
+## The Finding That Changes Everything
 
-## Architecture
-ConflictSense is built on a deterministic agentic reasoning pipeline:
-1. **Ingestion**: Policies are loaded into an Azure AI Search vector store.
-2. **Analysis**: A multi-stage reasoning agent retrieves cross-policy evidence and validates contradictions.
-3. **Synthesis**: The system maps out the blast radius (who is harmed) and quantifies the legal and human risk.
+Nexora Financial promised every employee that anonymous reports would protect them.
 
-## Demo Scenarios
-ConflictSense comes pre-loaded with several realistic enterprise conflicts:
-- **Employee Accommodation Conflict**: HR mandates assistive tech; IT prohibits non-standard software.
-- **Whistleblower Protection Conflict**: HR guarantees anonymity; IT logs all activity to user identities.
-- **Employee Privacy / Mental Health**: Data residency regulations vs. global monitoring mandates.
-- **Full Knowledge Base Analysis**: A comprehensive 7-step enterprise audit scanning the entire corpus in < 5 seconds.
+ConflictSense found — without being asked — that every anonymous report is traceable.
 
-## Accessibility Features
-Accessibility is not just a checkbox; it is built into the core of ConflictSense:
-* **Keyboard Navigation**: Full `tabindex` support across the entire interface.
-* **Screen Reader Optimization**: Native ARIA labels and semantic HTML on all agent timelines and conflict cards.
-* **Color Contrast**: AAA compliant color palettes optimized for visual impairments.
+> **Whistleblower Policy §4.2:**  
+> *"Employee identity is never logged or traceable by any internal party. The ethics portal does not capture IP addresses, session tokens, device identifiers, or any metadata that could be used to identify the reporter."*
 
-## Hack for Good Impact
-By transforming compliance from a "bureaucratic checklist" into a **human-centered governance platform**, ConflictSense actively protects vulnerable employee groups. It surfaces hidden risks that directly harm employees, such as structural disability discrimination and whistleblower exposure.
+> **IT Security Policy §12.1:**  
+> *"All system access is logged with full user identity for security audit purposes. **No exceptions permitted.** Logs are retained for a minimum of 7 years and are admissible as evidence in disciplinary and legal proceedings."*
 
-## Reasoning Agent Differentiation
-### Why a chatbot is not enough
-Chatbots summarize documents. ConflictSense **reasons** about them.
+These two sections cannot simultaneously be true. For the same employee. On the same network. At the same company.
 
-ConflictSense:
-✓ Detects contradictions
-✓ Validates findings
-✓ Quantifies risk
-✓ Identifies harmed groups
-✓ Recommends remediation
+**ConflictSense didn't retrieve this. It reasoned to it** — across seven policy documents, in 90 seconds, without being asked to check the anonymous reporting system.
 
-Chatbots:
-✗ Summarize documents
+---
 
-## Tech Stack
-* **Frontend**: React (Vite), JavaScript, Lucide Icons
-* **Backend**: Python, FastAPI, Pydantic
-* **AI/Search**: Azure AI Search, Groq, Nvidia NIMs
+## Why This Is Not a Search Engine
 
-## Deployment
-ConflictSense is designed for enterprise deployment:
-* **Frontend**: Deployed on Vercel
-* **Backend**: Deployed on Render
+| What you ask | Standard RAG | ConflictSense |
+|---|---|---|
+| "What is the whistleblower policy?" | Returns the document | N/A — wrong question |
+| "Does our anonymity promise hold?" | Summarizes the promise | Finds the IT policy that structurally breaks it |
+| "Who is harmed by this conflict?" | No answer | Identifies the exact employee class at risk |
+| "What do we do about it?" | No answer | Generates remediation plan gated behind human approval |
 
-## Screenshots
-*(Screenshots showing the Executive Summary, Conflict Portfolio, and Live Agent Timeline go here)*
+A chatbot answers the questions you ask. ConflictSense finds the contradictions you didn't know to ask about.
 
-## Awards Focus
-ConflictSense is optimized for the **Accessibility Award** and the **Hack for Good Award** by focusing entirely on human-centric governance and accessible design.
+---
+
+## Multi-Agent Reasoning Architecture
+
+```
+PolicyIngestionAgent    → chunks and indexes policy documents; extracts entities and obligations
+CrossPolicyAnalyzer     → identifies overlapping entities across document boundaries
+LogicValidator          → tests whether two obligations can simultaneously hold for the same person
+RiskAssessor            → classifies the harm by employee category, severity, and human impact
+Human Approval Gate     → no action, no ticket, no remediation without explicit human sign-off
+```
+
+**Every conflict finding is:**
+- Grounded in exact, highlighted citations from the source document
+- Validated by a second agent before surfacing in the UI
+- Gated behind human approval before any governance action
+- Abstained when evidence is insufficient — the system says "I don't know" rather than hallucinating
+
+The validation chain and the abstention mechanism are what separate this from retrieval. Retrieval returns relevant text. ConflictSense proves that two relevant texts are logically irreconcilable.
+
+---
+
+## Three Modes of Execution
+
+### 1. Verified Demo Scenarios — Offline
+Pre-validated reasoning traces from real pipeline runs, replayed deterministically for judging reliability. Zero network dependency. Sub-3-second execution. The output is real — the reasoning pipeline produced it. The playback is engineered for reliability, not to fake reasoning.
+
+**Scenarios included:**
+- **Whistleblower Anonymity Conflict** *(primary)* — IT logging makes anonymous reporting impossible
+- **Employee Accommodation Conflict** — IT device policy blocks HR-mandated accessibility accommodations
+- **Privacy & Data Residency Conflict** — DPDP compliance obligations conflict with US-only infrastructure mandates
+
+### 2. Full Knowledge Base Audit — Offline
+Synthetic complete corporate policy library. Generates Executive Dashboard, departmental risk index, and a portfolio of validated conflicts with severity classification.
+
+### 3. Live Upload Analysis — Online · Azure AI Search
+Upload custom `.md` policy documents. Azure Hybrid Retrieval (Keyword + Vector) + Semantic Ranking retrieves grounded evidence. Live multi-agent reasoning pipeline. System abstains when evidence is insufficient rather than fabricating findings.
+
+---
+
+## Human Impact
+
+ConflictSense identifies who is harmed before it identifies what is violated.
+
+**Whistleblower Retaliation Risk:** Employees who trust anonymous reporting channels are silently exposed when IT audit logging makes anonymity technically impossible. Trust in a protection that doesn't exist is not neutral — it causes people to take risks they would not otherwise accept.
+
+**Disability Accommodation Barriers:** Employees requiring assistive software or non-standard devices are blocked when HR accommodation policy conflicts with IT's mandatory standard-device policy. The law requires accommodation. The IT policy makes accommodation impossible.
+
+**Employee Privacy Risk:** Data residency requirements conflict with infrastructure jurisdiction mandates, exposing employee data to jurisdictions employees were told it would never reach.
+
+These are not compliance line-items. These are people.
+
+---
+
+## Accessibility
+
+ConflictSense protects marginalized employees. It must be accessible to them.
+
+- **`aria-live="polite"`** on all agent timeline updates — screen readers announce reasoning as it streams, without page reload
+- **`prefers-reduced-motion` respected** — one toggle disables every animation system-wide
+- **Keyboard navigation throughout** — press `?` to launch the global shortcuts overlay from anywhere
+- **Full focus trapping** in modal dialogs using native `<dialog>` elements — no synthetic focus management
+- **WCAG AA contrast** on all severity indicators and action buttons
+- **Dedicated Accessibility Demo mode** built into the header — not buried in settings
+
+See [docs/accessibility.md](docs/accessibility.md) for full technical documentation.
+
+---
+
+## Microsoft Technology
+
+**Azure AI Search** powers the live upload pipeline:
+- Hybrid Retrieval (Keyword + Vector) ensures both semantic and lexical relevance
+- Semantic Ranking surfaces the most policy-relevant passages
+- Every conflict citation is hard-linked to an exact passage from the Azure knowledge base
+- Abstention prevents fabricated citations when retrieval confidence is insufficient
+
+---
+
+## Quickstart
+
+No credentials needed. No build server. Runs in under 30 seconds.
+
+```bash
+cd frontend
+npm install
+npm run dev
+# → http://localhost:5173
+```
+
+**Live deployment:** [conflictsense.vercel.app](https://conflictsense.vercel.app)
+
+---
+
+## The 90-Second Demo Path
+
+1. Open the app at idle state
+2. Select **"Whistleblower Anonymity Conflict"** from the scenario dropdown
+3. Click **Run Analysis** — watch the agent timeline fill with real reasoning steps and cited passages
+4. When the ⚡ unexpected conflict card appears — click it
+5. See **Whistleblower §4.2** highlighted in green. See **IT Security §12.1** highlighted in red. Read the proof.
+6. Click **Request Legal Review** — complete the modal, observe the governance ticket injected into the timeline
+7. Toggle **Accessibility Demo** — navigate the entire experience by keyboard alone
+
+The contradiction is self-evident. No narration required.
+
+---
+
+## All Data Is Synthetic
+
+Every company name, employee, policy, and scenario is 100% fabricated for this submission. Nexora Technologies is fictional. No real PII, no real enterprise data.
+
+---
+
+## Student Context
+
+Built solo over 10 days by Sujal — final-year engineering student, Mumbai, India.  
+No team. No prior enterprise compliance background. Free-tier Azure and Vercel throughout.
+
+---
+
+## License
+MIT
