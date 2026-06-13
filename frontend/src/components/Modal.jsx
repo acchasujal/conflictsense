@@ -5,6 +5,8 @@ export default function Modal({ isOpen, onClose, title, children }) {
 
   useEffect(() => {
     const dialog = dialogRef.current;
+    if (!dialog) return;
+    
     if (isOpen) {
       if (!dialog.open) dialog.showModal();
     } else {
@@ -14,13 +16,15 @@ export default function Modal({ isOpen, onClose, title, children }) {
 
   useEffect(() => {
     const dialog = dialogRef.current;
+    if (!dialog) return;
+    
     const handleCancel = (e) => {
       e.preventDefault();
       onClose();
     };
     dialog.addEventListener('cancel', handleCancel);
     return () => dialog.removeEventListener('cancel', handleCancel);
-  }, [onClose]);
+  }, [onClose, isOpen]);
 
   if (!isOpen) return null;
 
