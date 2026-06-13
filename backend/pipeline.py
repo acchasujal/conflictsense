@@ -30,7 +30,7 @@ from typing import Callable
 logger = logging.getLogger("conflictsense.pipeline")
 
 _ROOT     = Path(__file__).parent.parent
-_MOCK_DIR = _ROOT / "mock_data"
+_MOCK_DIR = _ROOT / ".mock_data"
 KB_DIR    = _ROOT / "knowledge_base"
 UPLOADS_DIR = _ROOT / "data" / "uploads"
 

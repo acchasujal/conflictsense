@@ -70,7 +70,7 @@ app.add_middleware(
 # ─── Load pre-computed mock data (Tier 3) ─────────────────────────────────────
 # Resolved relative to the project root, not this file's location.
 _ROOT = Path(__file__).parent.parent
-_MOCK_DIR = _ROOT / "mock_data"
+_MOCK_DIR = _ROOT / ".mock_data"
 
 
 def _load_json(filename: str) -> list:
