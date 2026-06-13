@@ -18,8 +18,7 @@
 ---
 
 ## ⚡ The Finding That Changes Everything
-
-![ConflictSense Hero](docs/images/Hero.png)
+![ConflictSense](docs/images/conflictsense.png)
 
 Nexora Financial promised every employee that anonymous reports would protect them. ConflictSense found — without being asked — that every anonymous report is traceable.
 
@@ -52,7 +51,6 @@ A chatbot answers the questions you ask. ConflictSense finds the structural impo
 
 ConflictSense relies on a disciplined, multi-stage reasoning pipeline designed to prioritize logical entailment and human safety over simple text retrieval. It operates through specialized agents managed by a central Orchestrator.
 
-![ConflictSense Architecture](docs/images/Architecture_Poster.png)
 
 **1. Retrieval & Grounding Layer (`DocumentAnalyzer`)**
 When a policy enters the system, it is indexed into **Azure AI Search**. The analyzer uses Hybrid Retrieval (Keyword + Vector) and Semantic Ranking to surface highly relevant chunks.
