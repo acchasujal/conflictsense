@@ -25,6 +25,8 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import ConflictDashboard    from './components/ConflictDashboard.jsx';
+import Modal                from './components/Modal.jsx';
+import Toast                from './components/Toast.jsx';
 import ReasoningTrace       from './components/ReasoningTrace.jsx';
 import EnterpriseRiskBanner from './components/EnterpriseRiskBanner.jsx';
 import { streamAnalysis, approveConflict, rejectConflict } from './lib/api.js';
