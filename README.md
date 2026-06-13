@@ -19,76 +19,19 @@
 
 ## ⚡ The Finding That Changes Everything
 
+![ConflictSense Hero](docs/images/Hero.png)
+
 Nexora Financial promised every employee that anonymous reports would protect them. ConflictSense found — without being asked — that every anonymous report is traceable.
 
-```text
-┌──────────────────────────┐             ┌──────────────────────────┐
-│   Whistleblower Policy   │      ⚡      │    IT Security Policy    │
-│    Anonymous Reports     │             │     Identity Logging     │
-└──────────────────────────┘             └──────────────────────────┘
-                            ↓
-                     ConflictSense
-                            ↓
-            "Anonymous reporting is impossible"
-                            ↓
-                       Human Impact:
-             • Retaliation Risk • Privacy Risk
-```
+> **Whistleblower Policy §4.2:**  
+> *"Employee identity is never logged or traceable by any internal party. The ethics portal does not capture IP addresses, session tokens, device identifiers, or any metadata that could be used to identify the reporter."*
+
+> **IT Security Policy §12.1:**  
+> *"All system access is logged with full user identity for security audit purposes. **No exceptions permitted.** Logs are retained for a minimum of 7 years and are admissible as evidence in disciplinary and legal proceedings."*
 
 These two sections cannot simultaneously be true. For the same employee. On the same network. At the same company.
 
 **ConflictSense didn't retrieve this. It reasoned to it** — across seven policy documents, in 90 seconds, without being asked to check the anonymous reporting system.
-
----
-
-## ⚙️ Multi-Agent Reasoning Architecture
-
-ConflictSense relies on a disciplined, multi-stage reasoning pipeline designed to prioritize logical entailment and human safety over simple text retrieval. It operates through specialized agents managed by a central Orchestrator.
-
-```mermaid
-flowchart LR
-    %% Styling
-    classDef input fill:#2C3E50,stroke:#none,color:#fff,padding:10px
-    classDef search fill:#2980B9,stroke:#none,color:#fff,padding:10px
-    classDef reason fill:#8E44AD,stroke:#none,color:#fff,padding:10px
-    classDef output fill:#E67E22,stroke:#none,color:#fff,padding:10px
-    classDef reliable fill:#27AE60,stroke:#none,color:#fff,padding:10px
-
-    %% Nodes
-    subgraph KNOWLEDGE["Knowledge Sources"]
-        direction TB
-        docs["📄 Enterprise Policies"]:::input
-        uploads["☁️ Upload Documents"]:::input
-    end
-
-    subgraph RETRIEVAL["Azure AI Search"]
-        direction TB
-        hybrid["Hybrid Retrieval"]:::search
-        semantic["Semantic Ranking"]:::search
-    end
-
-    subgraph ENGINE["Reasoning Engine"]
-        direction LR
-        DA["DocumentAnalyzer"]:::reason --> CD["ConflictDetector"]:::reason
-        CD --> VAL["ConflictValidatorAgent"]:::reason
-    end
-
-    subgraph OUTPUTS["Governance & Impact"]
-        direction TB
-        detect["⚡ Contradiction Detection"]:::output
-        impact["👥 Human Impact Analysis"]:::output
-        action["🛡️ Human Approval Gate"]:::output
-    end
-
-    %% Routing
-    KNOWLEDGE --> RETRIEVAL
-    RETRIEVAL -->|Grounded Citations| ENGINE
-    ENGINE -->|Validated Proof| OUTPUTS
-
-    %% Reliability Layer at bottom
-    RELIABLE["Reliability Layer: Provider Routing & Abstention Logic (4-Tier Fallback)"]:::reliable
-    ENGINE -.-> RELIABLE
-```
 
 ---
 
@@ -105,29 +48,11 @@ A chatbot answers the questions you ask. ConflictSense finds the structural impo
 
 ---
 
-## 📸 Proof & Action Gallery
+## ⚙️ Multi-Agent Reasoning Architecture
 
-The ConflictSense workflow is designed for maximum transparency and safety.
+ConflictSense relies on a disciplined, multi-stage reasoning pipeline designed to prioritize logical entailment and human safety over simple text retrieval. It operates through specialized agents managed by a central Orchestrator.
 
-### 1. Multi-Agent Reasoning Trace
-The system performs multi-stage logic and streams its thoughts natively in the UI.
-![Reasoning Trace Mid-Execution](docs/images/Reasoning%20Trace%20Mid-Execution.png)
-
-### 2. Grounded Logical Proof
-The system cites the exact conflicting paragraphs and proves the contradiction.
-![The Anonymity Conflict](docs/images/Anonymity%20Conflict.png)
-
-### 3. Human Approval Gate
-It's safe for the enterprise. It doesn't break things autonomously; it requires human sign-off.
-![Action Center (Human Approval Gate)](docs/images/Human%20Approval%20Gate.png)
-
-### 4. Accessibility First
-Marginalized users are prioritized natively with full screen reader integration.
-![Accessibility Demo Active](docs/images/Accessibility%20Demo.png)
-
----
-
-## 🏗️ Architecture Details
+![ConflictSense Architecture](docs/images/Architecture_Poster.png)
 
 **1. Retrieval & Grounding Layer (`DocumentAnalyzer`)**
 When a policy enters the system, it is indexed into **Azure AI Search**. The analyzer uses Hybrid Retrieval (Keyword + Vector) and Semantic Ranking to surface highly relevant chunks.
@@ -150,6 +75,28 @@ To guarantee zero cold-start failures during judging:
 - **Tier 2:** Automatic LLM Provider Failover (routes to Nvidia if Primary fails).
 - **Tier 3:** Precomputed Trace Replay (Offline, verified demo scenarios).
 - **Tier 4:** Hard Abstention.
+
+---
+
+## 📸 Proof & Action Gallery
+
+The ConflictSense workflow is designed for maximum transparency and safety.
+
+### 1. Multi-Agent Reasoning Trace
+The system performs multi-stage logic and streams its thoughts natively in the UI.
+![Reasoning Trace Mid-Execution](docs/images/Reasoning%20Trace%20Mid-Execution.png)
+
+### 2. Grounded Logical Proof
+The system cites the exact conflicting paragraphs and proves the contradiction.
+![The Anonymity Conflict](docs/images/Anonymity%20Conflict.png)
+
+### 3. Human Approval Gate
+It's safe for the enterprise. It doesn't break things autonomously; it requires human sign-off.
+![Action Center (Human Approval Gate)](docs/images/Human%20Approval%20Gate.png)
+
+### 4. Accessibility First
+Marginalized users are prioritized natively with full screen reader integration.
+![Accessibility Demo Active](docs/images/Accessibility%20Demo.png)
 
 ---
 
