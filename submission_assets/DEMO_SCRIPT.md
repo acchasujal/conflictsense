@@ -52,21 +52,89 @@ Second conflict card appears with ⚡ badge.
 
 ---
 
-## ⏱️ 3-Minute Version
+## ⏱️ 3-Minute Demo Script
 
-**[Follows the 90-second script, then adds:]**
+**[Screen recording: Chrome, 1920×1080, conflictsense.vercel.app, incognito mode.]**
 
-**[1:30–2:00]** Switch to the upload tab.  
-*Narration:* "For custom enterprise documents, the live pipeline uses Azure AI Search — Hybrid Retrieval with Semantic Ranking. The system abstains when evidence is insufficient. It says 'I don't know' rather than fabricate a finding."  
-*Show the abstention state if achievable. Do NOT show a 7+ minute spinner.*  
-*Alternative if upload is slow: show the architecture diagram slide instead.*
+---
 
-**[2:00–2:30]** Show architecture diagram (static image).  
-*Narration:* "PolicyIngestion. CrossPolicyAnalysis. LogicValidation. RiskAssessment. Human Approval Gate. Every finding validated before it reaches a human. Every action gated behind one."
+**[0:00–0:15]** *Screen: Idle state. Document grid visible. No narration yet. Let the UI sit for 2 seconds. Then speak.*
 
-**[2:30–3:00]** Return to the anonymity conflict expanded view.  
-*Narration:* "A student, working alone, in Mumbai, found this in a fictional company's policies. In a real enterprise, nobody would have looked. The employees who trusted that guarantee would never have known. ConflictSense looks. Because someone has to."  
-GitHub URL + Live URL visible. Close.
+> "There's a company called Nexora. And they've done everything right, at least on paper. Seven policy documents. A compliance team. A legal review cycle. And a promise they made to every single employee:
+>
+> *'If you see something wrong, you can report it. Anonymously. We will never know it was you.'*"
+
+---
+
+**[0:15–0:28]** *Action: Click "Whistleblower Anonymity Conflict" in the scenario dropdown. Click Run Analysis. Do not narrate during the click.*
+
+*[Pause 3 seconds as the analysis begins.]*
+
+> "ConflictSense reads their policies. All of them. Not to summarize them. To find whether the promises inside them can actually be kept."
+
+---
+
+**[0:28–0:52]** *Screen: Agent cards begin appearing in the left panel one by one. Each card shows a conclusion sentence — not a loading spinner. Let the first two agent cards arrive before continuing.*
+
+> "Five agents work through the documents in sequence. Each one checks whether the obligations in one policy can coexist with the obligations in another — for the same employee, at the same company.
+>
+> A data residency gap appears. Expected. The kind of thing every compliance audit finds."
+
+*[First conflict card arrives — DPDP. 2-second pause.]*
+
+> "Then something else."
+
+*[Second conflict card arrives with ⚡ badge. 4 full seconds of silence.]*
+
+---
+
+**[0:52–1:22]** *Action: Click the ⚡ conflict card to expand it. The side-by-side contradiction view opens. Left panel: Whistleblower Policy §4.2, text highlighted in green. Right panel: IT Security Policy §12.1, text highlighted in red.*
+
+*[Read the citations aloud, slowly.]*
+
+> "Whistleblower Policy. Section 4.2. *'Employee identity is never logged or traceable by any internal party. The ethics portal does not capture IP addresses, session tokens, device identifiers, or any metadata that could be used to identify the reporter.'*
+>
+> IT Security Policy. Section 12.1. *'All system access is logged with full user identity for security audit purposes. No exceptions permitted. Logs are retained for a minimum of seven years.'*
+>
+> These two policies cannot both be true. For the same employee. On the same network.
+>
+> Nexora's anonymity guarantee has never been technically possible. Every report they received was traceable. And nobody knew."
+
+*[Hold on the expanded card for 3 seconds. No narration.]*
+
+---
+
+**[1:22–1:45]** *Action: Click "Request Legal Review." Modal opens, pre-filled with the conflict title and severity. Complete the form and click Submit. Governance ticket injects into the reasoning trace timeline.*
+
+> "No system takes action on its own. The finding goes to a human. A legal review is opened. The ticket is logged in the audit trail.
+>
+> The employees who filed those reports — they deserve to know that the protection failed. And the people responsible deserve to fix it before the next report comes in."
+
+---
+
+**[1:45–2:10]** *Action: Click the Accessibility Demo toggle in the header. Keyboard shortcuts overlay appears. Navigate one conflict card using only Tab and Enter.*
+
+> "One more thing. The employees most at risk from a policy like this — the ones most likely to need an anonymous reporting channel — are often the same employees who need accessibility tools to use any tool at all.
+>
+> ConflictSense is built for them. Screen reader announcements. Keyboard navigation. No mouse required. The protection should reach everyone it's meant to protect."
+
+---
+
+**[2:10–2:45]** *Action: Switch to the upload tab. Show the interface. If abstention is available, show it. If not, hold on the architecture diagram or the upload interface briefly.*
+
+> "The demo scenarios you've seen are pre-validated runs — real pipeline output, replayed reliably so nothing breaks during judging. For live documents, the pipeline connects to Azure AI Search. Hybrid retrieval, semantic ranking, grounded citations.
+>
+> When it finds something, it cites the exact line. When it doesn't find enough to be certain, it says so. It doesn't guess."
+
+---
+
+**[2:45–3:00]** *Action: Return to the expanded anonymity conflict card. Hold on the citation highlighting.*
+
+> "I built this alone, in ten days, because I kept thinking about that employee. The one who trusted the promise. The one who reported something — a safety issue, a financial irregularity, someone above them abusing power — and who believed, the whole time, that no one would ever know it was them.
+>
+> ConflictSense exists so that someone checks whether that belief is actually true."
+
+*[Hold 3 seconds. Fade. conflictsense.vercel.app visible in the final frame.]*
 
 ---
 
