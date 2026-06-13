@@ -1,6 +1,8 @@
 # ConflictSense ◈
 **Protecting people by exposing hidden enterprise contradictions.**
 
+![ConflictSense](docs/images/conflictsense.png)
+
 *Microsoft Agents League 2026 — Reasoning Agents Track*  
 *Built solo over 4 days by a second-year engineering student from Mumbai, India.*
 
@@ -18,7 +20,6 @@
 ---
 
 ## ⚡ The Finding That Changes Everything
-![ConflictSense](docs/images/conflictsense.png)
 
 Nexora Financial promised every employee that anonymous reports would protect them. ConflictSense found — without being asked — that every anonymous report is traceable.
 
