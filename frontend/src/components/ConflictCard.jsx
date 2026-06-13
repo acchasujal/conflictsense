@@ -225,220 +225,103 @@ export default function ConflictCard({
 
   const cardStyle = {
     background: '#FFFFFF',
-    border: isSelected
-      ? `1px solid ${sev.border}`
-      : '0.5px solid #E2E8F0',
+    border: isSelected ? `1px solid ${sev.border}` : '0.5px solid #E2E8F0',
     borderLeft: `3px solid ${sev.leftBorder}`,
     borderRadius: 8,
-    padding: '10px 12px',
+    padding: '16px',
     cursor: 'pointer',
     transition: 'border 0.15s, box-shadow 0.15s',
     animation: 'slideIn 0.3s ease',
     boxShadow: isSelected ? `0 0 0 1.5px ${sev.border}33` : 'none',
-    // Surprise conflicts get a faint purple tint when collapsed
     ...(conflict.isSurprise && !isSelected
       ? { background: '#FDFCFF', borderLeft: `3px solid #9F8FE8` }
       : {}),
   };
 
+  const policyA = conflict.citations && conflict.citations[0] ? conflict.citations[0] : null;
+  const policyB = conflict.citations && conflict.citations[1] ? conflict.citations[1] : null;
+
+  const resultText = conflict.risk_assessment?.reasoning || conflict.affected;
+  const affectedEntities = conflict.risk_assessment?.affected_entities?.join(', ') || "Unknown";
+  const riskText = conflict.human_impact || "Not specified";
+
   return (
     <div style={cardStyle} onClick={onSelect} role="button" tabIndex={0}
-         aria-expanded={isSelected} aria-label={`Conflict finding: ${conflict.title}. Severity: ${conflict.severity}. Press Enter or Space to expand.`}
-         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}>
+         aria-expanded={isSelected} aria-label={`Conflict finding: ${conflict.title}`}>
 
-      {/* ── Header row: badges + confidence ────────────────────────────── */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          marginBottom: 5,
-          flexWrap: 'wrap',
-        }}
-      >
-        {/* Severity badge */}
-        <span
-          style={{
-            background: sev.bg,
-            color: sev.color,
-            fontSize: 10,
-            fontWeight: 700,
-            padding: '1px 6px',
-            borderRadius: 3,
-            letterSpacing: '0.3px',
-            border: `0.5px solid ${sev.border}`,
-          }}
-        >
-          {sev.label.toUpperCase()}
-        </span>
-
-        {/* Surprise / unexpected finding badge */}
-        {conflict.isSurprise && (
-          <span
-            style={{
-              background: '#E0E7FF',
-              color: '#312E81',
-              fontSize: 10,
-              fontWeight: 600,
-              padding: '1px 6px',
-              borderRadius: 3,
-              border: '0.5px solid #818CF8',
-            }}
-          >
-            ⚡ unexpected finding
+      {/* Hero Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 16 }}>🚨</span>
+          <span style={{ fontSize: 12, fontWeight: 800, color: sev.color, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            {conflict.severity} POLICY CONTRADICTION
           </span>
-        )}
-
-        {/* Approval status badges */}
-        {isApproved && (
-          <span
-            style={{
-              background: '#EAF3DE',
-              color: '#27500A',
-              fontSize: 10,
-              fontWeight: 500,
-              padding: '1px 6px',
-              borderRadius: 3,
-            }}
-          >
-            ✓ approved
-          </span>
-        )}
-        {isRejected && (
-          <span
-            style={{
-              background: '#F1F5F9',
-              color: '#94A3B8',
-              fontSize: 10,
-              padding: '1px 6px',
-              borderRadius: 3,
-            }}
-          >
-            false positive
-          </span>
-        )}
-        {isEscalated && !isApproved && !isRejected && (
-          <span
-            style={{
-              background: '#EEF2FF',
-              color: '#3730A3',
-              fontSize: 10,
-              fontWeight: 500,
-              padding: '1px 6px',
-              borderRadius: 3,
-              border: '0.5px solid #A5B4FC',
-            }}
-          >
-            ↗ escalated to legal
-          </span>
-        )}
-
-        {/* Confidence — right-aligned */}
-        <span
-          style={{
-            marginLeft: 'auto',
-            fontSize: 10,
-            color: '#94A3B8',
-            fontFamily: 'monospace',
-            flexShrink: 0,
-          }}
-        >
-          {conflict.confidence}% conf
-        </span>
+          {isApproved && <span style={{ background: '#EAF3DE', color: '#27500A', fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 3 }}>✓ approved</span>}
+          {isRejected && <span style={{ background: '#F1F5F9', color: '#94A3B8', fontSize: 10, padding: '1px 6px', borderRadius: 3 }}>false positive</span>}
+        </div>
+        <span style={{ fontSize: 11, color: '#94A3B8', fontFamily: 'monospace' }}>{conflict.confidence}% conf</span>
       </div>
 
-      {/* ── Title ──────────────────────────────────────────────────────── */}
-      <div
-        style={{
-          fontSize: 13,
-          fontWeight: 500,
-          color: '#0F172A',
-          marginBottom: 4,
-          lineHeight: 1.4,
-        }}
-      >
+      <div style={{ fontSize: 15, fontWeight: 600, color: '#0F172A', marginBottom: 16 }}>
         {conflict.title}
       </div>
 
-      {/* ── Affected ───────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 5 }}>
-        {(() => {
-          const aff = parseStructuredText(conflict.affected);
-          return (
-            <>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#0F172A', marginBottom: 4 }}>Primary Consequence</div>
-              <div style={{ fontSize: 11, color: '#475569', marginBottom: 10, lineHeight: 1.5 }}>{aff.summary}</div>
-              
-              {(aff.systems?.length > 0 || aff.teams?.length > 0 || aff.employees?.length > 0) && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12 }}>
-                  {aff.systems?.length > 0 && (
-                    <div>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', marginBottom: 4 }}>Affected Systems</div>
-                      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: '#334155', lineHeight: 1.6 }}>
-                        {(aff.systems ?? []).map(s => <li key={s}>{s}</li>)}
-                      </ul>
-                    </div>
-                  )}
-                  {aff.teams?.length > 0 && (
-                    <div>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', marginBottom: 4 }}>Affected Teams</div>
-                      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: '#334155', lineHeight: 1.6 }}>
-                        {(aff.teams ?? []).map(t => <li key={t}>{t}</li>)}
-                      </ul>
-                    </div>
-                  )}
-                  {aff.employees?.length > 0 && (
-                    <div>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', marginBottom: 4 }}>Affected Employees</div>
-                      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 11, color: '#334155', lineHeight: 1.6 }}>
-                        {(aff.employees ?? []).map(e => <li key={e}>{e}</li>)}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          );
-        })()}
-      </div>
-
-      {/* ── Policy Relationship ────────────────────────────────────────── */}
-      {conflict.sources && conflict.sources.length >= 2 && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, marginTop: 12 }}>
-          <div style={{ flex: 1, background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, color: '#334155', textAlign: 'center', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-            {conflict.sources[0]}
-          </div>
-          <div style={{ flex: 1, height: isSelected && conflict.isSurprise ? 3 : 1, background: isSelected && conflict.isSurprise ? '#DC2626' : sev.border, position: 'relative', transition: 'all 0.3s ease' }}>
-            <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', background: isSelected && conflict.isSurprise ? '#DC2626' : sev.bg, color: isSelected && conflict.isSurprise ? '#FFFFFF' : sev.color, border: `1px solid ${isSelected && conflict.isSurprise ? '#DC2626' : sev.border}`, borderRadius: 12, padding: '2px 8px', fontSize: 10, fontWeight: 700, letterSpacing: '0.5px' }}>
-              ↔ CONTRADICTION
+      {/* Visual Policy A vs B Contradiction */}
+      {policyA && policyB && (
+        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 6, padding: '12px', marginBottom: 16 }}>
+          {/* Policy A */}
+          <div style={{ padding: '8px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 4 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+              {policyA.document} {policyA.section}
+            </div>
+            <div style={{ fontSize: 13, color: '#475569', fontStyle: 'italic', lineHeight: 1.5 }}>
+              "{highlightPassage(policyA.passage, policyA.document)}"
             </div>
           </div>
-          <div style={{ flex: 1, background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, color: '#334155', textAlign: 'center', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-            {conflict.sources[1]}
+
+          {/* Arrow / Conflict indicator */}
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 1, background: '#CBD5E1', zIndex: 0 }} />
+            <div style={{ background: '#F8FAFC', padding: '0 8px', zIndex: 1 }}>
+              <span style={{ background: sev.bg, color: sev.color, border: `1px solid ${sev.border}`, borderRadius: 12, padding: '2px 8px', fontSize: 10, fontWeight: 700, letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontSize: 12 }}>⚠</span> CONFLICT
+              </span>
+            </div>
+          </div>
+
+          {/* Policy B */}
+          <div style={{ padding: '8px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 4 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+              {policyB.document} {policyB.section}
+            </div>
+            <div style={{ fontSize: 13, color: '#475569', fontStyle: 'italic', lineHeight: 1.5 }}>
+              "{highlightPassage(policyB.passage, policyB.document)}"
+            </div>
           </div>
         </div>
       )}
 
-      {/* ── Risk level on collapsed card ────────────────────────────────── */}
-      {conflict.risk_assessment && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' }}>
-          <RiskPill
-            riskLevel={conflict.risk_assessment.risk_level}
-            riskScore={conflict.risk_assessment.risk_score}
-          />
-          {conflict.risk_assessment.potential_consequences?.[0] && (
-            <span style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {conflict.risk_assessment.potential_consequences[0]}
-            </span>
-          )}
+      {/* Consequence Summaries */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+        <div style={{ fontSize: 13, lineHeight: 1.5 }}>
+          <span style={{ fontWeight: 700, color: '#0F172A' }}>Result: </span>
+          <span style={{ color: '#475569' }}>{resultText}</span>
         </div>
-      )}
+        <div style={{ fontSize: 13, lineHeight: 1.5 }}>
+          <span style={{ fontWeight: 700, color: '#0F172A' }}>Affected: </span>
+          <span style={{ color: '#475569' }}>{affectedEntities}</span>
+        </div>
+        <div style={{ fontSize: 13, lineHeight: 1.5 }}>
+          <span style={{ fontWeight: 700, color: '#0F172A' }}>Risk: </span>
+          <span style={{ color: '#475569' }}>{riskText}</span>
+        </div>
+      </div>
 
-      {/* ── Source citation badges ──────────────────────────────────────── */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-        {(conflict.sources ?? []).map((src, i) => (
-          <CitationBadge key={i} src={src} />
-        ))}
+      {/* Expand/Collapse Toggle */}
+      <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: 12, display: 'flex', justifyContent: 'center' }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: '#2563EB' }}>
+          {isSelected ? 'Hide Reasoning ▲' : '[Expand Reasoning] ▼'}
+        </span>
       </div>
 
       {/* ── Expanded detail (when selected) ────────────────────────────── */}
@@ -446,210 +329,35 @@ export default function ConflictCard({
         <div
           style={{
             marginTop: 12,
-            paddingTop: 12,
+            paddingTop: 16,
             borderTop: '0.5px solid #E2E8F0',
-            animation: 'fadeInUp 0.2s ease',
+            animation: 'fadeInDown 0.3s ease',
           }}
+          onClick={(e) => e.stopPropagation()}
         >
-          {/* Deadline alert */}
-          {conflict.deadline && (
-            <div
-              style={{
-                fontSize: 11,
-                color: '#993C1D',
-                background: '#FAECE7',
-                padding: '4px 10px',
-                borderRadius: 4,
-                marginBottom: 10,
-                display: 'inline-block',
-                border: '0.5px solid #F8C4B4',
-              }}
-            >
-              ⏰ {conflict.deadline}
+          {/* Detailed Reasoning section */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#0F172A', marginBottom: 8, textTransform: 'uppercase' }}>
+              System Reasoning
             </div>
-          )}
-
-          {/* High-Impact Visual Contradiction */}
-          {conflict.citations && conflict.citations.length >= 2 && (
-            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, padding: '16px', marginBottom: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#DC2626', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                <span style={{ fontSize: 16 }}>🚨</span> Critical Policy Contradiction
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderLeft: '3px solid #16A34A', borderRadius: 6, padding: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#0F172A', marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
-                    <span>{conflict.citations[0].document} {conflict.citations[0].section}</span>
-                    <span style={{ color: '#16A34A', background: '#F0FDF4', padding: '2px 6px', borderRadius: 4, fontSize: 9 }}>✓ GUARANTEES</span>
-                  </div>
-                  <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.5 }}>"{conflict.citations[0].passage}"</div>
-                </div>
-                
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', fontSize: 10, fontWeight: 800, padding: '4px 12px', borderRadius: 12, textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', zIndex: 1 }}>
-                    ↓ Contradicts ↓
-                  </div>
-                </div>
-                
-                <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderLeft: '3px solid #DC2626', borderRadius: 6, padding: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#0F172A', marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
-                    <span>{conflict.citations[1].document} {conflict.citations[1].section}</span>
-                    <span style={{ color: '#DC2626', background: '#FEF2F2', padding: '2px 6px', borderRadius: 4, fontSize: 9 }}>✗ PROHIBITS</span>
-                  </div>
-                  <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.5 }}>"{conflict.citations[1].passage}"</div>
-                </div>
-              </div>
-              
-              <div style={{ marginTop: 16, fontSize: 13, color: '#0F172A', background: '#FEF2F2', padding: '12px', borderRadius: 6, borderLeft: '3px solid #DC2626', lineHeight: 1.5 }}>
-                <span style={{ fontWeight: 800, color: '#991B1B', marginRight: 6 }}>RESULT:</span> 
-                {conflict.risk_assessment?.reasoning || 'Structural impossibility preventing lawful compliance.'}
-              </div>
-            </div>
-          )}
-
-          {/* Trust Panel & Confidence Evolution */}
-          <div style={{ marginBottom: 12, background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 6, padding: '12px' }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#991B1B', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-              <span style={{ fontSize: 16 }}>👥</span> Who Is Harmed?
-            </div>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#7F1D1D', textTransform: 'uppercase', marginBottom: 4 }}>Affected Groups:</div>
-                <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: '#991B1B', lineHeight: 1.4 }}>
-                  {(conflict.risk_assessment?.affected_entities ?? ['Vulnerable employees', 'HR teams', 'Management']).map((group, i) => (
-                    <li key={i}>{group}</li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#7F1D1D', textTransform: 'uppercase', marginBottom: 4 }}>Potential Harm:</div>
-                <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: '#991B1B', lineHeight: 1.4 }}>
-                  {(conflict.risk_assessment?.potential_consequences ?? [conflict.human_impact || 'Creates an unsafe environment for employees']).map((harm, i) => (
-                    <li key={i}>{harm}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            
-            <div style={{ background: '#FFFFFF', borderRadius: 6, padding: '10px 12px', border: '1px solid #F87171' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#0F172A', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                Confidence Evolution (Multi-Agent Consensus)
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, position: 'relative' }}>
-                <div style={{ flex: 1, height: 4, background: '#E2E8F0', borderRadius: 2, position: 'absolute', top: 12, left: 10, right: 10, zIndex: 0 }} />
-                
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }} title="Initial raw detection from semantic overlap">
-                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#F1F5F9', border: '2px solid #94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
-                    {Math.max(65, conflict.confidence - 14)}%
-                  </div>
-                  <div style={{ fontSize: 9, color: '#64748B', fontWeight: 600 }}>Detection</div>
-                </div>
-
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }} title="Validation confirmed structural impossibility">
-                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#EEF2FF', border: '2px solid #818CF8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#3730A3', marginBottom: 4 }}>
-                    {Math.max(70, conflict.confidence - 6)}%
-                  </div>
-                  <div style={{ fontSize: 9, color: '#64748B', fontWeight: 600 }}>Validation</div>
-                </div>
-
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }} title="Risk assessment anchored citations">
-                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#F0FDF4', border: '2px solid #4ADE80', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#166534', marginBottom: 4 }}>
-                    {conflict.confidence}%
-                  </div>
-                  <div style={{ fontSize: 9, color: '#64748B', fontWeight: 600 }}>Risk Anchor</div>
-                </div>
-              </div>
+            <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.6, background: '#F8FAFC', padding: 12, borderRadius: 6, border: '1px solid #E2E8F0' }}>
+              {conflict.risk_assessment?.reasoning || conflict.affected}
             </div>
           </div>
 
-          {/* Resolution text */}
-          <div
-            style={{
-              fontSize: 11,
-              color: '#475569',
-              marginBottom: 12,
-              lineHeight: 1.75,
-              background: '#F8FAFC',
-              padding: '10px 14px',
-              borderRadius: 6,
-              border: '1px solid #E2E8F0'
-            }}
-          >
-            {(() => {
-              const res = parseStructuredText(conflict.resolution);
-              return (
-                <>
-                  <div style={{ fontWeight: 600, color: '#0F172A', marginBottom: 4 }}>Resolution Recommendation</div>
-                  <div>
-                    {res.recommendation || res.summary || (
-                      typeof res === 'string' ? res : (
-                        <ul style={{ margin: 0, paddingLeft: 16 }}>
-                          {Object.entries(res).map(([k, v]) => (
-                            <li key={k}><strong>{k}:</strong> {typeof v === 'string' ? v : JSON.stringify(v)}</li>
-                          ))}
-                        </ul>
-                      )
-                    )}
-                  </div>
-                  {(res.owners?.length > 0 || res.deadline) && (
-                    <div style={{ display: 'flex', gap: 8, marginTop: 8, paddingTop: 8, borderTop: '1px dashed #CBD5E1' }}>
-                      {res.owners?.map(o => (
-                        <span key={o} style={{ background: '#EEF2FF', color: '#3730A3', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 500 }}>
-                          Owner: {o}
-                        </span>
-                      ))}
-                      {res.deadline && (
-                        <span style={{ background: '#FFF7ED', color: '#9A3412', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 500 }}>
-                          Deadline: {res.deadline}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </>
-              );
-            })()}
-          </div>
+          {/* Remediation */}
+          <RemediationWorkflow conflict={conflict} />
 
-          {/* Human Approval Gate */}
-          {!isApproved && !isRejected && !isEscalated ? (
-            <ApprovalGate
-              onApprove={onApprove}
-              onReject={onReject}
-              onEscalate={onEscalate}
-              conflictId={conflict.id}
-              traceId={traceId}
-            />
-          ) : isApproved ? (
-            <RemediationWorkflow conflict={conflict} />
-          ) : isEscalated ? (
-            <div
-              style={{
-                fontSize: 11,
-                color: '#3730A3',
-                background: '#EEF2FF',
-                border: '0.5px solid #A5B4FC',
-                padding: '6px 12px',
-                borderRadius: 5,
-                display: 'inline-block',
-              }}
-            >
-              ↗ Escalated to legal team — awaiting review
-            </div>
-          ) : (
-            <div
-              style={{
-                fontSize: 11,
-                color: '#94A3B8',
-                background: '#F1F5F9',
-                padding: '6px 12px',
-                borderRadius: 5,
-                display: 'inline-block',
-              }}
-            >
-              Marked as false positive — excluded from resolution workflow
-            </div>
-          )}
+          {/* Approval Gate */}
+          <ApprovalGate
+            isApproved={isApproved}
+            isRejected={isRejected}
+            isEscalated={isEscalated}
+            onApprove={onApprove}
+            onReject={onReject}
+            onEscalate={onEscalate}
+            traceId={traceId}
+          />
         </div>
       )}
     </div>
