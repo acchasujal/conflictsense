@@ -182,6 +182,11 @@ export default function App() {
   const [currentScenario, setCurrentScenario]   = useState(null);
   const [liveDocuments, setLiveDocuments]       = useState(MOCK_DOCUMENTS);
 
+  // Modals & Toasts
+  const [activeModal, setActiveModal]           = useState(null);
+  const [toastMessage, setToastMessage]         = useState(null);
+  const [legalReason, setLegalReason]           = useState("Potential compliance exposure requires legal assessment.");
+
   // ── Accessibility state ───────────────────────────────────────────────
   const [reducedMotion, setReducedMotion]       = useState(false);
   const [srMode, setSrMode]                     = useState(false);
@@ -384,29 +389,54 @@ export default function App() {
     setSelectedId((prev) => (prev === id ? null : id));
   }, []);
 
-  const handleApprove = useCallback(async (id) => {
-    // Optimistic local update first
-    setApprovedIds((prev) => new Set([...prev, id]));
-    // Fire-and-forget backend call
-    try {
-      await approveConflict(id);
-    } catch (err) {
-      console.warn('[App] /approve call failed (mock mode OK):', err.message);
-    }
+  const handleApprove = useCallback((id) => {
+    setActiveModal({ type: 'APPROVE', conflictId: id });
   }, []);
 
-  const handleReject = useCallback(async (id) => {
-    setRejectedIds((prev) => new Set([...prev, id]));
-    try {
-      await rejectConflict(id);
-    } catch (err) {
-      console.warn('[App] /reject call failed (mock mode OK):', err.message);
-    }
+  const handleReject = useCallback((id) => {
+    setActiveModal({ type: 'LEGAL', conflictId: id });
   }, []);
 
   const handleEscalate = useCallback((id) => {
-    setEscalatedIds((prev) => new Set([...prev, id]));
+    setActiveModal({ type: 'ESCALATE', conflictId: id });
   }, []);
+
+  const confirmAction = () => {
+    if (!activeModal) return;
+    const { type, conflictId } = activeModal;
+    
+    let newStep = {
+      event: "trace_step",
+      data: {
+        time: "0.2s",
+        confidence: 100,
+        citations: []
+      }
+    };
+
+    if (type === 'APPROVE') {
+      setApprovedIds((prev) => new Set([...prev, conflictId]));
+      setToastMessage("Remediation plan approved.");
+      newStep.data.agent = "GovernanceApprovalAgent";
+      newStep.data.agentColor = "#16A34A";
+      newStep.data.conclusion = "Remediation plan approved by reviewer.";
+    } else if (type === 'LEGAL') {
+      setRejectedIds((prev) => new Set([...prev, conflictId]));
+      setToastMessage("Legal review requested.");
+      newStep.data.agent = "LegalReviewAgent";
+      newStep.data.agentColor = "#9333EA";
+      newStep.data.conclusion = "Conflict escalated for legal assessment. Reason: " + legalReason;
+    } else if (type === 'ESCALATE') {
+      setEscalatedIds((prev) => new Set([...prev, conflictId]));
+      setToastMessage("Conflict escalated to Governance Board.");
+      newStep.data.agent = "GovernanceBoardAgent";
+      newStep.data.agentColor = "#DC2626";
+      newStep.data.conclusion = "Critical conflict escalated for executive review.";
+    }
+
+    setVisibleSteps(prev => [...prev, newStep]);
+    setActiveModal(null);
+  };
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
@@ -582,6 +612,66 @@ export default function App() {
           />
         </main>
       </div>
+
+      {/* ── Modals & Toasts ────────────────────────────────────────── */}
+      <Modal 
+        isOpen={activeModal?.type === 'APPROVE'} 
+        onClose={() => setActiveModal(null)} 
+        title="Approve Remediation Plan?"
+      >
+        <div style={{ fontSize: 14, color: '#334155', marginBottom: 24 }}>
+          This will mark the conflict as approved for remediation and update governance status.
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+          <button onClick={() => setActiveModal(null)} style={{ padding: '8px 16px', borderRadius: 4, border: '1px solid #CBD5E1', background: '#FFFFFF', cursor: 'pointer' }}>Cancel</button>
+          <button onClick={confirmAction} style={{ padding: '8px 16px', borderRadius: 4, border: 'none', background: '#3B82F6', color: '#FFFFFF', fontWeight: 600, cursor: 'pointer' }}>Confirm</button>
+        </div>
+      </Modal>
+
+      <Modal 
+        isOpen={activeModal?.type === 'LEGAL'} 
+        onClose={() => setActiveModal(null)} 
+        title="Request Legal Review"
+      >
+        <div style={{ fontSize: 14, color: '#334155', marginBottom: 16 }}>
+          {activeModal && visibleConflicts.find(c => c.id === activeModal.conflictId) && (
+            <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 6, marginBottom: 16, border: '1px solid #E2E8F0' }}>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>{visibleConflicts.find(c => c.id === activeModal.conflictId).title}</div>
+              <div style={{ fontSize: 12, color: '#64748B' }}>Severity: {visibleConflicts.find(c => c.id === activeModal.conflictId).severity}</div>
+            </div>
+          )}
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: 8 }}>Reason</label>
+          <textarea 
+            value={legalReason} 
+            onChange={(e) => setLegalReason(e.target.value)}
+            style={{ width: '100%', padding: 12, borderRadius: 4, border: '1px solid #CBD5E1', minHeight: 80, fontFamily: 'inherit', boxSizing: 'border-box' }}
+          />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+          <button onClick={() => setActiveModal(null)} style={{ padding: '8px 16px', borderRadius: 4, border: '1px solid #CBD5E1', background: '#FFFFFF', cursor: 'pointer' }}>Cancel</button>
+          <button onClick={confirmAction} style={{ padding: '8px 16px', borderRadius: 4, border: 'none', background: '#9333EA', color: '#FFFFFF', fontWeight: 600, cursor: 'pointer' }}>Submit</button>
+        </div>
+      </Modal>
+
+      <Modal 
+        isOpen={activeModal?.type === 'ESCALATE'} 
+        onClose={() => setActiveModal(null)} 
+        title="Escalate to Governance Board"
+      >
+        <div style={{ fontSize: 14, color: '#334155', marginBottom: 24 }}>
+          This conflict will be escalated to the Governance Board due to enterprise impact.
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+          <button onClick={() => setActiveModal(null)} style={{ padding: '8px 16px', borderRadius: 4, border: '1px solid #CBD5E1', background: '#FFFFFF', cursor: 'pointer' }}>Cancel</button>
+          <button onClick={confirmAction} style={{ padding: '8px 16px', borderRadius: 4, border: 'none', background: '#DC2626', color: '#FFFFFF', fontWeight: 600, cursor: 'pointer' }}>Escalate</button>
+        </div>
+      </Modal>
+
+      <Toast 
+        isVisible={!!toastMessage} 
+        message={toastMessage} 
+        onClose={() => setToastMessage(null)} 
+      />
     </>
   );
 }

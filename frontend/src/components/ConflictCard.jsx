@@ -256,8 +256,17 @@ export default function ConflictCard({
           <span style={{ fontSize: 12, fontWeight: 800, color: sev.color, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
             {conflict.severity} POLICY CONTRADICTION
           </span>
-          {isApproved && <span style={{ background: '#EAF3DE', color: '#27500A', fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 3 }}>✓ approved</span>}
-          {isRejected && <span style={{ background: '#F1F5F9', color: '#94A3B8', fontSize: 10, padding: '1px 6px', borderRadius: 3 }}>false positive</span>}
+          {isApproved ? (
+            <span style={{ background: '#EAF3DE', color: '#27500A', border: '1px solid #97C459', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4 }}>APPROVED</span>
+          ) : isRejected ? (
+            <span style={{ background: '#F3E8FF', color: '#7E22CE', border: '1px solid #D8B4FE', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4 }}>LEGAL REVIEW</span>
+          ) : isEscalated ? (
+            <span style={{ background: '#FEE2E2', color: '#B91C1C', border: '1px solid #FCA5A5', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4 }}>ESCALATED</span>
+          ) : isSelected ? (
+            <span style={{ background: '#DBEAFE', color: '#1D4ED8', border: '1px solid #93C5FD', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4 }}>UNDER REVIEW</span>
+          ) : (
+            <span style={{ background: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4 }}>NEW</span>
+          )}
         </div>
         <span style={{ fontSize: 11, color: '#94A3B8', fontFamily: 'monospace' }}>{conflict.confidence}% conf</span>
       </div>
