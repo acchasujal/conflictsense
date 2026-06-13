@@ -31,7 +31,7 @@ These two sections cannot simultaneously be true. For the same employee. On the 
 
 **ConflictSense didn't retrieve this. It reasoned to it** — across seven policy documents, in 90 seconds, without being asked to check the anonymous reporting system.
 
-![The Anonymity Conflict](https://raw.githubusercontent.com/acchasujal/conflictsense/main/judge_screenshots/01_anonymity_conflict_expanded.png)
+![The Anonymity Conflict](docs/images/Anonymity%20Conflict.png)
 
 ---
 
@@ -52,7 +52,7 @@ A chatbot answers the questions you ask. ConflictSense finds the structural impo
 
 ConflictSense relies on a multi-stage reasoning pipeline powered by **Azure AI Search**.
 
-![Reasoning Trace Mid-Execution](https://raw.githubusercontent.com/acchasujal/conflictsense/main/judge_screenshots/02_reasoning_trace_mid_execution.png)
+![Reasoning Trace Mid-Execution](docs/images/Reasoning%20Trace%20Mid-Execution.png)
 
 1. **PolicyIngestionAgent:** Chunks and indexes policy documents; extracts entities and obligations.
 2. **CrossPolicyAnalyzer:** Identifies overlapping entities across document boundaries.
@@ -66,7 +66,7 @@ ConflictSense relies on a multi-stage reasoning pipeline powered by **Azure AI S
 - Gated behind human approval before any governance action.
 - Abstained when evidence is insufficient — the system says "I don't know" rather than hallucinating.
 
-![Action Center (Human Approval Gate)](https://raw.githubusercontent.com/acchasujal/conflictsense/main/judge_screenshots/04_action_center.png)
+![Action Center (Human Approval Gate)](docs/images/Human%20Approval%20Gate.png)
 
 ---
 
@@ -74,7 +74,7 @@ ConflictSense relies on a multi-stage reasoning pipeline powered by **Azure AI S
 
 ConflictSense identifies who is harmed before it identifies what is violated.
 
-![Who Is Harmed (Human Impact)](https://raw.githubusercontent.com/acchasujal/conflictsense/main/judge_screenshots/03_human_impact.png)
+![Who Is Harmed (Human Impact)](docs/images/Human%20Impact%20section.png)
 
 - **Whistleblower Retaliation Risk:** Employees who trust anonymous reporting channels are silently exposed when IT audit logging makes anonymity technically impossible. Trust in a protection that doesn't exist is not neutral — it causes people to take risks they would not otherwise accept.
 - **Disability Accommodation Barriers:** Employees requiring assistive software or non-standard devices are blocked when HR accommodation policy conflicts with IT's mandatory standard-device policy. 
@@ -87,7 +87,7 @@ These are not compliance line-items. These are people.
 
 ConflictSense protects marginalized employees. It must be accessible to them.
 
-![Accessibility Demo Active](https://raw.githubusercontent.com/acchasujal/conflictsense/main/judge_screenshots/05_accessibility_active.png)
+![Accessibility Demo Active](docs/images/Accessibility%20Demo.png)
 
 - **`aria-live="polite"`** on all agent timeline updates — screen readers announce reasoning as it streams.
 - **`prefers-reduced-motion` respected** — one toggle disables every animation system-wide.
