@@ -50,21 +50,76 @@ A chatbot answers the questions you ask. ConflictSense finds the structural impo
 
 ## ⚙️ Multi-Agent Reasoning Architecture
 
-ConflictSense relies on a multi-stage reasoning pipeline powered by **Azure AI Search**.
+ConflictSense relies on a disciplined, multi-stage reasoning pipeline designed to prioritize logical entailment and human safety over simple text retrieval. It operates through specialized agents managed by a central Orchestrator.
+
+```mermaid
+graph TD
+    %% Styling
+    classDef user fill:#2C3E50,stroke:#none,color:#fff,font-weight:bold,padding:10px
+    classDef retrieve fill:#2980B9,stroke:#none,color:#fff,font-weight:bold,padding:10px
+    classDef reason fill:#8E44AD,stroke:#none,color:#fff,font-weight:bold,padding:10px
+    classDef validate fill:#E67E22,stroke:#none,color:#fff,font-weight:bold,padding:10px
+    classDef govern fill:#C0392B,stroke:#none,color:#fff,font-weight:bold,padding:10px
+
+    %% Layers
+    INPUT["User Input / Policy Upload"]:::user
+    
+    subgraph Retrieval Layer
+        DA["DocumentAnalyzer<br/>(Azure AI Search: Hybrid + Semantic)"]:::retrieve
+    end
+    
+    subgraph Reasoning Layer
+        CD["ConflictDetector<br/>(Logical Entailment Testing)"]:::reason
+    end
+    
+    subgraph Validation Layer
+        VAL["ConflictValidatorAgent<br/>(Abstention / Grounding Check)"]:::validate
+    end
+    
+    subgraph Risk Layer
+        IA["ImpactAssessor & RiskQuantifier<br/>(Harm Classification)"]:::validate
+    end
+
+    subgraph Governance Layer
+        RR["ResolutionRecommender"]:::govern
+        GATE["Human Approval Gate<br/>(Action Center UI)"]:::govern
+    end
+
+    %% Flow
+    INPUT --> DA
+    DA --> CD
+    CD --> VAL
+    
+    VAL -- "Insufficient Evidence" --> ABSTAIN["System Abstains (No Hallucination)"]
+    VAL -- "Validated Proof" --> IA
+    
+    IA --> RR
+    RR --> GATE
+```
 
 ![Reasoning Trace Mid-Execution](docs/images/Reasoning%20Trace%20Mid-Execution.png)
 
-1. **PolicyIngestionAgent:** Chunks and indexes policy documents; extracts entities and obligations.
-2. **CrossPolicyAnalyzer:** Identifies overlapping entities across document boundaries.
-3. **LogicValidator:** Tests whether two obligations can simultaneously hold for the same person.
-4. **RiskAssessor:** Classifies the harm by employee category, severity, and human impact.
-5. **Human Approval Gate:** No action, no ticket, no remediation without explicit human sign-off.
+**1. Retrieval & Grounding Layer (`DocumentAnalyzer`)**
+When a policy enters the system, it is indexed into **Azure AI Search**. The analyzer uses Hybrid Retrieval (Keyword + Vector) and Semantic Ranking to surface highly relevant chunks.
 
-**Every conflict finding is:**
-- Grounded in exact, highlighted citations from the source document.
-- Validated by a second agent before surfacing in the UI.
-- Gated behind human approval before any governance action.
-- Abstained when evidence is insufficient — the system says "I don't know" rather than hallucinating.
+**2. Logical Entailment Layer (`ConflictDetector`)**
+This is what separates ConflictSense from a retrieval chatbot. The detector tests whether two obligations can simultaneously hold for the same employee class. It does not summarize; it proves structural impossibilities. 
+
+**3. Validation & Abstention Layer (`ConflictValidatorAgent`)**
+A secondary agent acts as an adversarial reviewer. If a candidate conflict lacks citations from at least two *distinct* documents, or if confidence falls below the strict 65% threshold, the system **abstains**. It outputs "Insufficient validated evidence" rather than hallucinating a finding.
+
+**4. Risk & Impact Layer (`ImpactAssessor` & `RiskQuantifier`)**
+Operating in parallel, these agents shift focus from *what is violated* to *who is harmed*. They classify the employee category at risk (e.g., Whistleblower, Disabled Employee) and assign a severity score.
+
+**5. Governance Layer (`ResolutionRecommender` & `Human Approval Gate`)**
+The system proposes a remediation plan, but takes zero automated action. Every generated ticket or policy block is intercepted by a strict Human Approval Gate in the UI, requiring explicit human sign-off before routing to Legal or HR.
+
+**The Reliability Fallback Chain (4-Tier Architecture):**
+To guarantee zero cold-start failures during judging:
+- **Tier 1:** Live Azure AI Search + Primary LLM (Groq via OpenRouter/Native API).
+- **Tier 2:** Automatic LLM Provider Failover (routes to Nvidia if Primary fails).
+- **Tier 3:** Precomputed Trace Replay (Offline, verified demo scenarios).
+- **Tier 4:** Hard Abstention.
 
 ![Action Center (Human Approval Gate)](docs/images/Human%20Approval%20Gate.png)
 
